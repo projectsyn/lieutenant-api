@@ -38,17 +38,7 @@ As the API spec is written with OpenAPI, the [OpenAPI Generator](https://openapi
 Some API endpoints store data in Kubernetes objects. These objects must be
 named like this:
 
-`echo "prefix-$(pwgen -A -B 6)"`
-
-Prefixes are:
-
-* Tenants: `t-`
-* Clusters: `c-`
-* GitRepos: `g-`
-
-Example:
-
-`t-ieg4di`
+`pwgen -A -B 6 1`
 
 ### Links
 
