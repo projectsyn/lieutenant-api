@@ -2,6 +2,10 @@ openapi: '3.0.2'
 info:
   title: Lieutenant API
   description: Project Syn Management API
+  contact:
+    name: VSHN AG
+    email: info@vshn.ch
+    url: https://vshn.ch
   version: 0.0.1
   license:
     name: BSD 3-Clause License
