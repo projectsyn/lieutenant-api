@@ -475,7 +475,11 @@ paths:
           description: Initial bootstrap token
       responses:
         '200':
-          description: Cluster found and token valid
+          description: Kubernetes manifests to install Steward, the cluster agent
+          content:
+            application/json:
+              schema:
+                type: object
         '401':
           description: Token invalid
         '404':
@@ -513,7 +517,7 @@ paths:
         required: true
         $ref: '#/components/requestBodies/StoreInventory'
       responses:
-        '200':
+        '201':
           description: Inventory data stored
         default:
           $ref: '#/components/responses/Default'
