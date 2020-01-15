@@ -308,6 +308,8 @@ paths:
       summary: Deletes a tenant
       tags:
         - tenant
+      parameters:
+        - $ref: '#/components/parameters/TenantId'
       responses:
         '204':
           description: Tenant deleted
@@ -426,6 +428,8 @@ paths:
       summary: Deletes a cluster
       tags:
         - cluster
+      parameters:
+        - $ref: '#/components/parameters/ClusterId'
       responses:
         '204':
           description: Cluster deleted
