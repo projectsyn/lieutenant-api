@@ -29,6 +29,7 @@ func main() {
 
 	e := echo.New()
 	e.Use(echomiddleware.Logger())
+	e.Pre(echomiddleware.RemoveTrailingSlash())
 
 	apiGroup := e.Group("api")
 	//apiGroup.Use(middleware.OapiRequestValidator(swagger))
