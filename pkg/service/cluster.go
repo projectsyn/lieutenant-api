@@ -1,6 +1,7 @@
 package service
 
 import (
+	"encoding/json"
 	"github.com/AlekSi/pointer"
 	"github.com/labstack/echo/v4"
 	"github.com/projectsyn/lieutenant/pkg/api"
@@ -26,7 +27,18 @@ func (s *APIImpl) ListClusters(ctx echo.Context, params api.ListClustersParams) 
 
 // CreateCluster creates a new cluster
 func (s *APIImpl) CreateCluster(ctx echo.Context) error {
-	return ctx.JSON(http.StatusCreated, sampleCluster)
+	var newCluster *api.CreateClusterJSONRequestBody
+	if err := ctx.Bind(&newCluster); err != nil {
+		return ctx.JSON(http.StatusBadRequest, api.Reason{
+			Reason: err.Error(),
+		})
+	}
+	cluster := api.Cluster{
+		ClusterProperties: api.ClusterProperties(*newCluster),
+	}
+	cluster.Id = api.Id("new-id")
+
+	return ctx.JSON(http.StatusCreated, cluster)
 }
 
 // DeleteCluster deletes a cluster
@@ -43,5 +55,13 @@ func (s *APIImpl) GetCluster(ctx echo.Context, clusterID api.ClusterIdParameter)
 
 // UpdateCluster updates a cluster
 func (s *APIImpl) UpdateCluster(ctx echo.Context, clusterID api.ClusterIdParameter) error {
+	var patchCluster api.ClusterProperties
+	dec := json.NewDecoder(ctx.Request().Body)
+	if err := dec.Decode(&patchCluster); err != nil {
+		ctx.JSON(http.StatusBadRequest, api.Reason{
+			Reason: err.Error(),
+		})
+		return err
+	}
 	return ctx.NoContent(http.StatusNoContent)
 }

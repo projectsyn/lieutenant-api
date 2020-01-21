@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 
+	_ "github.com/cosmtrek/air" // used for hot reload
 	"github.com/projectsyn/lieutenant/pkg/service"
 )
 

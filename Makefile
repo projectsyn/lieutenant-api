@@ -29,11 +29,15 @@ build: generate
 
 .PHONY: test
 test: generate
-	$(GOTEST) -v ./...
+	$(GOTEST) -v -cover ./pkg/...
 
 .PHONY: run
 run: generate
 	go run main.go
+
+.PHONY: watch
+watch: generate
+	go run github.com/cosmtrek/air
 
 .PHONY: clean
 clean:
