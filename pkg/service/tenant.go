@@ -10,7 +10,7 @@ import (
 var sampleTenant = api.Tenant{
 	TenantId: api.NewTenantID("ut0uaVae"),
 	TenantProperties: api.TenantProperties{
-		Name:        pointer.ToString("tenant-a"),
+		Name:        "tenant-a",
 		DisplayName: pointer.ToString("Tenant A corp."),
 		GitRepo:     pointer.ToString("ssh://git@github.com/projectsyn/cluster-catalog.git"),
 	},

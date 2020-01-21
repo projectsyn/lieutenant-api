@@ -25,6 +25,8 @@ components:
       readOnly: true
     TenantProperties:
       type: object
+      required:
+        - name
       description: |
         A tenant defition object.
         It can belong to another tenant to allow for tenant hierarchies.
