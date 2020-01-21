@@ -15,7 +15,7 @@ servers:
     description: Project Syn Lieutenant Production API
   - url: https://api-test.syn.vshn.ch/api/
     description: Project Syn Lieutenant Test API
-  - url: http://localhost:8080/api/
+  - url: /api/
     description: Local development
 components:
   schemas:

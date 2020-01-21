@@ -6,9 +6,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/labstack/echo/v4"
-	echomiddleware "github.com/labstack/echo/v4/middleware"
-	"github.com/projectsyn/lieutenant/pkg/api"
 	"github.com/projectsyn/lieutenant/pkg/service"
 )
 
@@ -16,25 +13,11 @@ import (
 var Version = "unreleased"
 
 func main() {
-
-	swagger, err := api.GetSwagger()
+	e, err := service.NewAPIServer()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error loading swagger spec\n: %s", err)
+		fmt.Fprintf(os.Stderr, err.Error()+"\n")
 		os.Exit(1)
 	}
-
-	swagger.Servers = nil
-
-	svc := service.NewService()
-
-	e := echo.New()
-	e.Use(echomiddleware.Logger())
-	e.Pre(echomiddleware.RemoveTrailingSlash())
-
-	apiGroup := e.Group("api")
-	//apiGroup.Use(middleware.OapiRequestValidator(swagger))
-	api.RegisterHandlers(apiGroup, svc)
-
 	fmt.Println("Start server")
 	e.Logger.Fatal(e.Start(":8080"))
 }
