@@ -24,12 +24,13 @@ generate:
 build: generate
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -v \
 		-o $(BINARY_NAME) \
-		-ldflags "-X main.Version=$(VERSION)"
+		-ldflags "-X main.Version=$(VERSION)" \
+		main.go
 	@echo built '$(VERSION)'
 
 .PHONY: test
 test: generate
-	$(GOTEST) -v -cover ./pkg/...
+	$(GOTEST) -v -cover ./...
 
 .PHONY: run
 run: generate

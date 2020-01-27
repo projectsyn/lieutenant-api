@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"github.com/AlekSi/pointer"
 	"github.com/labstack/echo/v4"
-	"github.com/projectsyn/lieutenant/pkg/api"
+	"github.com/projectsyn/lieutenant-api/pkg/api"
 	"net/http"
 )
 

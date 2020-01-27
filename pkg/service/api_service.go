@@ -11,7 +11,7 @@ import (
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/labstack/echo/v4"
 	echomiddleware "github.com/labstack/echo/v4/middleware"
-	"github.com/projectsyn/lieutenant/pkg/api"
+	"github.com/projectsyn/lieutenant-api/pkg/api"
 )
 
 // APIBasePath the base path of the API

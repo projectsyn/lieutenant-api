@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"os"
 
-	_ "github.com/cosmtrek/air" // used for hot reload
-	"github.com/projectsyn/lieutenant/pkg/service"
+	_ "github.com/cosmtrek/air/runner" // used for hot reload
+	"github.com/projectsyn/lieutenant-api/pkg/service"
 )
 
 // Version is the lieutenant-api version (set during build)

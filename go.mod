@@ -1,4 +1,4 @@
-module github.com/projectsyn/lieutenant
+module github.com/projectsyn/lieutenant-api
 
 go 1.13
 
