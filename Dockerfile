@@ -1,14 +1,16 @@
+# syntax = docker/dockerfile:experimental
+
 FROM docker.io/golang:1.13 as build
 
 WORKDIR /app
 
 COPY go.mod go.sum ./
-RUN go mod download
+RUN --mount=type=cache,target=$GOPATH/pkg/mod go mod download
 
 COPY . .
 
-RUN make test
-RUN make build
+RUN --mount=type=cache,target=$HOME/.cache/go-build make test
+RUN --mount=type=cache,target=$HOME/.cache/go-build make build
 
 FROM gcr.io/distroless/static:nonroot
 
