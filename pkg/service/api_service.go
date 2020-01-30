@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
-	"github.com/deepmap/oapi-codegen/pkg/middleware"
+	oapimiddleware "github.com/deepmap/oapi-codegen/pkg/middleware"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/labstack/echo/v4"
-	echomiddleware "github.com/labstack/echo/v4/middleware"
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/projectsyn/lieutenant-api/pkg/api"
 )
 
@@ -30,8 +31,11 @@ func NewAPIServer() (*echo.Echo, error) {
 	apiImpl := &APIImpl{}
 
 	e := echo.New()
-	e.Use(echomiddleware.Logger())
-	e.Pre(echomiddleware.RemoveTrailingSlash())
+	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
+		Skipper: func(c echo.Context) bool { return strings.HasSuffix(c.Path(), "/healthz") },
+	}))
+	e.Use(middleware.Recover())
+	e.Pre(middleware.RemoveTrailingSlash())
 
 	e.HTTPErrorHandler = customHTTPErrorHandler
 
@@ -44,7 +48,7 @@ func NewAPIServer() (*echo.Echo, error) {
 		return value, nil
 	})
 
-	apiGroup.Use(middleware.OapiRequestValidator(swagger))
+	apiGroup.Use(oapimiddleware.OapiRequestValidator(swagger))
 	api.RegisterHandlers(apiGroup, apiImpl)
 
 	return e, nil

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/deepmap/oapi-codegen/pkg/testutil"
+	"github.com/projectsyn/lieutenant-api/pkg/api"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -31,5 +32,9 @@ func TestInstallStewardNoToken(t *testing.T) {
 	result := testutil.NewRequest().
 		Get(APIBasePath+"/install/steward.json").
 		Go(t, e)
-	assert.Equal(t, http.StatusUnauthorized, result.Code())
+	assert.Equal(t, http.StatusBadRequest, result.Code())
+	reason := &api.Reason{}
+	err := result.UnmarshalJsonToObject(reason)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, reason.Reason)
 }
