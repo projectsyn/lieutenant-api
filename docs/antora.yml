@@ -1,0 +1,6 @@
+name: lieutenant-api
+title: Lieutenant API
+version: master
+start_page: ROOT:index.adoc
+nav:
+- modules/ROOT/nav.adoc

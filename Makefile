@@ -6,6 +6,14 @@ VERSION ?= $(shell git describe --tags --always --dirty --match=v* || (echo "com
 IMAGE_NAME ?= docker.io/lieutenant-api/$(BINARY_NAME):$(VERSION)
 
 # Antora variables
+docker_cmd  ?= docker
+docker_opts ?= --rm --tty --user "$$(id -u)"
+
+antora_cmd  ?= $(docker_cmd) run $(docker_opts) --volume "$${PWD}":/antora vshn/antora:1.3
+antora_opts ?= --cache-dir=.cache/antora
+
+vale_cmd ?= $(docker_cmd) run $(docker_opts) --volume "$${PWD}"/docs/modules/ROOT/pages:/pages vshn/vale:1.1 --minAlertLevel=error --config=/pages/.vale.ini /pages
+
 # Go parameters
 GOCMD   ?= go
 GOBUILD ?= $(GOCMD) build
@@ -48,3 +56,15 @@ clean:
 docker:
 	docker build -t $(IMAGE_NAME) .
 	@echo built image $(IMAGE_NAME)
+
+.PHONY: docs
+docs:    $(web_dir)/index.html
+
+$(web_dir)/index.html: playbook.yml $(pages)
+	$(antora_cmd) $(antora_opts) $<
+
+.PHONY: check
+check:
+	$(vale_cmd)
+
+

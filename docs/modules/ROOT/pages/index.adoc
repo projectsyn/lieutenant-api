@@ -1,0 +1,5 @@
+= Lieutenant API
+
+image::syn.png[]
+
+This is the documentation of the Lieutenant API project.
