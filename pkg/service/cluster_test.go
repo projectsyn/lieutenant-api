@@ -6,137 +6,155 @@ import (
 
 	"github.com/AlekSi/pointer"
 	"github.com/deepmap/oapi-codegen/pkg/testutil"
+	"github.com/labstack/echo/v4"
 	"github.com/projectsyn/lieutenant-api/pkg/api"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestListCluster(t *testing.T) {
-	// Setup
-	e, err := NewAPIServer()
+	e := setupTest(t)
+
+	result := testutil.NewRequest().
+		Get(APIBasePath+"/clusters").
+		WithHeader(echo.HeaderAuthorization, bearerToken).
+		Go(t, e)
+	assert.Equal(t, http.StatusOK, result.Code())
+	clusters := []api.Cluster{}
+	err := result.UnmarshalJsonToObject(&clusters)
 	assert.NoError(t, err)
+	assert.GreaterOrEqual(t, len(clusters), 1)
+	found := false
+	for _, cluster := range clusters {
+		if string(cluster.ClusterId.Id) == clusterA.Name {
+			found = true
+			break
+		}
+	}
+	assert.Truef(t, found, "Cluster not found in result list", clusterA.Name)
+}
+
+func TestListClusterMissingBearer(t *testing.T) {
+	e := setupTest(t)
 
 	result := testutil.NewRequest().
 		Get(APIBasePath+"/clusters").
 		Go(t, e)
-	assert.Equal(t, http.StatusOK, result.Code())
-	clusters := &[]api.Cluster{}
-	err = result.UnmarshalJsonToObject(clusters)
-	assert.NoError(t, err)
-	assert.NotNil(t, clusters)
-	assert.GreaterOrEqual(t, len(*clusters), 1)
+	assert.Equal(t, http.StatusBadRequest, result.Code())
+}
+
+func TestListClusterWrongToken(t *testing.T) {
+	e := setupTest(t)
+
+	result := testutil.NewRequest().
+		Get(APIBasePath+"/clusters").
+		WithHeader(echo.HeaderAuthorization, "asdf").
+		Go(t, e)
+	assert.Equal(t, http.StatusBadRequest, result.Code())
 }
 
 func TestCreateCluster(t *testing.T) {
-	// Setup
-	e, err := NewAPIServer()
-	assert.NoError(t, err)
+	e := setupTest(t)
 
 	newCluster := api.ClusterProperties{
-		Name:        "test-cluster",
 		DisplayName: pointer.ToString("My test cluster"),
+		Tenant:      tenantA.Name,
 	}
 	result := testutil.NewRequest().
 		Post(APIBasePath+"/clusters").
 		WithJsonBody(newCluster).
+		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
 	assert.Equal(t, http.StatusCreated, result.Code())
 	cluster := &api.Cluster{}
-	err = result.UnmarshalJsonToObject(cluster)
+	err := result.UnmarshalJsonToObject(cluster)
 	assert.NoError(t, err)
 	assert.NotNil(t, cluster)
 	assert.NotEmpty(t, cluster.Id)
-	assert.Equal(t, cluster.Name, newCluster.Name)
+	assert.Equal(t, cluster.DisplayName, newCluster.DisplayName)
 }
 
 func TestCreateClusterNoJSON(t *testing.T) {
-	// Setup
-	e, err := NewAPIServer()
-	assert.NoError(t, err)
+	e := setupTest(t)
 
 	result := testutil.NewRequest().
 		Post(APIBasePath+"/clusters/").
 		WithJsonContentType().
 		WithBody([]byte("invalid-body")).
+		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
 	assert.Equal(t, http.StatusBadRequest, result.Code())
 	reason := &api.Reason{}
-	err = result.UnmarshalJsonToObject(reason)
+	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, reason.Reason)
 }
 
 func TestCreateClusterEmpty(t *testing.T) {
-	// Setup
-	e, err := NewAPIServer()
-	assert.NoError(t, err)
+	e := setupTest(t)
 
 	result := testutil.NewRequest().
 		Post(APIBasePath+"/clusters/").
 		WithJsonContentType().
+		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
 	assert.Equal(t, http.StatusBadRequest, result.Code())
 	reason := &api.Reason{}
-	err = result.UnmarshalJsonToObject(reason)
+	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, reason.Reason)
 }
 
 func TestClusterDelete(t *testing.T) {
-	// Setup
-	e, err := NewAPIServer()
-	assert.NoError(t, err)
+	e := setupTest(t)
 
 	result := testutil.NewRequest().
-		Delete(APIBasePath+"/clusters/1").
+		Delete(APIBasePath+"/clusters/"+clusterA.Name).
+		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
 	assert.Equal(t, http.StatusNoContent, result.Code())
 }
 
 func TestClusterGet(t *testing.T) {
-	// Setup
-	e, err := NewAPIServer()
-	assert.NoError(t, err)
-	id := "haevechee2ethot"
+	e := setupTest(t)
+
 	result := testutil.NewRequest().
-		Get(APIBasePath+"/clusters/"+id).
+		Get(APIBasePath+"/clusters/"+clusterA.Name).
+		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
 	assert.Equal(t, http.StatusOK, result.Code())
 	cluster := &api.Cluster{}
-	err = result.UnmarshalJsonToObject(cluster)
+	err := result.UnmarshalJsonToObject(cluster)
 	assert.NoError(t, err)
 	assert.NotNil(t, cluster)
-	assert.NotEmpty(t, cluster.Id)
-	assert.NotEmpty(t, cluster.Name)
-	assert.Equal(t, api.NewClusterID(id), cluster.ClusterId)
+	assert.Equal(t, api.NewClusterID(clusterA.Name), cluster.ClusterId)
+	assert.Equal(t, tenantA.Name, cluster.Tenant)
 }
 
 func TestClusterUpdateEmpty(t *testing.T) {
-	// Setup
-	e, err := NewAPIServer()
-	assert.NoError(t, err)
+	e := setupTest(t)
 
 	result := testutil.NewRequest().
 		Patch(APIBasePath+"/clusters/1").
+		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
 	assert.Equal(t, http.StatusBadRequest, result.Code())
 	reason := &api.Reason{}
-	err = result.UnmarshalJsonToObject(reason)
+	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, reason.Reason)
 }
 
 func TestClusterUpdate(t *testing.T) {
-	// Setup
-	e, err := NewAPIServer()
-	assert.NoError(t, err)
+	e := setupTest(t)
 
 	updateCluster := &api.ClusterProperties{
 		DisplayName: pointer.ToString("New Name"),
 	}
 	result := testutil.NewRequest().
-		Patch(APIBasePath+"/clusters/1/").
+		Patch(APIBasePath+"/clusters/"+clusterA.Name).
 		WithJsonBody(updateCluster).
 		WithContentType("application/merge-patch+json").
+		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
 	assert.Equal(t, http.StatusNoContent, result.Code())
 }
