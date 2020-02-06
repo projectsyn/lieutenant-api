@@ -75,10 +75,18 @@ var (
 			},
 		},
 	}
+	clusterASecret = &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      clusterA.Name,
+			Namespace: clusterA.Namespace,
+		},
+		Data: map[string][]byte{"token": []byte("sometoken")},
+	}
 	testObjects = []runtime.Object{
 		tenantA,
 		tenantB,
 		clusterA,
+		clusterASecret,
 		&synv1alpha1.Cluster{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "sample-cluster-b",
@@ -113,21 +121,12 @@ var (
 		&corev1.ServiceAccount{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      clusterA.Name,
-				Namespace: "default",
+				Namespace: clusterA.Namespace,
 			},
 			Secrets: []corev1.ObjectReference{{
-				Name:      clusterA.Name + "-token",
-				Namespace: "default",
+				Name:      clusterASecret.Name,
+				Namespace: clusterASecret.Namespace,
 			}},
-		},
-		&corev1.Secret{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      clusterA.Name + "-token",
-				Namespace: "default",
-			},
-			Data: map[string][]byte{
-				"token": []byte("tokentoken"),
-			},
 		},
 	}
 )
