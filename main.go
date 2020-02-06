@@ -11,7 +11,10 @@ import (
 )
 
 // Version is the lieutenant-api version (set during build)
-var Version = "unreleased"
+var (
+	Version   = "unreleased"
+	BuildDate = "now"
+)
 
 func main() {
 	e, err := service.NewAPIServer()
@@ -19,6 +22,8 @@ func main() {
 		fmt.Fprintf(os.Stderr, err.Error()+"\n")
 		os.Exit(1)
 	}
-	fmt.Println("Start server")
+	fmt.Println("Version: " + Version)
+	fmt.Println("Build Date: " + BuildDate)
+
 	e.Logger.Fatal(e.Start(":8080"))
 }
