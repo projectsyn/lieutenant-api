@@ -1,44 +1,104 @@
 package service
 
 import (
-	"github.com/AlekSi/pointer"
+	"encoding/json"
+	"net/http"
+
 	"github.com/labstack/echo/v4"
 	"github.com/projectsyn/lieutenant-api/pkg/api"
-	"net/http"
+	synv1alpha1 "github.com/projectsyn/lieutenant-operator/pkg/apis/syn/v1alpha1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-var sampleTenant = api.Tenant{
-	TenantId: api.NewTenantID("ut0uaVae"),
-	TenantProperties: api.TenantProperties{
-		Name:        "tenant-a",
-		DisplayName: pointer.ToString("Tenant A corp."),
-		GitRepo:     pointer.ToString("ssh://git@github.com/projectsyn/cluster-catalog.git"),
-	},
-}
-
 // ListTenants lists all tenants
-func (s *APIImpl) ListTenants(ctx echo.Context) error {
-	return ctx.JSON(http.StatusOK, []api.Tenant{sampleTenant})
+func (s *APIImpl) ListTenants(c echo.Context) error {
+	ctx := c.(*APIContext)
+	tenantList := &synv1alpha1.TenantList{}
+	if err := ctx.client.List(ctx.context, tenantList, client.InNamespace(s.namespace)); err != nil {
+		return err
+	}
+	var tenants []*api.Tenant
+	for _, tenant := range tenantList.Items {
+		apiTenant := api.NewAPITenantFromCRD(&tenant)
+		tenants = append(tenants, apiTenant)
+	}
+	return ctx.JSON(http.StatusOK, tenants)
 }
 
 // CreateTenant creates a new tenant
-func (s *APIImpl) CreateTenant(ctx echo.Context) error {
-	return ctx.JSON(http.StatusCreated, sampleTenant)
+func (s *APIImpl) CreateTenant(c echo.Context) error {
+	ctx := c.(*APIContext)
+	var newTenant *api.CreateTenantJSONRequestBody
+	if err := ctx.Bind(&newTenant); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err)
+	}
+	apiTenant := &api.Tenant{
+		TenantProperties: api.TenantProperties(*newTenant),
+	}
+	id, err := api.GenerateID()
+	if err != nil {
+		return err
+	}
+	apiTenant.Id = id
+	tenant := api.NewCRDFromAPITenant(apiTenant)
+	tenant.Namespace = s.namespace
+	if err := ctx.client.Create(ctx.context, tenant); err != nil {
+		return err
+	}
+	apiTenant = api.NewAPITenantFromCRD(tenant)
+	return ctx.JSON(http.StatusCreated, apiTenant)
 }
 
 // DeleteTenant deletes a tenant
-func (s *APIImpl) DeleteTenant(ctx echo.Context, tenantID api.TenantIdParameter) error {
+func (s *APIImpl) DeleteTenant(c echo.Context, tenantID api.TenantIdParameter) error {
+	ctx := c.(*APIContext)
+
+	deleteTenant := &synv1alpha1.Tenant{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      string(tenantID),
+			Namespace: s.namespace,
+		},
+	}
+	if err := ctx.client.Delete(ctx.context, deleteTenant); err != nil {
+		return err
+	}
 	return ctx.NoContent(http.StatusNoContent)
 }
 
 // GetTenant gets a tenant
-func (s *APIImpl) GetTenant(ctx echo.Context, tenantID api.TenantIdParameter) error {
-	t := sampleTenant
-	t.Id = api.Id(tenantID)
-	return ctx.JSON(http.StatusOK, t)
+func (s *APIImpl) GetTenant(c echo.Context, tenantID api.TenantIdParameter) error {
+	ctx := c.(*APIContext)
+
+	tenant := &synv1alpha1.Tenant{}
+	if err := ctx.client.Get(ctx.context, client.ObjectKey{Name: string(tenantID), Namespace: s.namespace}, tenant); err != nil {
+		return err
+	}
+	apiTenant := api.NewAPITenantFromCRD(tenant)
+	return ctx.JSON(http.StatusOK, apiTenant)
 }
 
 // UpdateTenant udpates a tenant
-func (s *APIImpl) UpdateTenant(ctx echo.Context, tenantID api.TenantIdParameter) error {
+func (s *APIImpl) UpdateTenant(c echo.Context, tenantID api.TenantIdParameter) error {
+	ctx := c.(*APIContext)
+
+	var patchTenant api.TenantProperties
+	dec := json.NewDecoder(ctx.Request().Body)
+	if err := dec.Decode(&patchTenant); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err)
+	}
+	existingTenant := &synv1alpha1.Tenant{}
+	if err := ctx.client.Get(ctx.context, client.ObjectKey{Name: string(tenantID), Namespace: s.namespace}, existingTenant); err != nil {
+		return err
+	}
+	if patchTenant.DisplayName != nil {
+		existingTenant.Spec.DisplayName = *patchTenant.DisplayName
+	}
+	if patchTenant.GitRepo != nil {
+		existingTenant.Spec.GitRepoURL = *patchTenant.GitRepo
+	}
+	if err := ctx.client.Update(ctx.context, existingTenant); err != nil {
+		return err
+	}
 	return ctx.NoContent(http.StatusNoContent)
 }
