@@ -10,9 +10,7 @@ import (
 )
 
 func TestInstallSteward(t *testing.T) {
-	// Setup
-	e, err := NewAPIServer()
-	assert.NoError(t, err)
+	e := setupTest(t)
 
 	result := testutil.NewRequest().
 		Get(APIBasePath+"/install/steward.json?token=haevechee2ethot").
@@ -25,9 +23,7 @@ func TestInstallSteward(t *testing.T) {
 }
 
 func TestInstallStewardNoToken(t *testing.T) {
-	// Setup
-	e, err := NewAPIServer()
-	assert.NoError(t, err)
+	e := setupTest(t)
 
 	result := testutil.NewRequest().
 		Get(APIBasePath+"/install/steward.json").

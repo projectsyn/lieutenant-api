@@ -1,10 +1,12 @@
 package service
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 
 	oapimiddleware "github.com/deepmap/oapi-codegen/pkg/middleware"
@@ -13,22 +15,39 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/projectsyn/lieutenant-api/pkg/api"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // APIBasePath the base path of the API
 const APIBasePath = "/api"
 
 // APIImpl implements the API interface
-type APIImpl struct{}
+type APIImpl struct {
+	namespace string
+}
+
+// APIContext is a custom echo context
+type APIContext struct {
+	echo.Context
+	client  client.Client
+	context context.Context
+}
 
 // NewAPIServer instantiates a new Echo API server
-func NewAPIServer() (*echo.Echo, error) {
+func NewAPIServer(k8sMiddleware ...KubernetesAuth) (*echo.Echo, error) {
 	swagger, err := api.GetSwagger()
 	if err != nil {
 		return nil, fmt.Errorf("Error loading swagger spec\n: %s", err)
 	}
 
-	apiImpl := &APIImpl{}
+	namespace := os.Getenv("NAMESPACE")
+	if len(namespace) == 0 {
+		namespace = "default"
+	}
+
+	apiImpl := &APIImpl{
+		namespace: namespace,
+	}
 
 	e := echo.New()
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
@@ -49,6 +68,13 @@ func NewAPIServer() (*echo.Echo, error) {
 	})
 
 	apiGroup.Use(oapimiddleware.OapiRequestValidator(swagger))
+	if len(k8sMiddleware) == 0 {
+		apiGroup.Use(DefaultKubernetesAuth.JWTAuth)
+	} else {
+		for _, middle := range k8sMiddleware {
+			apiGroup.Use(middle.JWTAuth)
+		}
+	}
 	api.RegisterHandlers(apiGroup, apiImpl)
 
 	return e, nil
