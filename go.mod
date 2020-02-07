@@ -6,16 +6,30 @@ require (
 	github.com/AlekSi/pointer v1.1.0
 	github.com/cosmtrek/air v1.12.0
 	github.com/deepmap/oapi-codegen v1.3.4
+	github.com/emicklei/go-restful v2.11.2+incompatible // indirect
+	github.com/fatih/color v1.9.0 // indirect
 	github.com/getkin/kin-openapi v0.2.0
-	github.com/labstack/echo/v4 v4.1.11
-	github.com/mattn/go-isatty v0.0.11 // indirect
-	github.com/projectsyn/lieutenant-operator v0.0.1
+	github.com/go-openapi/spec v0.19.6 // indirect
+	github.com/go-openapi/swag v0.19.7 // indirect
+	github.com/google/gofuzz v1.1.0 // indirect
+	github.com/json-iterator/go v1.1.9 // indirect
+	github.com/labstack/echo/v4 v4.1.14
+	github.com/mattn/go-isatty v0.0.12 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
+	github.com/projectsyn/lieutenant-operator v0.0.2
 	github.com/stretchr/testify v1.4.0
-	golang.org/x/sys v0.0.0-20200120151820-655fe14d7479 // indirect
+	golang.org/x/crypto v0.0.0-20200206161412-a0c6ece9d31a // indirect
+	golang.org/x/net v0.0.0-20200202094626-16171245cfb2 // indirect
+	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d // indirect
+	golang.org/x/sys v0.0.0-20200202164722-d101bd2416d5 // indirect
+	golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543 // indirect
 	k8s.io/api v0.17.2
 	k8s.io/apimachinery v0.17.2
 	k8s.io/client-go v12.0.0+incompatible
+	k8s.io/kube-openapi v0.0.0-20200204173128-addea2498afe // indirect
+	k8s.io/utils v0.0.0-20200124190032-861946025e34 // indirect
 	sigs.k8s.io/controller-runtime v0.4.0
+	sigs.k8s.io/yaml v1.2.0 // indirect
 )
 
 // replace github.com/deepmap/oapi-codegen => ../../GitHub/deepmap/oapi-codegen/

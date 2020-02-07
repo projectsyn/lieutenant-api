@@ -7,9 +7,9 @@ import (
 	"strings"
 
 	"github.com/AlekSi/pointer"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	synv1alpha1 "github.com/projectsyn/lieutenant-operator/pkg/apis/syn/v1alpha1"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const idCharset = "abcdefghijklmnopqrstuvwxyz" + "0123456789"
@@ -102,10 +102,8 @@ func NewAPIClusterFromCRD(cluster *synv1alpha1.Cluster) *Cluster {
 	}
 
 	if cluster.Spec.GitRepoTemplate != nil {
-		deployKeys := cluster.Spec.GitRepoTemplate.Spec.DeployKeys
-		if len(deployKeys) > 0 {
-			key := deployKeys[0]
-			sshKey := fmt.Sprintf("%s %s", key.Type, key.Key)
+		if stewardKey, ok := cluster.Spec.GitRepoTemplate.DeployKeys["steward"]; ok {
+			sshKey := fmt.Sprintf("%s %s", stewardKey.Type, stewardKey.Key)
 			apiCluster.SshDeployKey = &sshKey
 		}
 	}
@@ -119,7 +117,7 @@ func NewCRDFromAPICluster(apiCluster *Cluster) *synv1alpha1.Cluster {
 			Name: string(apiCluster.ClusterId.Id),
 		},
 		Spec: synv1alpha1.ClusterSpec{
-			TenantRef: synv1alpha1.TenantRef{
+			TenantRef: corev1.LocalObjectReference{
 				Name: apiCluster.Tenant,
 			},
 		},
@@ -134,7 +132,7 @@ func NewCRDFromAPICluster(apiCluster *Cluster) *synv1alpha1.Cluster {
 		facts := synv1alpha1.Facts{}
 		for key, value := range *apiCluster.Facts {
 			if valueStr, ok := value.(string); ok {
-				facts[synv1alpha1.FactKey(key)] = synv1alpha1.FactValue(valueStr)
+				facts[key] = valueStr
 			}
 		}
 	}

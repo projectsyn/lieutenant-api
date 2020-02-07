@@ -110,7 +110,7 @@ func (s *APIImpl) UpdateCluster(c echo.Context, clusterID api.ClusterIdParameter
 		}
 		for key, value := range *patchCluster.Facts {
 			if valueStr, ok := value.(string); ok {
-				(*existingCluster.Spec.Facts)[synv1alpha1.FactKey(key)] = synv1alpha1.FactValue(valueStr)
+				(*existingCluster.Spec.Facts)[key] = valueStr
 			}
 		}
 	}

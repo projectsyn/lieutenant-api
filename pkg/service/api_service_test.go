@@ -40,13 +40,11 @@ var (
 		Spec: synv1alpha1.TenantSpec{
 			DisplayName: "Tenant B",
 			GitRepoTemplate: &synv1alpha1.GitRepoTemplate{
-				Spec: synv1alpha1.GitRepoSpec{
-					RepoName: "defaults",
-					Path:     "tenant-a",
-					APISecretRef: &corev1.SecretReference{
-						Name:      "api-creds",
-						Namespace: "default",
-					},
+				RepoName: "defaults",
+				Path:     "tenant-a",
+				APISecretRef: corev1.SecretReference{
+					Name:      "api-creds",
+					Namespace: "default",
 				},
 			},
 		},
@@ -59,9 +57,8 @@ var (
 		Spec: synv1alpha1.ClusterSpec{
 			DisplayName: "Sample Cluster A",
 			GitRepoURL:  "ssh://git@github.com/example/repo.git",
-			TenantRef: synv1alpha1.TenantRef{
-				Name:      tenantA.Name,
-				Namespace: tenantA.Namespace,
+			TenantRef: corev1.LocalObjectReference{
+				Name: tenantA.Name,
 			},
 			Facts: &synv1alpha1.Facts{
 				"cloud": "cloudscale",
@@ -95,24 +92,17 @@ var (
 			Spec: synv1alpha1.ClusterSpec{
 				DisplayName: "Sample Cluster B",
 				GitRepoURL:  "ssh://git@github.com/example/repo.git",
-				TenantRef: synv1alpha1.TenantRef{
-					Name:      tenantB.Name,
-					Namespace: tenantB.Namespace,
+				TenantRef: corev1.LocalObjectReference{
+					Name: tenantB.Name,
 				},
 				GitRepoTemplate: &synv1alpha1.GitRepoTemplate{
-					Spec: synv1alpha1.GitRepoSpec{
-						Path:         tenantB.Spec.GitRepoTemplate.Spec.Path,
-						APISecretRef: tenantB.Spec.GitRepoTemplate.Spec.APISecretRef,
-						RepoName:     "cluster-b",
-						TenantRef: &synv1alpha1.TenantRef{
-							Name:      tenantB.Name,
-							Namespace: tenantB.Namespace,
-						},
-						DeployKeys: []synv1alpha1.DeployKey{
-							synv1alpha1.DeployKey{
-								Type: "ssh-ed25519",
-								Key:  "AAAAC3NzaC1lZDI1NTE5AAAAIPEx4k5NQ46DA+m49Sb3aIyAAqqbz7TdHbArmnnYqwjf",
-							},
+					Path:         tenantB.Spec.GitRepoTemplate.Path,
+					APISecretRef: tenantB.Spec.GitRepoTemplate.APISecretRef,
+					RepoName:     "cluster-b",
+					DeployKeys: map[string]synv1alpha1.DeployKey{
+						"steward": synv1alpha1.DeployKey{
+							Type: "ssh-ed25519",
+							Key:  "AAAAC3NzaC1lZDI1NTE5AAAAIPEx4k5NQ46DA+m49Sb3aIyAAqqbz7TdHbArmnnYqwjf",
 						},
 					},
 				},
