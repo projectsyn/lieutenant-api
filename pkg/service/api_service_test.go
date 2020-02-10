@@ -66,9 +66,9 @@ var (
 		},
 		Status: synv1alpha1.ClusterStatus{
 			BootstrapToken: &synv1alpha1.BootstrapToken{
-				Token:               "haevechee2ethot",
-				BootstrapTokenValid: true,
-				ValidUntil:          metav1.NewTime(time.Now().Add(30 * time.Minute)),
+				Token:      "haevechee2ethot",
+				TokenValid: true,
+				ValidUntil: metav1.NewTime(time.Now().Add(30 * time.Minute)),
 			},
 		},
 	}

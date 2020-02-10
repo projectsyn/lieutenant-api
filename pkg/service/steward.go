@@ -46,7 +46,7 @@ func (s *APIImpl) InstallSteward(c echo.Context, params api.InstallStewardParams
 	for _, cluster := range clusterList.Items {
 		if bToken := cluster.Status.BootstrapToken; bToken != nil {
 			if len(bToken.Token) > 0 && bToken.Token == *params.Token {
-				if bToken.BootstrapTokenValid {
+				if bToken.TokenValid {
 					t, err := s.getServiceAccountToken(ctx, cluster.Name)
 					if err != nil {
 						return err
