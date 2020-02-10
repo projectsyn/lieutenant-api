@@ -23,6 +23,7 @@ func TestInstallSteward(t *testing.T) {
 	manifests := &corev1.List{}
 	err := result.UnmarshalJsonToObject(&manifests)
 	assert.NoError(t, err)
+	assert.Len(t, manifests.Items, 6)
 	decoder := json.NewSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme, true)
 	foundSecret := false
 	for _, item := range manifests.Items {

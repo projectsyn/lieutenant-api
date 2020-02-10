@@ -72,6 +72,33 @@ var (
 			},
 		},
 	}
+	clusterB = &synv1alpha1.Cluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "sample-cluster-b",
+			Namespace: "default",
+		},
+		Spec: synv1alpha1.ClusterSpec{
+			DisplayName: "Sample Cluster B",
+			GitRepoURL:  "ssh://git@github.com/example/repo.git",
+			TenantRef: corev1.LocalObjectReference{
+				Name: tenantB.Name,
+			},
+			GitRepoTemplate: &synv1alpha1.GitRepoTemplate{
+				Path:         tenantB.Spec.GitRepoTemplate.Path,
+				APISecretRef: tenantB.Spec.GitRepoTemplate.APISecretRef,
+				RepoName:     "cluster-b",
+				DeployKeys: map[string]synv1alpha1.DeployKey{
+					"steward": synv1alpha1.DeployKey{
+						Type: "ssh-ed25519",
+						Key:  "AAAAC3NzaC1lZDI1NTE5AAAAIPEx4k5NQ46DA+m49Sb3aIyAAqqbz7TdHbArmnnYqwjf",
+					},
+				},
+			},
+			Facts: &synv1alpha1.Facts{
+				"cloud": "cloudscale",
+			},
+		},
+	}
 	clusterASecret = &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      clusterA.Name,
@@ -84,30 +111,7 @@ var (
 		tenantB,
 		clusterA,
 		clusterASecret,
-		&synv1alpha1.Cluster{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "sample-cluster-b",
-				Namespace: "default",
-			},
-			Spec: synv1alpha1.ClusterSpec{
-				DisplayName: "Sample Cluster B",
-				GitRepoURL:  "ssh://git@github.com/example/repo.git",
-				TenantRef: corev1.LocalObjectReference{
-					Name: tenantB.Name,
-				},
-				GitRepoTemplate: &synv1alpha1.GitRepoTemplate{
-					Path:         tenantB.Spec.GitRepoTemplate.Path,
-					APISecretRef: tenantB.Spec.GitRepoTemplate.APISecretRef,
-					RepoName:     "cluster-b",
-					DeployKeys: map[string]synv1alpha1.DeployKey{
-						"steward": synv1alpha1.DeployKey{
-							Type: "ssh-ed25519",
-							Key:  "AAAAC3NzaC1lZDI1NTE5AAAAIPEx4k5NQ46DA+m49Sb3aIyAAqqbz7TdHbArmnnYqwjf",
-						},
-					},
-				},
-			},
-		},
+		clusterB,
 		&corev1.ServiceAccount{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      clusterA.Name,

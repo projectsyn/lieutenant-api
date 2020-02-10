@@ -3,6 +3,7 @@ package service
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 	"github.com/projectsyn/lieutenant-api/pkg/api"
@@ -95,6 +96,10 @@ func (s *APIImpl) UpdateCluster(c echo.Context, clusterID api.ClusterIdParameter
 		return err
 	}
 
+	if len(patchCluster.Tenant) > 0 {
+		return echo.NewHTTPError(http.StatusBadRequest, "Changing tenant of a cluster is not yet implemented")
+	}
+
 	if patchCluster.DisplayName != nil {
 		existingCluster.Spec.DisplayName = *patchCluster.DisplayName
 	}
@@ -102,7 +107,19 @@ func (s *APIImpl) UpdateCluster(c echo.Context, clusterID api.ClusterIdParameter
 		existingCluster.Spec.GitRepoURL = *patchCluster.GitRepo
 	}
 	if patchCluster.SshDeployKey != nil {
-		// update "steward" SSH key
+		k := strings.Split(*patchCluster.SshDeployKey, " ")
+		if len(k) != 2 {
+			return echo.NewHTTPError(http.StatusBadRequest, "Illegal deploy key format. Expected '<type> <public key>'")
+		}
+		stewardKey := synv1alpha1.DeployKey{
+			Type:        k[0],
+			Key:         k[1],
+			WriteAccess: false,
+		}
+		if existingCluster.Spec.GitRepoTemplate == nil {
+			return echo.NewHTTPError(http.StatusBadRequest, "Cannot update deploy key for not-managed git repo")
+		}
+		existingCluster.Spec.GitRepoTemplate.DeployKeys["steward"] = stewardKey
 	}
 	if patchCluster.Facts != nil {
 		if existingCluster.Spec.Facts == nil {

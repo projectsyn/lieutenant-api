@@ -144,14 +144,79 @@ func TestClusterUpdateEmpty(t *testing.T) {
 	assert.NotEmpty(t, reason.Reason)
 }
 
+func TestClusterUpdateTenant(t *testing.T) {
+	e := setupTest(t)
+
+	updateCluster := &api.ClusterProperties{
+		Tenant: "changed-tenant",
+	}
+
+	result := testutil.NewRequest().
+		Patch(APIBasePath+"/clusters/"+clusterA.Name).
+		WithJsonBody(updateCluster).
+		WithContentType("application/merge-patch+json").
+		WithHeader(echo.HeaderAuthorization, bearerToken).
+		Go(t, e)
+	assert.Equal(t, http.StatusBadRequest, result.Code())
+	reason := &api.Reason{}
+	err := result.UnmarshalJsonToObject(reason)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, reason.Reason)
+}
+
+func TestClusterUpdateIllegalDeployKey(t *testing.T) {
+	e := setupTest(t)
+
+	updateCluster := &api.ClusterProperties{
+		SshDeployKey: pointer.ToString("Some illegal key"),
+	}
+
+	result := testutil.NewRequest().
+		Patch(APIBasePath+"/clusters/"+clusterB.Name).
+		WithJsonBody(updateCluster).
+		WithContentType("application/merge-patch+json").
+		WithHeader(echo.HeaderAuthorization, bearerToken).
+		Go(t, e)
+	assert.Equal(t, http.StatusBadRequest, result.Code())
+	reason := &api.Reason{}
+	err := result.UnmarshalJsonToObject(reason)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, reason.Reason)
+}
+
+func TestClusterUpdateNotManagedDeployKey(t *testing.T) {
+	e := setupTest(t)
+
+	updateCluster := &api.ClusterProperties{
+		SshDeployKey: pointer.ToString("ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPEx4k5NQ46DA+m49Sb3aIyAAqqbz7TdHbArmnnYqwjf"),
+	}
+
+	result := testutil.NewRequest().
+		Patch(APIBasePath+"/clusters/"+clusterA.Name).
+		WithJsonBody(updateCluster).
+		WithContentType("application/merge-patch+json").
+		WithHeader(echo.HeaderAuthorization, bearerToken).
+		Go(t, e)
+	assert.Equal(t, http.StatusBadRequest, result.Code())
+	reason := &api.Reason{}
+	err := result.UnmarshalJsonToObject(reason)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, reason.Reason)
+}
+
 func TestClusterUpdate(t *testing.T) {
 	e := setupTest(t)
 
 	updateCluster := &api.ClusterProperties{
-		DisplayName: pointer.ToString("New Name"),
+		DisplayName:  pointer.ToString("New Name"),
+		SshDeployKey: pointer.ToString("ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPEx4k5NQ46DA+m49Sb3aIyAAqqbz7TdHbArmnnYqwjf"),
+		GitRepo:      pointer.ToString("https://github.com/some/repo.git"),
+		Facts: &api.ClusterFacts{
+			"some": "fact",
+		},
 	}
 	result := testutil.NewRequest().
-		Patch(APIBasePath+"/clusters/"+clusterA.Name).
+		Patch(APIBasePath+"/clusters/"+clusterB.Name).
 		WithJsonBody(updateCluster).
 		WithContentType("application/merge-patch+json").
 		WithHeader(echo.HeaderAuthorization, bearerToken).
