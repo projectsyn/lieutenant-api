@@ -69,7 +69,7 @@ func TestCreateCluster(t *testing.T) {
 	err := result.UnmarshalJsonToObject(cluster)
 	assert.NoError(t, err)
 	assert.NotNil(t, cluster)
-	assert.NotEmpty(t, cluster.Id)
+	assert.Contains(t, cluster.Id, api.ClusterIDPrefix)
 	assert.Equal(t, cluster.DisplayName, newCluster.DisplayName)
 }
 
@@ -126,7 +126,7 @@ func TestClusterGet(t *testing.T) {
 	err := result.UnmarshalJsonToObject(cluster)
 	assert.NoError(t, err)
 	assert.NotNil(t, cluster)
-	assert.Equal(t, api.NewClusterID(clusterA.Name), cluster.ClusterId)
+	assert.Equal(t, clusterA.Name, string(cluster.ClusterId.Id))
 	assert.Equal(t, tenantA.Name, cluster.Tenant)
 }
 

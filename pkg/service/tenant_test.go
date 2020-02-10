@@ -42,7 +42,7 @@ func TestCreateTenant(t *testing.T) {
 	err := result.UnmarshalJsonToObject(tenant)
 	assert.NoError(t, err)
 	assert.NotNil(t, tenant)
-	assert.NotEmpty(t, tenant.Id)
+	assert.Contains(t, tenant.Id, api.TenantIDPrefix)
 	assert.Equal(t, newTenant.DisplayName, tenant.DisplayName)
 }
 
@@ -97,7 +97,7 @@ func TestTenantGet(t *testing.T) {
 	tenant := &api.Tenant{}
 	err := result.UnmarshalJsonToObject(tenant)
 	assert.NoError(t, err)
-	assert.Equal(t, api.NewTenantID(tenantA.Name), tenant.TenantId)
+	assert.Equal(t, tenantA.Name, string(tenant.Id))
 	assert.Equal(t, tenantA.Spec.DisplayName, *tenant.DisplayName)
 	assert.Equal(t, tenantA.Spec.GitRepoURL, *tenant.GitRepo)
 }

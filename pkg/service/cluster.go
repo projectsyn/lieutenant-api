@@ -39,11 +39,11 @@ func (s *APIImpl) CreateCluster(c echo.Context) error {
 	apiCluster := &api.Cluster{
 		ClusterProperties: api.ClusterProperties(*newCluster),
 	}
-	id, err := api.GenerateID()
+	id, err := api.GenerateClusterID()
 	if err != nil {
 		return err
 	}
-	apiCluster.Id = id
+	apiCluster.ClusterId = id
 	cluster := api.NewCRDFromAPICluster(apiCluster)
 	cluster.Namespace = s.namespace
 	if err := ctx.client.Create(ctx.context, cluster); err != nil {

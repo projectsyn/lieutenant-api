@@ -36,11 +36,11 @@ func (s *APIImpl) CreateTenant(c echo.Context) error {
 	apiTenant := &api.Tenant{
 		TenantProperties: api.TenantProperties(*newTenant),
 	}
-	id, err := api.GenerateID()
+	id, err := api.GenerateTenantID()
 	if err != nil {
 		return err
 	}
-	apiTenant.Id = id
+	apiTenant.TenantId = id
 	tenant := api.NewCRDFromAPITenant(apiTenant)
 	tenant.Namespace = s.namespace
 	if err := ctx.client.Create(ctx.context, tenant); err != nil {
