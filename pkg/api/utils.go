@@ -72,6 +72,15 @@ func NewCRDFromAPITenant(apiTenant *Tenant) *synv1alpha1.Tenant {
 
 	if apiTenant.GitRepo != nil {
 		tenant.Spec.GitRepoURL = *apiTenant.GitRepo
+	} else {
+		// TODO: properly generate GitRepoTemplate
+		tenant.Spec.GitRepoTemplate = &synv1alpha1.GitRepoTemplate{
+			Path:     "syn/cluster-catalogs",
+			RepoName: string(apiTenant.Id),
+			APISecretRef: corev1.SecretReference{
+				Name: "vshn-gitlab",
+			},
+		}
 	}
 
 	return tenant
@@ -127,6 +136,15 @@ func NewCRDFromAPICluster(apiCluster *Cluster) *synv1alpha1.Cluster {
 	}
 	if apiCluster.GitRepo != nil {
 		cluster.Spec.GitRepoURL = *apiCluster.GitRepo
+	} else {
+		// TODO: properly generate GitRepoTemplate
+		cluster.Spec.GitRepoTemplate = &synv1alpha1.GitRepoTemplate{
+			Path:     "syn/cluster-catalogs",
+			RepoName: fmt.Sprintf("%s-%s", apiCluster.Tenant, apiCluster.Id),
+			APISecretRef: corev1.SecretReference{
+				Name: "vshn-gitlab",
+			},
+		}
 	}
 	if apiCluster.Facts != nil {
 		facts := synv1alpha1.Facts{}
