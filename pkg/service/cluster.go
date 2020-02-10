@@ -20,10 +20,10 @@ func (s *APIImpl) ListClusters(c echo.Context, params api.ListClustersParams) er
 	if err := ctx.client.List(ctx.context, clusterList, client.InNamespace(s.namespace)); err != nil {
 		return err
 	}
-	var clusters []*api.Cluster
+	clusters := []api.Cluster{}
 	for _, cluster := range clusterList.Items {
 		apiCluster := api.NewAPIClusterFromCRD(&cluster)
-		clusters = append(clusters, apiCluster)
+		clusters = append(clusters, *apiCluster)
 	}
 	return ctx.JSON(http.StatusOK, clusters)
 }

@@ -18,10 +18,10 @@ func (s *APIImpl) ListTenants(c echo.Context) error {
 	if err := ctx.client.List(ctx.context, tenantList, client.InNamespace(s.namespace)); err != nil {
 		return err
 	}
-	var tenants []*api.Tenant
+	tenants := []api.Tenant{}
 	for _, tenant := range tenantList.Items {
 		apiTenant := api.NewAPITenantFromCRD(&tenant)
-		tenants = append(tenants, apiTenant)
+		tenants = append(tenants, *apiTenant)
 	}
 	return ctx.JSON(http.StatusOK, tenants)
 }
