@@ -15,6 +15,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/projectsyn/lieutenant-api/pkg/api"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -82,15 +83,18 @@ func NewAPIServer(k8sMiddleware ...KubernetesAuth) (*echo.Echo, error) {
 
 func customHTTPErrorHandler(err error, c echo.Context) {
 	code := http.StatusInternalServerError
-	msg := err.Error()
+	message := err.Error()
 	if he, ok := err.(*echo.HTTPError); ok {
 		code = he.Code
 		if m, ok := he.Message.(string); ok {
-			msg = m
+			message = m
 		}
+	} else if apiErr, ok := err.(errors.APIStatus); ok {
+		code = int(apiErr.Status().Code)
+		message = strings.ReplaceAll(apiErr.Status().Message, "\"", "'")
 	}
 	reason := api.Reason{
-		Reason: msg,
+		Reason: message,
 	}
 	c.JSON(code, reason)
 	c.Logger().Error(err)
