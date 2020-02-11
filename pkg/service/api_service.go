@@ -19,8 +19,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// APIBasePath the base path of the API
-const APIBasePath = "/api"
+const (
+	// APIBasePath the base path of the API
+	APIBasePath = "/api"
+)
 
 // APIImpl implements the API interface
 type APIImpl struct {
@@ -60,7 +62,7 @@ func NewAPIServer(k8sMiddleware ...KubernetesAuth) (*echo.Echo, error) {
 	e.HTTPErrorHandler = customHTTPErrorHandler
 
 	apiGroup := e.Group(APIBasePath)
-	openapi3filter.RegisterBodyDecoder("application/merge-patch+json", func(body io.Reader, header http.Header, schema *openapi3.SchemaRef, encFn openapi3filter.EncodingFn) (interface{}, error) {
+	openapi3filter.RegisterBodyDecoder(api.ContentJSONPatch, func(body io.Reader, header http.Header, schema *openapi3.SchemaRef, encFn openapi3filter.EncodingFn) (interface{}, error) {
 		var value interface{}
 		if err := json.NewDecoder(body).Decode(&value); err != nil {
 			return nil, &openapi3filter.ParseError{Kind: openapi3filter.KindInvalidFormat, Cause: err}

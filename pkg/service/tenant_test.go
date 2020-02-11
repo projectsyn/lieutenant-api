@@ -125,7 +125,7 @@ func TestTenantUpdate(t *testing.T) {
 	result := testutil.NewRequest().
 		Patch(APIBasePath+"/tenants/"+tenantB.Name).
 		WithJsonBody(updateTenant).
-		WithContentType("application/merge-patch+json").
+		WithContentType(api.ContentJSONPatch).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
 	assert.Equal(t, http.StatusNoContent, result.Code())

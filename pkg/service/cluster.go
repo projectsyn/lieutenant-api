@@ -104,22 +104,28 @@ func (s *APIImpl) UpdateCluster(c echo.Context, clusterID api.ClusterIdParameter
 		existingCluster.Spec.DisplayName = *patchCluster.DisplayName
 	}
 	if patchCluster.GitRepo != nil {
-		existingCluster.Spec.GitRepoURL = *patchCluster.GitRepo
-	}
-	if patchCluster.SshDeployKey != nil {
-		k := strings.Split(*patchCluster.SshDeployKey, " ")
-		if len(k) != 2 {
-			return echo.NewHTTPError(http.StatusBadRequest, "Illegal deploy key format. Expected '<type> <public key>'")
+		if patchCluster.GitRepo.Url != nil {
+			existingCluster.Spec.GitRepoURL = *patchCluster.GitRepo.Url
 		}
-		stewardKey := synv1alpha1.DeployKey{
-			Type:        k[0],
-			Key:         k[1],
-			WriteAccess: false,
+		if patchCluster.GitRepo.HostKeys != nil {
+			existingCluster.Spec.GitHostKeys = *patchCluster.GitRepo.HostKeys
 		}
-		if existingCluster.Spec.GitRepoTemplate == nil {
-			return echo.NewHTTPError(http.StatusBadRequest, "Cannot update deploy key for not-managed git repo")
+
+		if patchCluster.GitRepo.DeployKey != nil {
+			k := strings.Split(*patchCluster.GitRepo.DeployKey, " ")
+			if len(k) != 2 {
+				return echo.NewHTTPError(http.StatusBadRequest, "Illegal deploy key format. Expected '<type> <public key>'")
+			}
+			stewardKey := synv1alpha1.DeployKey{
+				Type:        k[0],
+				Key:         k[1],
+				WriteAccess: false,
+			}
+			if existingCluster.Spec.GitRepoTemplate == nil {
+				return echo.NewHTTPError(http.StatusBadRequest, "Cannot update depoy key for not-managed git repo")
+			}
+			existingCluster.Spec.GitRepoTemplate.DeployKeys["steward"] = stewardKey
 		}
-		existingCluster.Spec.GitRepoTemplate.DeployKeys["steward"] = stewardKey
 	}
 	if patchCluster.Facts != nil {
 		if existingCluster.Spec.Facts == nil {

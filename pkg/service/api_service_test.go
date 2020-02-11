@@ -56,6 +56,7 @@ var (
 		},
 		Spec: synv1alpha1.ClusterSpec{
 			DisplayName: "Sample Cluster A",
+			GitHostKeys: "some keys",
 			GitRepoURL:  "ssh://git@github.com/example/repo.git",
 			TenantRef: corev1.LocalObjectReference{
 				Name: tenantA.Name,
@@ -79,7 +80,6 @@ var (
 		},
 		Spec: synv1alpha1.ClusterSpec{
 			DisplayName: "Sample Cluster B",
-			GitRepoURL:  "ssh://git@github.com/example/repo.git",
 			TenantRef: corev1.LocalObjectReference{
 				Name: tenantB.Name,
 			},

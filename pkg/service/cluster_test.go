@@ -128,6 +128,7 @@ func TestClusterGet(t *testing.T) {
 	assert.NotNil(t, cluster)
 	assert.Equal(t, clusterA.Name, string(cluster.ClusterId.Id))
 	assert.Equal(t, tenantA.Name, cluster.Tenant)
+	assert.Equal(t, clusterA.Spec.GitHostKeys, *cluster.GitRepo.HostKeys)
 }
 
 func TestClusterGetNotFound(t *testing.T) {
@@ -168,7 +169,7 @@ func TestClusterUpdateTenant(t *testing.T) {
 	result := testutil.NewRequest().
 		Patch(APIBasePath+"/clusters/"+clusterA.Name).
 		WithJsonBody(updateCluster).
-		WithContentType("application/merge-patch+json").
+		WithContentType(api.ContentJSONPatch).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
 	assert.Equal(t, http.StatusBadRequest, result.Code())
@@ -182,13 +183,15 @@ func TestClusterUpdateIllegalDeployKey(t *testing.T) {
 	e := setupTest(t)
 
 	updateCluster := &api.ClusterProperties{
-		SshDeployKey: pointer.ToString("Some illegal key"),
+		GitRepo: &api.GitRepo{
+			DeployKey: pointer.ToString("Some illegal key"),
+		},
 	}
 
 	result := testutil.NewRequest().
 		Patch(APIBasePath+"/clusters/"+clusterB.Name).
 		WithJsonBody(updateCluster).
-		WithContentType("application/merge-patch+json").
+		WithContentType(api.ContentJSONPatch).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
 	assert.Equal(t, http.StatusBadRequest, result.Code())
@@ -202,13 +205,15 @@ func TestClusterUpdateNotManagedDeployKey(t *testing.T) {
 	e := setupTest(t)
 
 	updateCluster := &api.ClusterProperties{
-		SshDeployKey: pointer.ToString("ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPEx4k5NQ46DA+m49Sb3aIyAAqqbz7TdHbArmnnYqwjf"),
+		GitRepo: &api.GitRepo{
+			DeployKey: pointer.ToString("ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPEx4k5NQ46DA+m49Sb3aIyAAqqbz7TdHbArmnnYqwjf"),
+		},
 	}
 
 	result := testutil.NewRequest().
 		Patch(APIBasePath+"/clusters/"+clusterA.Name).
 		WithJsonBody(updateCluster).
-		WithContentType("application/merge-patch+json").
+		WithContentType(api.ContentJSONPatch).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
 	assert.Equal(t, http.StatusBadRequest, result.Code())
@@ -222,9 +227,11 @@ func TestClusterUpdate(t *testing.T) {
 	e := setupTest(t)
 
 	updateCluster := &api.ClusterProperties{
-		DisplayName:  pointer.ToString("New Name"),
-		SshDeployKey: pointer.ToString("ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPEx4k5NQ46DA+m49Sb3aIyAAqqbz7TdHbArmnnYqwjf"),
-		GitRepo:      pointer.ToString("https://github.com/some/repo.git"),
+		DisplayName: pointer.ToString("New Name"),
+		GitRepo: &api.GitRepo{
+			DeployKey: pointer.ToString("ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPEx4k5NQ46DA+m49Sb3aIyAAqqbz7TdHbArmnnYqwjf"),
+			Url:       pointer.ToString("https://github.com/some/repo.git"),
+		},
 		Facts: &api.ClusterFacts{
 			"some": "fact",
 		},
@@ -232,7 +239,7 @@ func TestClusterUpdate(t *testing.T) {
 	result := testutil.NewRequest().
 		Patch(APIBasePath+"/clusters/"+clusterB.Name).
 		WithJsonBody(updateCluster).
-		WithContentType("application/merge-patch+json").
+		WithContentType(api.ContentJSONPatch).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
 	assert.Equal(t, http.StatusNoContent, result.Code())

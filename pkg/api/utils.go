@@ -6,7 +6,6 @@ import (
 	"math/big"
 	"strings"
 
-	"github.com/AlekSi/pointer"
 	synv1alpha1 "github.com/projectsyn/lieutenant-operator/pkg/apis/syn/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -17,6 +16,8 @@ const (
 	ClusterIDPrefix = "c-"
 	// TenantIDPrefix is prefixed to all tenant IDs
 	TenantIDPrefix = "t-"
+	// ContentJSONPatch is the content type to do JSON updates
+	ContentJSONPatch = "application/merge-patch+json"
 
 	idCharset = "abcdefghijklmnopqrstuvwxyz" + "0123456789"
 )
@@ -109,16 +110,21 @@ func NewAPIClusterFromCRD(cluster *synv1alpha1.Cluster) *Cluster {
 	apiCluster := &Cluster{
 		ClusterId: ClusterId{Id: Id(cluster.Name)},
 		ClusterProperties: ClusterProperties{
-			Tenant: cluster.Spec.TenantRef.Name,
+			Tenant:  cluster.Spec.TenantRef.Name,
+			GitRepo: &GitRepo{},
 		},
 	}
 
 	if len(cluster.Spec.DisplayName) > 0 {
-		apiCluster.DisplayName = pointer.ToString(cluster.Spec.DisplayName)
+		apiCluster.DisplayName = &cluster.Spec.DisplayName
 	}
 
 	if len(cluster.Spec.GitRepoURL) > 0 {
-		apiCluster.GitRepo = pointer.ToString(cluster.Spec.GitRepoURL)
+		apiCluster.GitRepo.Url = &cluster.Spec.GitRepoURL
+	}
+
+	if len(cluster.Spec.GitHostKeys) > 0 {
+		apiCluster.GitRepo.HostKeys = &cluster.Spec.GitHostKeys
 	}
 
 	if cluster.Spec.Facts != nil {
@@ -132,7 +138,7 @@ func NewAPIClusterFromCRD(cluster *synv1alpha1.Cluster) *Cluster {
 	if cluster.Spec.GitRepoTemplate != nil {
 		if stewardKey, ok := cluster.Spec.GitRepoTemplate.DeployKeys["steward"]; ok {
 			sshKey := fmt.Sprintf("%s %s", stewardKey.Type, stewardKey.Key)
-			apiCluster.SshDeployKey = &sshKey
+			apiCluster.GitRepo.DeployKey = &sshKey
 		}
 	}
 
@@ -155,8 +161,14 @@ func NewCRDFromAPICluster(apiCluster *Cluster) *synv1alpha1.Cluster {
 		cluster.Spec.DisplayName = *apiCluster.DisplayName
 	}
 	if apiCluster.GitRepo != nil {
-		cluster.Spec.GitRepoURL = *apiCluster.GitRepo
-	} else {
+		if apiCluster.GitRepo.HostKeys != nil {
+			cluster.Spec.GitHostKeys = *apiCluster.GitRepo.HostKeys
+		}
+		if apiCluster.GitRepo.Url != nil {
+			cluster.Spec.GitRepoURL = *apiCluster.GitRepo.Url
+		}
+	}
+	if apiCluster.GitRepo == nil || apiCluster.GitRepo.Url == nil {
 		// TODO: properly generate GitRepoTemplate
 		cluster.Spec.GitRepoTemplate = &synv1alpha1.GitRepoTemplate{
 			Path:     "syn/cluster-catalogs",
