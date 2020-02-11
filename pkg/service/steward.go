@@ -3,6 +3,7 @@ package service
 import (
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/AlekSi/pointer"
 	"github.com/labstack/echo/v4"
@@ -43,17 +44,19 @@ func (s *APIImpl) InstallSteward(c echo.Context, params api.InstallStewardParams
 		return err
 	}
 	var token string
-	for _, cluster := range clusterList.Items {
-		if bToken := cluster.Status.BootstrapToken; bToken != nil {
+	cluster := &synv1alpha1.Cluster{}
+	for _, c := range clusterList.Items {
+		if bToken := c.Status.BootstrapToken; bToken != nil {
 			if len(bToken.Token) > 0 && bToken.Token == *params.Token {
-				if bToken.TokenValid {
-					t, err := s.getServiceAccountToken(ctx, cluster.Name)
+				if bToken.TokenValid && time.Now().Before(bToken.ValidUntil.Time) {
+					t, err := s.getServiceAccountToken(ctx, c.Name)
 					if err != nil {
 						return err
 					}
 					token = t
+					cluster = &c
 				} else {
-					return echo.NewHTTPError(http.StatusUnauthorized, "Token already used")
+					return echo.NewHTTPError(http.StatusUnauthorized, "Token already used or expired")
 				}
 			}
 		}
@@ -83,7 +86,11 @@ func (s *APIImpl) InstallSteward(c echo.Context, params api.InstallStewardParams
 	}})
 	installList.Items = append(installList.Items, runtime.RawExtension{Object: stewardDeployment})
 	installList.Items = append(installList.Items, runtime.RawExtension{Object: createSecret(token)})
-	return ctx.JSON(http.StatusOK, installList)
+	if err := ctx.JSON(http.StatusOK, installList); err != nil {
+		return err
+	}
+	cluster.Status.BootstrapToken.TokenValid = false
+	return ctx.client.Status().Update(ctx.context, cluster)
 }
 
 func (s *APIImpl) getServiceAccountToken(ctx *APIContext, saName string) (string, error) {
@@ -97,7 +104,7 @@ func (s *APIImpl) getServiceAccountToken(ctx *APIContext, saName string) (string
 	}
 	secretName := serviceAccount.Secrets[0]
 	secret := &corev1.Secret{}
-	if err := ctx.client.Get(ctx.context, types.NamespacedName{Name: secretName.Name, Namespace: secretName.Namespace}, secret); err != nil {
+	if err := ctx.client.Get(ctx.context, types.NamespacedName{Name: secretName.Name, Namespace: serviceAccount.Namespace}, secret); err != nil {
 		return "", err
 	}
 

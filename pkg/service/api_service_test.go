@@ -98,6 +98,13 @@ var (
 				"cloud": "cloudscale",
 			},
 		},
+		Status: synv1alpha1.ClusterStatus{
+			BootstrapToken: &synv1alpha1.BootstrapToken{
+				Token:      "shuaCh1k",
+				TokenValid: true,
+				ValidUntil: metav1.NewTime(time.Now().Add(-1 * time.Hour)),
+			},
+		},
 	}
 	clusterASecret = &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
@@ -144,9 +151,10 @@ func TestNewServer(t *testing.T) {
 }
 
 func setupTest(t *testing.T, objs ...[]runtime.Object) *echo.Echo {
+	f := fake.NewFakeClientWithScheme(scheme.Scheme, testObjects...)
 	testMiddleWare := KubernetesAuth{
 		CreateClientFunc: func(token string) (client.Client, error) {
-			return fake.NewFakeClientWithScheme(scheme.Scheme, testObjects...), nil
+			return f, nil
 		},
 	}
 	e, err := NewAPIServer(testMiddleWare)

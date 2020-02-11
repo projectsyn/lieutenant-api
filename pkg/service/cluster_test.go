@@ -130,6 +130,20 @@ func TestClusterGet(t *testing.T) {
 	assert.Equal(t, tenantA.Name, cluster.Tenant)
 }
 
+func TestClusterGetNotFound(t *testing.T) {
+	e := setupTest(t)
+
+	result := testutil.NewRequest().
+		Get(APIBasePath+"/clusters/not-existing").
+		WithHeader(echo.HeaderAuthorization, bearerToken).
+		Go(t, e)
+	assert.Equal(t, http.StatusNotFound, result.Code())
+	reason := &api.Reason{}
+	err := result.UnmarshalJsonToObject(reason)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, reason.Reason)
+}
+
 func TestClusterUpdateEmpty(t *testing.T) {
 	e := setupTest(t)
 

@@ -62,3 +62,16 @@ func TestInstallStewardInvalidToken(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotEmpty(t, reason.Reason)
 }
+
+func TestInstallStewardUsedToken(t *testing.T) {
+	e := setupTest(t)
+
+	result := testutil.NewRequest().
+		Get(APIBasePath+"/install/steward.json?token="+clusterB.Status.BootstrapToken.Token).
+		Go(t, e)
+	assert.Equal(t, http.StatusUnauthorized, result.Code())
+	reason := &api.Reason{}
+	err := result.UnmarshalJsonToObject(reason)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, reason.Reason)
+}
