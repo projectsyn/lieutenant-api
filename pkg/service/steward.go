@@ -72,7 +72,7 @@ func (s *APIImpl) InstallSteward(c echo.Context, params api.InstallStewardParams
 		},
 	}
 	apiHost := ctx.Request().URL.Scheme + ctx.Request().Host + ctx.Request().URL.Port()
-	stewardDeployment := createStewardDeployment(apiHost)
+	stewardDeployment := createStewardDeployment(apiHost, cluster.Name)
 	installList.Items = append(installList.Items, createRBAC()...)
 	installList.Items = append(installList.Items, runtime.RawExtension{Object: &corev1.Namespace{
 		TypeMeta: metav1.TypeMeta{
@@ -188,7 +188,7 @@ func createSecret(token string) *corev1.Secret {
 	}
 }
 
-func createStewardDeployment(apiHost string) *appsv1.Deployment {
+func createStewardDeployment(apiHost, clusterID string) *appsv1.Deployment {
 	image := os.Getenv("STEWARD_IMAGE")
 	if len(image) == 0 {
 		image = stewardImageDefault
@@ -228,6 +228,10 @@ func createStewardDeployment(apiHost string) *appsv1.Deployment {
 							corev1.EnvVar{
 								Name:  "STEWARD_API",
 								Value: apiHost,
+							},
+							corev1.EnvVar{
+								Name:  "STEWARD_CLUSTER_ID",
+								Value: clusterID,
 							},
 							corev1.EnvVar{
 								Name: "STEWARD_TOKEN",
