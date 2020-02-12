@@ -95,7 +95,9 @@ func (s *APIImpl) UpdateTenant(c echo.Context, tenantID api.TenantIdParameter) e
 		existingTenant.Spec.DisplayName = *patchTenant.DisplayName
 	}
 	if patchTenant.GitRepo != nil {
-		existingTenant.Spec.GitRepoURL = *patchTenant.GitRepo
+		if patchTenant.GitRepo.Url != nil {
+			existingTenant.Spec.GitRepoURL = *patchTenant.GitRepo.Url
+		}
 	}
 	if err := ctx.client.Update(ctx.context, existingTenant); err != nil {
 		return err

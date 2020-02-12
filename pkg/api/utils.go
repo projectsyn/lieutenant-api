@@ -65,6 +65,9 @@ func generateID() (Id, error) {
 func NewAPITenantFromCRD(tenant *synv1alpha1.Tenant) *Tenant {
 	apiTenant := &Tenant{
 		TenantId: TenantId{Id: Id(tenant.Name)},
+		TenantProperties: TenantProperties{
+			GitRepo: &GitRepo{},
+		},
 	}
 
 	if len(tenant.Spec.DisplayName) > 0 {
@@ -72,7 +75,7 @@ func NewAPITenantFromCRD(tenant *synv1alpha1.Tenant) *Tenant {
 	}
 
 	if len(tenant.Spec.GitRepoURL) > 0 {
-		apiTenant.GitRepo = &tenant.Spec.GitRepoURL
+		apiTenant.GitRepo.Url = &tenant.Spec.GitRepoURL
 	}
 
 	return apiTenant
@@ -90,11 +93,13 @@ func NewCRDFromAPITenant(apiTenant *Tenant) *synv1alpha1.Tenant {
 	}
 
 	if apiTenant.GitRepo != nil {
-		tenant.Spec.GitRepoURL = *apiTenant.GitRepo
+		if apiTenant.GitRepo.Url != nil {
+			tenant.Spec.GitRepoURL = *apiTenant.GitRepo.Url
+		}
 	} else {
 		// TODO: properly generate GitRepoTemplate
 		tenant.Spec.GitRepoTemplate = &synv1alpha1.GitRepoTemplate{
-			Path:     "syn/cluster-catalogs",
+			Path:     "syn/customers",
 			RepoName: string(apiTenant.Id),
 			APISecretRef: corev1.SecretReference{
 				Name: "vshn-gitlab",
@@ -172,7 +177,7 @@ func NewCRDFromAPICluster(apiCluster *Cluster) *synv1alpha1.Cluster {
 		// TODO: properly generate GitRepoTemplate
 		cluster.Spec.GitRepoTemplate = &synv1alpha1.GitRepoTemplate{
 			Path:     "syn/cluster-catalogs",
-			RepoName: fmt.Sprintf("%s-%s", apiCluster.Tenant, apiCluster.Id),
+			RepoName: string(apiCluster.Id),
 			APISecretRef: corev1.SecretReference{
 				Name: "vshn-gitlab",
 			},
