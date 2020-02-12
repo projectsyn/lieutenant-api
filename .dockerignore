@@ -1,0 +1,5 @@
+.*ignore
+*.md
+Dockerfile
+lieutenant-api
+__debug_bin

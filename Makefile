@@ -3,7 +3,7 @@ BINARY_NAME ?= lieutenant-api
 
 VERSION ?= $(shell git describe --tags --always --dirty --match=v* || (echo "command failed $$?"; exit 1))
 
-IMAGE_NAME ?= docker.io/lieutenant-api/$(BINARY_NAME):$(VERSION)
+IMAGE_NAME ?= docker.io/projectsyn/$(BINARY_NAME):$(VERSION)
 
 # Antora variables
 docker_cmd  ?= docker
@@ -32,12 +32,13 @@ generate:
 build: generate
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -v \
 		-o $(BINARY_NAME) \
-		-ldflags "-X main.Version=$(VERSION)"
+		-ldflags "-X main.Version=$(VERSION) -X 'main.BuildDate=$(shell date)'" \
+		main.go
 	@echo built '$(VERSION)'
 
 .PHONY: test
 test: generate
-	$(GOTEST) -v -cover ./pkg/...
+	$(GOTEST) -v -cover ./...
 
 .PHONY: run
 run: generate
@@ -54,7 +55,7 @@ clean:
 
 .PHONY: docker
 docker:
-	docker build -t $(IMAGE_NAME) .
+	DOCKER_BUILDKIT=1 docker build -t $(IMAGE_NAME) .
 	@echo built image $(IMAGE_NAME)
 
 .PHONY: docs
