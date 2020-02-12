@@ -62,7 +62,7 @@ func generateID() (Id, error) {
 }
 
 // NewAPITenantFromCRD transforms a CRD tenant into the API representation
-func NewAPITenantFromCRD(tenant *synv1alpha1.Tenant) *Tenant {
+func NewAPITenantFromCRD(tenant synv1alpha1.Tenant) *Tenant {
 	apiTenant := &Tenant{
 		TenantId: TenantId{Id: Id(tenant.Name)},
 		TenantProperties: TenantProperties{
@@ -82,7 +82,7 @@ func NewAPITenantFromCRD(tenant *synv1alpha1.Tenant) *Tenant {
 }
 
 // NewCRDFromAPITenant transforms an API tenant into the CRD representation
-func NewCRDFromAPITenant(apiTenant *Tenant) *synv1alpha1.Tenant {
+func NewCRDFromAPITenant(apiTenant Tenant) *synv1alpha1.Tenant {
 	tenant := &synv1alpha1.Tenant{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: string(apiTenant.TenantId.Id),
@@ -111,7 +111,7 @@ func NewCRDFromAPITenant(apiTenant *Tenant) *synv1alpha1.Tenant {
 }
 
 // NewAPIClusterFromCRD transforms a CRD cluster into the API representation
-func NewAPIClusterFromCRD(cluster *synv1alpha1.Cluster) *Cluster {
+func NewAPIClusterFromCRD(cluster synv1alpha1.Cluster) *Cluster {
 	apiCluster := &Cluster{
 		ClusterId: ClusterId{Id: Id(cluster.Name)},
 		ClusterProperties: ClusterProperties{
@@ -151,7 +151,7 @@ func NewAPIClusterFromCRD(cluster *synv1alpha1.Cluster) *Cluster {
 }
 
 // NewCRDFromAPICluster transforms an API cluster into the CRD representation
-func NewCRDFromAPICluster(apiCluster *Cluster) *synv1alpha1.Cluster {
+func NewCRDFromAPICluster(apiCluster Cluster) *synv1alpha1.Cluster {
 	cluster := &synv1alpha1.Cluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: string(apiCluster.ClusterId.Id),

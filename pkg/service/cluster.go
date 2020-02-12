@@ -22,7 +22,7 @@ func (s *APIImpl) ListClusters(c echo.Context, params api.ListClustersParams) er
 	}
 	clusters := []api.Cluster{}
 	for _, cluster := range clusterList.Items {
-		apiCluster := api.NewAPIClusterFromCRD(&cluster)
+		apiCluster := api.NewAPIClusterFromCRD(cluster)
 		clusters = append(clusters, *apiCluster)
 	}
 	return ctx.JSON(http.StatusOK, clusters)
@@ -44,12 +44,12 @@ func (s *APIImpl) CreateCluster(c echo.Context) error {
 		return err
 	}
 	apiCluster.ClusterId = id
-	cluster := api.NewCRDFromAPICluster(apiCluster)
+	cluster := api.NewCRDFromAPICluster(*apiCluster)
 	cluster.Namespace = s.namespace
 	if err := ctx.client.Create(ctx.context, cluster); err != nil {
 		return err
 	}
-	apiCluster = api.NewAPIClusterFromCRD(cluster)
+	apiCluster = api.NewAPIClusterFromCRD(*cluster)
 	return ctx.JSON(http.StatusCreated, apiCluster)
 }
 
@@ -78,7 +78,7 @@ func (s *APIImpl) GetCluster(c echo.Context, clusterID api.ClusterIdParameter) e
 	if err := ctx.client.Get(ctx.context, client.ObjectKey{Name: string(clusterID), Namespace: s.namespace}, cluster); err != nil {
 		return err
 	}
-	apiCluster := api.NewAPIClusterFromCRD(cluster)
+	apiCluster := api.NewAPIClusterFromCRD(*cluster)
 	return ctx.JSON(http.StatusOK, apiCluster)
 }
 
@@ -143,6 +143,6 @@ func (s *APIImpl) UpdateCluster(c echo.Context, clusterID api.ClusterIdParameter
 	if err := ctx.client.Update(ctx.context, existingCluster); err != nil {
 		return err
 	}
-	apiCluster := api.NewAPIClusterFromCRD(existingCluster)
+	apiCluster := api.NewAPIClusterFromCRD(*existingCluster)
 	return ctx.JSON(http.StatusOK, apiCluster)
 }
