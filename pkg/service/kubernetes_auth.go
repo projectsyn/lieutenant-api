@@ -69,6 +69,11 @@ func getClientFromToken(token string) (client.Client, error) {
 		cfg.Username = ""
 		cfg.Password = ""
 		cfg.BearerToken = token
+		cfg.BearerTokenFile = ""
+		cfg.TLSClientConfig.KeyFile = ""
+		cfg.TLSClientConfig.KeyData = []byte{}
+		cfg.TLSClientConfig.CertFile = ""
+		cfg.TLSClientConfig.CertData = []byte{}
 	}
 	return client.New(cfg, client.Options{
 		Scheme: scheme.Scheme,
