@@ -947,6 +947,7 @@ func (r getClusterResponse) StatusCode() int {
 type updateClusterResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	JSON200      *Cluster
 	JSON403      *Reason
 	JSONDefault  *Reason
 }
@@ -1153,6 +1154,7 @@ func (r getTenantResponse) StatusCode() int {
 type updateTenantResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	JSON200      *Tenant
 	JSON403      *Reason
 	JSONDefault  *Reason
 }
@@ -1467,6 +1469,12 @@ func ParseUpdateClusterResponse(rsp *http.Response) (*updateClusterResponse, err
 	}
 
 	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		response.JSON200 = &Cluster{}
+		if err := json.Unmarshal(bodyBytes, response.JSON200); err != nil {
+			return nil, err
+		}
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
 		response.JSON403 = &Reason{}
 		if err := json.Unmarshal(bodyBytes, response.JSON403); err != nil {
@@ -1740,6 +1748,12 @@ func ParseUpdateTenantResponse(rsp *http.Response) (*updateTenantResponse, error
 	}
 
 	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		response.JSON200 = &Tenant{}
+		if err := json.Unmarshal(bodyBytes, response.JSON200); err != nil {
+			return nil, err
+		}
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
 		response.JSON403 = &Reason{}
 		if err := json.Unmarshal(bodyBytes, response.JSON403); err != nil {

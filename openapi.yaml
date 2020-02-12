@@ -275,8 +275,12 @@ paths:
             schema:
               $ref: '#/components/schemas/TenantProperties'
       responses:
-        '204':
+        '200':
           description: Tenant updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tenant'
         '403':
           description: Tenant update forbidden
           content:
@@ -398,8 +402,12 @@ paths:
             schema:
               $ref: '#/components/schemas/ClusterProperties'
       responses:
-        '204':
+        '200':
           description: Cluster updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cluster'
         '403':
           description: Cluster update forbidden
           content:

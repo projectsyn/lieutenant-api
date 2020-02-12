@@ -225,9 +225,10 @@ func TestClusterUpdateNotManagedDeployKey(t *testing.T) {
 
 func TestClusterUpdate(t *testing.T) {
 	e := setupTest(t)
+	newDisplayName := "New Cluster Name"
 
 	updateCluster := &api.ClusterProperties{
-		DisplayName: pointer.ToString("New Name"),
+		DisplayName: &newDisplayName,
 		GitRepo: &api.GitRepo{
 			DeployKey: pointer.ToString("ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPEx4k5NQ46DA+m49Sb3aIyAAqqbz7TdHbArmnnYqwjf"),
 			Url:       pointer.ToString("https://github.com/some/repo.git"),
@@ -242,5 +243,12 @@ func TestClusterUpdate(t *testing.T) {
 		WithContentType(api.ContentJSONPatch).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
-	assert.Equal(t, http.StatusNoContent, result.Code())
+	assert.Equal(t, http.StatusOK, result.Code())
+	cluster := &api.Cluster{}
+	err := result.UnmarshalJsonToObject(cluster)
+	assert.NoError(t, err)
+	assert.NotNil(t, cluster)
+	assert.Equal(t, clusterB.Name, string(cluster.Id))
+	assert.Equal(t, newDisplayName, *cluster.DisplayName)
+	assert.Equal(t, *updateCluster.GitRepo.DeployKey, *cluster.GitRepo.DeployKey)
 }

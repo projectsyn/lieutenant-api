@@ -143,5 +143,6 @@ func (s *APIImpl) UpdateCluster(c echo.Context, clusterID api.ClusterIdParameter
 	if err := ctx.client.Update(ctx.context, existingCluster); err != nil {
 		return err
 	}
-	return ctx.NoContent(http.StatusNoContent)
+	apiCluster := api.NewAPIClusterFromCRD(existingCluster)
+	return ctx.JSON(http.StatusOK, apiCluster)
 }

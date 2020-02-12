@@ -118,9 +118,10 @@ func TestTenantUpdateEmpty(t *testing.T) {
 
 func TestTenantUpdate(t *testing.T) {
 	e := setupTest(t)
+	newDisplayName := "New Tenant Name"
 
 	updateTenant := &api.TenantProperties{
-		DisplayName: pointer.ToString("New Name"),
+		DisplayName: &newDisplayName,
 	}
 	result := testutil.NewRequest().
 		Patch("/tenants/"+tenantB.Name).
@@ -128,5 +129,11 @@ func TestTenantUpdate(t *testing.T) {
 		WithContentType(api.ContentJSONPatch).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
-	assert.Equal(t, http.StatusNoContent, result.Code())
+	assert.Equal(t, http.StatusOK, result.Code())
+	tenant := &api.Tenant{}
+	err := result.UnmarshalJsonToObject(tenant)
+	assert.NoError(t, err)
+	assert.NotNil(t, tenant)
+	assert.Contains(t, string(tenant.Id), tenantB.Name)
+	assert.Equal(t, newDisplayName, *tenant.DisplayName)
 }

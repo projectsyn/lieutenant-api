@@ -100,5 +100,6 @@ func (s *APIImpl) UpdateTenant(c echo.Context, tenantID api.TenantIdParameter) e
 	if err := ctx.client.Update(ctx.context, existingTenant); err != nil {
 		return err
 	}
-	return ctx.NoContent(http.StatusNoContent)
+	apiTenant := api.NewAPITenantFromCRD(existingTenant)
+	return ctx.JSON(http.StatusOK, apiTenant)
 }
