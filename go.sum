@@ -568,6 +568,8 @@ github.com/pquerna/cachecontrol v0.0.0-20171018203845-0dec1b30a021/go.mod h1:prY
 github.com/pquerna/ffjson v0.0.0-20180717144149-af8b230fcd20/go.mod h1:YARuvh7BUWHNhzDq2OM5tzR2RiCcN2D7sapiKyCel/M=
 github.com/projectsyn/lieutenant-operator v0.0.4-0.20200211160915-e2bf511969d5 h1:bSaiajpwRv0jlX2ZFqI+1rh3qWpRSFJNOmO+esJ0dvU=
 github.com/projectsyn/lieutenant-operator v0.0.4-0.20200211160915-e2bf511969d5/go.mod h1:qoNweiN0phb6WY5o5qU0PKgAdZyIXVlF7kKywwt9Bqg=
+github.com/projectsyn/lieutenant-operator v0.0.4-0.20200212105647-fa8d581f3d20 h1:O53VCUbvLuOLpMO9316Bzvh5CbCsC9xJNNQuCWFZPKY=
+github.com/projectsyn/lieutenant-operator v0.0.4-0.20200212105647-fa8d581f3d20/go.mod h1:qoNweiN0phb6WY5o5qU0PKgAdZyIXVlF7kKywwt9Bqg=
 github.com/prometheus/client_golang v0.9.1/go.mod h1:7SWBe2y4D6OKWSNQJUaRYU/AaXPKyh/dDVn+NZz0KFw=
 github.com/prometheus/client_golang v0.9.2/go.mod h1:OsXs2jCmiKlQ1lTBmv21f2mNfw4xf/QclQDMrYNZzcM=
 github.com/prometheus/client_golang v0.9.3-0.20190127221311-3c4408c8b829/go.mod h1:p2iRAGwDERtqlqzRXnrOVns+ignqQo//hLXqYxZYVNs=

@@ -16,7 +16,7 @@ require (
 	github.com/labstack/echo/v4 v4.1.14
 	github.com/mattn/go-isatty v0.0.12 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/projectsyn/lieutenant-operator v0.0.4-0.20200211160915-e2bf511969d5
+	github.com/projectsyn/lieutenant-operator v0.0.4-0.20200212105647-fa8d581f3d20
 	github.com/stretchr/testify v1.4.0
 	golang.org/x/crypto v0.0.0-20200210222208-86ce3cb69678 // indirect
 	golang.org/x/net v0.0.0-20200202094626-16171245cfb2 // indirect
