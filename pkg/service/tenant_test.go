@@ -19,11 +19,13 @@ func TestListTenants(t *testing.T) {
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
 	assert.Equal(t, http.StatusOK, result.Code())
-	tenants := &[]api.Tenant{}
-	err := result.UnmarshalJsonToObject(tenants)
+	tenants := []api.Tenant{}
+	err := result.UnmarshalJsonToObject(&tenants)
 	assert.NoError(t, err)
 	assert.NotNil(t, tenants)
-	assert.Greater(t, len(*tenants), 1)
+	assert.GreaterOrEqual(t, len(tenants), 2)
+	assert.Equal(t, tenantA.Spec.DisplayName, *tenants[0].DisplayName)
+	assert.Equal(t, tenantB.Spec.DisplayName, *tenants[1].DisplayName)
 }
 
 func TestCreateTenant(t *testing.T) {

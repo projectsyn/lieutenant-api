@@ -22,15 +22,9 @@ func TestListCluster(t *testing.T) {
 	clusters := []api.Cluster{}
 	err := result.UnmarshalJsonToObject(&clusters)
 	assert.NoError(t, err)
-	assert.GreaterOrEqual(t, len(clusters), 1)
-	found := false
-	for _, cluster := range clusters {
-		if string(cluster.ClusterId.Id) == clusterA.Name {
-			found = true
-			break
-		}
-	}
-	assert.Truef(t, found, "Cluster not found in result list", clusterA.Name)
+	assert.GreaterOrEqual(t, len(clusters), 2)
+	assert.Equal(t, clusterA.Spec.DisplayName, *clusters[0].DisplayName)
+	assert.Equal(t, clusterB.Spec.DisplayName, *clusters[1].DisplayName)
 }
 
 func TestListClusterMissingBearer(t *testing.T) {

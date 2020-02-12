@@ -20,7 +20,7 @@ func (s *APIImpl) ListTenants(c echo.Context) error {
 	}
 	tenants := []api.Tenant{}
 	for _, tenant := range tenantList.Items {
-		apiTenant := api.NewAPITenantFromCRD(&tenant)
+		apiTenant := api.NewAPITenantFromCRD(tenant)
 		tenants = append(tenants, *apiTenant)
 	}
 	return ctx.JSON(http.StatusOK, tenants)
@@ -41,12 +41,12 @@ func (s *APIImpl) CreateTenant(c echo.Context) error {
 		return err
 	}
 	apiTenant.TenantId = id
-	tenant := api.NewCRDFromAPITenant(apiTenant)
+	tenant := api.NewCRDFromAPITenant(*apiTenant)
 	tenant.Namespace = s.namespace
 	if err := ctx.client.Create(ctx.context, tenant); err != nil {
 		return err
 	}
-	apiTenant = api.NewAPITenantFromCRD(tenant)
+	apiTenant = api.NewAPITenantFromCRD(*tenant)
 	return ctx.JSON(http.StatusCreated, apiTenant)
 }
 
@@ -74,7 +74,7 @@ func (s *APIImpl) GetTenant(c echo.Context, tenantID api.TenantIdParameter) erro
 	if err := ctx.client.Get(ctx.context, client.ObjectKey{Name: string(tenantID), Namespace: s.namespace}, tenant); err != nil {
 		return err
 	}
-	apiTenant := api.NewAPITenantFromCRD(tenant)
+	apiTenant := api.NewAPITenantFromCRD(*tenant)
 	return ctx.JSON(http.StatusOK, apiTenant)
 }
 
@@ -102,6 +102,6 @@ func (s *APIImpl) UpdateTenant(c echo.Context, tenantID api.TenantIdParameter) e
 	if err := ctx.client.Update(ctx.context, existingTenant); err != nil {
 		return err
 	}
-	apiTenant := api.NewAPITenantFromCRD(existingTenant)
+	apiTenant := api.NewAPITenantFromCRD(*existingTenant)
 	return ctx.JSON(http.StatusOK, apiTenant)
 }
