@@ -124,6 +124,9 @@ func (s *APIImpl) UpdateCluster(c echo.Context, clusterID api.ClusterIdParameter
 			if existingCluster.Spec.GitRepoTemplate == nil {
 				return echo.NewHTTPError(http.StatusBadRequest, "Cannot update depoy key for not-managed git repo")
 			}
+			if existingCluster.Spec.GitRepoTemplate.DeployKeys == nil {
+				existingCluster.Spec.GitRepoTemplate.DeployKeys = make(map[string]synv1alpha1.DeployKey)
+			}
 			existingCluster.Spec.GitRepoTemplate.DeployKeys["steward"] = stewardKey
 		}
 	}
