@@ -17,7 +17,7 @@ func TestQueryInventory(t *testing.T) {
 	query := "SELECT LAST(version,cloud) FROM mycluster"
 	result := testutil.NewRequest().
 		WithHeader(echo.HeaderAuthorization, bearerToken).
-		Get(APIBasePath+"/inventory?q="+url.QueryEscape(query)).
+		Get("/inventory?q="+url.QueryEscape(query)).
 		Go(t, e)
 	assert.Equal(t, http.StatusInternalServerError, result.Code())
 }
@@ -33,7 +33,7 @@ func TestUpdateInventory(t *testing.T) {
 		},
 	}
 	result := testutil.NewRequest().
-		Post(APIBasePath+"/inventory").
+		Post("/inventory").
 		WithJsonBody(updateInventory).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)

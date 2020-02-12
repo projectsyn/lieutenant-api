@@ -15,7 +15,7 @@ func TestListCluster(t *testing.T) {
 	e := setupTest(t)
 
 	result := testutil.NewRequest().
-		Get(APIBasePath+"/clusters").
+		Get("/clusters").
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
 	assert.Equal(t, http.StatusOK, result.Code())
@@ -37,7 +37,7 @@ func TestListClusterMissingBearer(t *testing.T) {
 	e := setupTest(t)
 
 	result := testutil.NewRequest().
-		Get(APIBasePath+"/clusters").
+		Get("/clusters").
 		Go(t, e)
 	assert.Equal(t, http.StatusBadRequest, result.Code())
 }
@@ -46,7 +46,7 @@ func TestListClusterWrongToken(t *testing.T) {
 	e := setupTest(t)
 
 	result := testutil.NewRequest().
-		Get(APIBasePath+"/clusters").
+		Get("/clusters").
 		WithHeader(echo.HeaderAuthorization, "asdf").
 		Go(t, e)
 	assert.Equal(t, http.StatusBadRequest, result.Code())
@@ -60,7 +60,7 @@ func TestCreateCluster(t *testing.T) {
 		Tenant:      tenantA.Name,
 	}
 	result := testutil.NewRequest().
-		Post(APIBasePath+"/clusters").
+		Post("/clusters").
 		WithJsonBody(newCluster).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
@@ -77,7 +77,7 @@ func TestCreateClusterNoJSON(t *testing.T) {
 	e := setupTest(t)
 
 	result := testutil.NewRequest().
-		Post(APIBasePath+"/clusters/").
+		Post("/clusters/").
 		WithJsonContentType().
 		WithBody([]byte("invalid-body")).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
@@ -93,7 +93,7 @@ func TestCreateClusterEmpty(t *testing.T) {
 	e := setupTest(t)
 
 	result := testutil.NewRequest().
-		Post(APIBasePath+"/clusters/").
+		Post("/clusters/").
 		WithJsonContentType().
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
@@ -108,7 +108,7 @@ func TestClusterDelete(t *testing.T) {
 	e := setupTest(t)
 
 	result := testutil.NewRequest().
-		Delete(APIBasePath+"/clusters/"+clusterA.Name).
+		Delete("/clusters/"+clusterA.Name).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
 	assert.Equal(t, http.StatusNoContent, result.Code())
@@ -118,7 +118,7 @@ func TestClusterGet(t *testing.T) {
 	e := setupTest(t)
 
 	result := testutil.NewRequest().
-		Get(APIBasePath+"/clusters/"+clusterA.Name).
+		Get("/clusters/"+clusterA.Name).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
 	assert.Equal(t, http.StatusOK, result.Code())
@@ -135,7 +135,7 @@ func TestClusterGetNotFound(t *testing.T) {
 	e := setupTest(t)
 
 	result := testutil.NewRequest().
-		Get(APIBasePath+"/clusters/not-existing").
+		Get("/clusters/not-existing").
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
 	assert.Equal(t, http.StatusNotFound, result.Code())
@@ -149,7 +149,7 @@ func TestClusterUpdateEmpty(t *testing.T) {
 	e := setupTest(t)
 
 	result := testutil.NewRequest().
-		Patch(APIBasePath+"/clusters/1").
+		Patch("/clusters/1").
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
 	assert.Equal(t, http.StatusBadRequest, result.Code())
@@ -167,7 +167,7 @@ func TestClusterUpdateTenant(t *testing.T) {
 	}
 
 	result := testutil.NewRequest().
-		Patch(APIBasePath+"/clusters/"+clusterA.Name).
+		Patch("/clusters/"+clusterA.Name).
 		WithJsonBody(updateCluster).
 		WithContentType(api.ContentJSONPatch).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
@@ -189,7 +189,7 @@ func TestClusterUpdateIllegalDeployKey(t *testing.T) {
 	}
 
 	result := testutil.NewRequest().
-		Patch(APIBasePath+"/clusters/"+clusterB.Name).
+		Patch("/clusters/"+clusterB.Name).
 		WithJsonBody(updateCluster).
 		WithContentType(api.ContentJSONPatch).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
@@ -211,7 +211,7 @@ func TestClusterUpdateNotManagedDeployKey(t *testing.T) {
 	}
 
 	result := testutil.NewRequest().
-		Patch(APIBasePath+"/clusters/"+clusterA.Name).
+		Patch("/clusters/"+clusterA.Name).
 		WithJsonBody(updateCluster).
 		WithContentType(api.ContentJSONPatch).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
@@ -237,7 +237,7 @@ func TestClusterUpdate(t *testing.T) {
 		},
 	}
 	result := testutil.NewRequest().
-		Patch(APIBasePath+"/clusters/"+clusterB.Name).
+		Patch("/clusters/"+clusterB.Name).
 		WithJsonBody(updateCluster).
 		WithContentType(api.ContentJSONPatch).
 		WithHeader(echo.HeaderAuthorization, bearerToken).

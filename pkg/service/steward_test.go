@@ -17,7 +17,7 @@ func TestInstallSteward(t *testing.T) {
 	e := setupTest(t)
 
 	result := testutil.NewRequest().
-		Get(APIBasePath+"/install/steward.json?token="+clusterA.Status.BootstrapToken.Token).
+		Get("/install/steward.json?token="+clusterA.Status.BootstrapToken.Token).
 		Go(t, e)
 	assert.Equal(t, http.StatusOK, result.Code())
 	manifests := &corev1.List{}
@@ -41,7 +41,7 @@ func TestInstallStewardNoToken(t *testing.T) {
 	e := setupTest(t)
 
 	result := testutil.NewRequest().
-		Get(APIBasePath+"/install/steward.json").
+		Get("/install/steward.json").
 		Go(t, e)
 	assert.Equal(t, http.StatusBadRequest, result.Code())
 	reason := &api.Reason{}
@@ -54,7 +54,7 @@ func TestInstallStewardInvalidToken(t *testing.T) {
 	e := setupTest(t)
 
 	result := testutil.NewRequest().
-		Get(APIBasePath+"/install/steward.json?token=NonExistentToken").
+		Get("/install/steward.json?token=NonExistentToken").
 		Go(t, e)
 	assert.Equal(t, http.StatusUnauthorized, result.Code())
 	reason := &api.Reason{}
@@ -67,7 +67,7 @@ func TestInstallStewardUsedToken(t *testing.T) {
 	e := setupTest(t)
 
 	result := testutil.NewRequest().
-		Get(APIBasePath+"/install/steward.json?token="+clusterB.Status.BootstrapToken.Token).
+		Get("/install/steward.json?token="+clusterB.Status.BootstrapToken.Token).
 		Go(t, e)
 	assert.Equal(t, http.StatusUnauthorized, result.Code())
 	reason := &api.Reason{}

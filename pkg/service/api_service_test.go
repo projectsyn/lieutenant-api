@@ -138,10 +138,10 @@ func TestNewServer(t *testing.T) {
 
 	server := setupTest(t)
 	for _, route := range server.Routes() {
-		if route.Path == APIBasePath || strings.HasSuffix(route.Path, "*") {
+		if strings.HasSuffix(route.Path, "*") {
 			continue
 		}
-		p := strings.TrimPrefix(route.Path, APIBasePath)
+		p := route.Path
 		if strings.ContainsRune(p, ':') {
 			p = strings.Replace(p, ":", "{", 1) + "}"
 		}
@@ -165,7 +165,7 @@ func setupTest(t *testing.T, objs ...[]runtime.Object) *echo.Echo {
 func TestHealthz(t *testing.T) {
 	e := setupTest(t)
 
-	result := testutil.NewRequest().Get(APIBasePath+"/healthz").Go(t, e)
+	result := testutil.NewRequest().Get("/healthz").Go(t, e)
 	assert.Equal(t, http.StatusOK, result.Code())
 	assert.Equal(t, "ok", string(result.Recorder.Body.String()))
 }

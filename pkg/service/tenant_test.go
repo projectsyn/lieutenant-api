@@ -15,7 +15,7 @@ func TestListTenants(t *testing.T) {
 	e := setupTest(t)
 
 	result := testutil.NewRequest().
-		Get(APIBasePath+"/tenants/").
+		Get("/tenants/").
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
 	assert.Equal(t, http.StatusOK, result.Code())
@@ -33,7 +33,7 @@ func TestCreateTenant(t *testing.T) {
 		DisplayName: pointer.ToString("My test Tenant"),
 	}
 	result := testutil.NewRequest().
-		Post(APIBasePath+"/tenants").
+		Post("/tenants").
 		WithJsonBody(newTenant).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
@@ -50,7 +50,7 @@ func TestCreateTenantFail(t *testing.T) {
 	e := setupTest(t)
 
 	result := testutil.NewRequest().
-		Post(APIBasePath+"/tenants/").
+		Post("/tenants/").
 		WithJsonContentType().
 		WithBody([]byte("invalid-body")).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
@@ -66,7 +66,7 @@ func TestCreateTenantEmpty(t *testing.T) {
 	e := setupTest(t)
 
 	result := testutil.NewRequest().
-		Post(APIBasePath+"/tenants/").
+		Post("/tenants/").
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
 	assert.Equal(t, http.StatusBadRequest, result.Code())
@@ -80,7 +80,7 @@ func TestTenantDelete(t *testing.T) {
 	e := setupTest(t)
 
 	result := testutil.NewRequest().
-		Delete(APIBasePath+"/tenants/"+tenantA.Name).
+		Delete("/tenants/"+tenantA.Name).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
 	assert.Equal(t, http.StatusNoContent, result.Code())
@@ -90,7 +90,7 @@ func TestTenantGet(t *testing.T) {
 	e := setupTest(t)
 
 	result := testutil.NewRequest().
-		Get(APIBasePath+"/tenants/"+tenantA.Name).
+		Get("/tenants/"+tenantA.Name).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
 	assert.Equal(t, http.StatusOK, result.Code())
@@ -106,7 +106,7 @@ func TestTenantUpdateEmpty(t *testing.T) {
 	e := setupTest(t)
 
 	result := testutil.NewRequest().
-		Patch(APIBasePath+"/tenants/1").
+		Patch("/tenants/1").
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
 	assert.Equal(t, http.StatusBadRequest, result.Code())
@@ -123,7 +123,7 @@ func TestTenantUpdate(t *testing.T) {
 		DisplayName: pointer.ToString("New Name"),
 	}
 	result := testutil.NewRequest().
-		Patch(APIBasePath+"/tenants/"+tenantB.Name).
+		Patch("/tenants/"+tenantB.Name).
 		WithJsonBody(updateTenant).
 		WithContentType(api.ContentJSONPatch).
 		WithHeader(echo.HeaderAuthorization, bearerToken).

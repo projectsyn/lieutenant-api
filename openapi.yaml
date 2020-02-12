@@ -11,11 +11,11 @@ info:
     name: BSD 3-Clause License
     url: https://choosealicense.com/licenses/bsd-3-clause/
 servers:
-  - url: https://api.syn.vshn.ch/api/
+  - url: https://api.syn.vshn.ch/
     description: Project Syn Lieutenant Production API
-  - url: https://api-test.syn.vshn.ch/api/
+  - url: https://api-test.syn.vshn.ch/
     description: Project Syn Lieutenant Test API
-  - url: /api/
+  - url: /
     description: Local development
 security:
   - BearerAuth: []

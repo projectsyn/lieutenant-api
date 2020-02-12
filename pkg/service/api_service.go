@@ -19,11 +19,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-const (
-	// APIBasePath the base path of the API
-	APIBasePath = "/api"
-)
-
 // APIImpl implements the API interface
 type APIImpl struct {
 	namespace string
@@ -61,7 +56,6 @@ func NewAPIServer(k8sMiddleware ...KubernetesAuth) (*echo.Echo, error) {
 
 	e.HTTPErrorHandler = customHTTPErrorHandler
 
-	apiGroup := e.Group(APIBasePath)
 	openapi3filter.RegisterBodyDecoder(api.ContentJSONPatch, func(body io.Reader, header http.Header, schema *openapi3.SchemaRef, encFn openapi3filter.EncodingFn) (interface{}, error) {
 		var value interface{}
 		if err := json.NewDecoder(body).Decode(&value); err != nil {
@@ -70,15 +64,15 @@ func NewAPIServer(k8sMiddleware ...KubernetesAuth) (*echo.Echo, error) {
 		return value, nil
 	})
 
-	apiGroup.Use(oapimiddleware.OapiRequestValidator(swagger))
+	e.Use(oapimiddleware.OapiRequestValidator(swagger))
 	if len(k8sMiddleware) == 0 {
-		apiGroup.Use(DefaultKubernetesAuth.JWTAuth)
+		e.Use(DefaultKubernetesAuth.JWTAuth)
 	} else {
 		for _, middle := range k8sMiddleware {
-			apiGroup.Use(middle.JWTAuth)
+			e.Use(middle.JWTAuth)
 		}
 	}
-	api.RegisterHandlers(apiGroup, apiImpl)
+	api.RegisterHandlers(e, apiImpl)
 
 	return e, nil
 }
