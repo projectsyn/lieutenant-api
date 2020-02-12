@@ -10,6 +10,38 @@ GitOps helper.
 The API is specified in [OpenAPI 3](https://swagger.io/docs/specification/about/) format.
 It's available in the file [openapi.yaml](openapi.yaml) in the root folder of this project.
 
+## Run API locally
+
+To run the API on your local workstation, follow these steps:
+
+```
+export KUBECONFIG=~/.kube/myconfig
+export NAMESPACE=syn-lieutenant
+make run
+```
+
+The `kubeconfig` must grant access to the cluster.
+
+Check with `curl localhost:8080/healthz` if the API is responding.
+
+## Example queries
+
+Done with [HTTPie](https://httpie.org/), but also works with plain `curl`.
+
+_Create Tenant_
+```
+http localhost:8080/tenants Authorization:"Bearer $(kubectl get secrets test-token-zzzzz -o json | jq ".data.token" -r | base64 --decode)" displayName="Syn Corp"
+```
+
+_Query Tenants_
+
+```
+http localhost:8080/tenants Authorization:"Bearer $(kubectl get secrets test-token-zzzzz -o json | jq ".data.token" -r | base64 --decode)"
+```
+
+* `test-token-zzzzz` is the token of a ServiceAccount with all the needed RBAC
+  rights on the underlying Kubernetes cluster
+
 ## Development
 
 ### API Versioning
