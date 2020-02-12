@@ -5,7 +5,7 @@ go 1.13
 require (
 	github.com/AlekSi/pointer v1.1.0
 	github.com/cosmtrek/air v1.12.0
-	github.com/deepmap/oapi-codegen v1.3.4
+	github.com/deepmap/oapi-codegen v1.3.5-0.20200206142458-d22ad467e649
 	github.com/emicklei/go-restful v2.11.2+incompatible // indirect
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/getkin/kin-openapi v0.2.0
@@ -18,13 +18,13 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/projectsyn/lieutenant-operator v0.0.4-0.20200211160915-e2bf511969d5
 	github.com/stretchr/testify v1.4.0
-	golang.org/x/crypto v0.0.0-20200208060501-ecb85df21340 // indirect
+	golang.org/x/crypto v0.0.0-20200210222208-86ce3cb69678 // indirect
 	golang.org/x/net v0.0.0-20200202094626-16171245cfb2 // indirect
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d // indirect
 	golang.org/x/sys v0.0.0-20200202164722-d101bd2416d5 // indirect
 	golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543 // indirect
-	k8s.io/api v0.17.2
-	k8s.io/apimachinery v0.17.2
+	k8s.io/api v0.17.3
+	k8s.io/apimachinery v0.17.3
 	k8s.io/client-go v12.0.0+incompatible
 	k8s.io/kube-openapi v0.0.0-20200204173128-addea2498afe // indirect
 	k8s.io/utils v0.0.0-20200124190032-861946025e34 // indirect
@@ -33,7 +33,6 @@ require (
 )
 
 // replace github.com/deepmap/oapi-codegen => ../../GitHub/deepmap/oapi-codegen/
-replace github.com/deepmap/oapi-codegen => github.com/vshn/oapi-codegen v1.3.5-0.20200120165139-75a50d5f3093
 
 // Pinned to kubernetes-1.16.2
 replace (
