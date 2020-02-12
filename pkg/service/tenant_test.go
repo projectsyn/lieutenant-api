@@ -99,7 +99,7 @@ func TestTenantGet(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, tenantA.Name, string(tenant.Id))
 	assert.Equal(t, tenantA.Spec.DisplayName, *tenant.DisplayName)
-	assert.Equal(t, tenantA.Spec.GitRepoURL, *tenant.GitRepo)
+	assert.Equal(t, tenantA.Spec.GitRepoURL, *tenant.GitRepo.Url)
 }
 
 func TestTenantUpdateEmpty(t *testing.T) {
@@ -122,6 +122,9 @@ func TestTenantUpdate(t *testing.T) {
 
 	updateTenant := &api.TenantProperties{
 		DisplayName: &newDisplayName,
+		GitRepo: &api.GitRepo{
+			Url: pointer.ToString("newURL"),
+		},
 	}
 	result := testutil.NewRequest().
 		Patch("/tenants/"+tenantB.Name).
