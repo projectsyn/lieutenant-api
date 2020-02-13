@@ -39,6 +39,7 @@ func TestInstallSteward(t *testing.T) {
 		if deployment, ok := obj.(*appsv1.Deployment); ok {
 			foundDeployment = true
 			assert.Equal(t, "https://example.com", deployment.Spec.Template.Spec.Containers[0].Env[0].Value)
+			assert.Equal(t, clusterA.Name, deployment.Spec.Template.Spec.Containers[0].Env[1].Value)
 		}
 	}
 	assert.True(t, foundSecret, "Could not find secret with steward token")

@@ -45,7 +45,7 @@ func (s *APIImpl) InstallSteward(c echo.Context, params api.InstallStewardParams
 		return err
 	}
 	var token string
-	cluster := &synv1alpha1.Cluster{}
+	cluster := synv1alpha1.Cluster{}
 	for _, c := range clusterList.Items {
 		if bToken := c.Status.BootstrapToken; bToken != nil {
 			if len(bToken.Token) > 0 && bToken.Token == *params.Token {
@@ -55,7 +55,7 @@ func (s *APIImpl) InstallSteward(c echo.Context, params api.InstallStewardParams
 						return err
 					}
 					token = t
-					cluster = &c
+					cluster = c
 				} else {
 					return echo.NewHTTPError(http.StatusUnauthorized, "Token already used or expired")
 				}
@@ -91,7 +91,7 @@ func (s *APIImpl) InstallSteward(c echo.Context, params api.InstallStewardParams
 		return err
 	}
 	cluster.Status.BootstrapToken.TokenValid = false
-	return ctx.client.Status().Update(ctx.context, cluster)
+	return ctx.client.Status().Update(ctx.context, &cluster)
 }
 
 func (s *APIImpl) getServiceAccountToken(ctx *APIContext, saName string) (string, error) {
