@@ -95,7 +95,7 @@ var (
 		Status: synv1alpha1.ClusterStatus{
 			BootstrapToken: &synv1alpha1.BootstrapToken{
 				Token:      "shuaCh1k",
-				TokenValid: true,
+				TokenValid: false,
 				ValidUntil: metav1.NewTime(time.Now().Add(-1 * time.Hour)),
 			},
 		},
