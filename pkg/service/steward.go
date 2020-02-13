@@ -72,7 +72,7 @@ func (s *APIImpl) InstallSteward(c echo.Context, params api.InstallStewardParams
 			Kind:       "List",
 		},
 	}
-	apiHost := ctx.Request().URL.Scheme + ctx.Request().Host + ctx.Request().URL.Port()
+	apiHost := ctx.Scheme() + "://" + ctx.Request().Host
 	stewardDeployment := createStewardDeployment(apiHost, cluster.Name)
 	installList.Items = append(installList.Items, createRBAC()...)
 	installList.Items = append(installList.Items, runtime.RawExtension{Object: &corev1.Namespace{
