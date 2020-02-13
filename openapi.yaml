@@ -11,9 +11,9 @@ info:
     name: BSD 3-Clause License
     url: https://choosealicense.com/licenses/bsd-3-clause/
 servers:
-  - url: https://api.syn.vshn.ch/
+  - url: https://api.syn.vshn.net/
     description: Project Syn Lieutenant Production API
-  - url: https://api-test.syn.vshn.ch/
+  - url: https://api-dev.syn.vshn.net/
     description: Project Syn Lieutenant Test API
   - url: /
     description: Local development
