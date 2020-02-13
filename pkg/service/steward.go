@@ -74,7 +74,6 @@ func (s *APIImpl) InstallSteward(c echo.Context, params api.InstallStewardParams
 	}
 	apiHost := ctx.Scheme() + "://" + ctx.Request().Host
 	stewardDeployment := createStewardDeployment(apiHost, cluster.Name)
-	installList.Items = append(installList.Items, createRBAC()...)
 	installList.Items = append(installList.Items, runtime.RawExtension{Object: &corev1.Namespace{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: corev1.SchemeGroupVersion.String(),
@@ -85,6 +84,7 @@ func (s *APIImpl) InstallSteward(c echo.Context, params api.InstallStewardParams
 			Labels: appLabels,
 		},
 	}})
+	installList.Items = append(installList.Items, createRBAC()...)
 	installList.Items = append(installList.Items, runtime.RawExtension{Object: stewardDeployment})
 	installList.Items = append(installList.Items, runtime.RawExtension{Object: createSecret(token)})
 	if err := ctx.JSON(http.StatusOK, installList); err != nil {

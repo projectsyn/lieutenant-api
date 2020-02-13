@@ -29,9 +29,13 @@ func TestInstallSteward(t *testing.T) {
 	decoder := json.NewSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme, true)
 	foundSecret := false
 	foundDeployment := false
-	for _, item := range manifests.Items {
+	for i, item := range manifests.Items {
 		obj, err := runtime.Decode(decoder, item.Raw)
 		assert.NoError(t, err)
+		if i == 0 {
+			_, ok := obj.(*corev1.Namespace)
+			assert.True(t, ok, "First object needs to be a namespace")
+		}
 		if secret, ok := obj.(*corev1.Secret); ok {
 			foundSecret = true
 			assert.Equal(t, secret.StringData["token"], string(clusterASecret.Data["token"]))
