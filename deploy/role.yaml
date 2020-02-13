@@ -5,9 +5,21 @@ metadata:
   name: lieutenant-api
 rules:
 - apiGroups:
+  - ""
+  resources:
+  - serviceaccounts
+  - secrets
+  verbs:
+  - get
+- apiGroups:
   - syn.tools
   resources:
   - clusters
   verbs:
   - list
+- apiGroups:
+  - syn.tools
+  resources:
+  - clusters/status
+  verbs:
   - update
