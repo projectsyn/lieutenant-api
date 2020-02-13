@@ -16,6 +16,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
@@ -40,7 +41,7 @@ func (s *APIImpl) InstallSteward(c echo.Context, params api.InstallStewardParams
 	}
 
 	clusterList := &synv1alpha1.ClusterList{}
-	if err := ctx.client.List(ctx.context, clusterList); err != nil {
+	if err := ctx.client.List(ctx.context, clusterList, client.InNamespace(s.namespace)); err != nil {
 		return err
 	}
 	var token string
