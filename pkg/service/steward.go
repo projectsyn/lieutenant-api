@@ -16,6 +16,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
@@ -40,11 +41,11 @@ func (s *APIImpl) InstallSteward(c echo.Context, params api.InstallStewardParams
 	}
 
 	clusterList := &synv1alpha1.ClusterList{}
-	if err := ctx.client.List(ctx.context, clusterList); err != nil {
+	if err := ctx.client.List(ctx.context, clusterList, client.InNamespace(s.namespace)); err != nil {
 		return err
 	}
 	var token string
-	cluster := &synv1alpha1.Cluster{}
+	cluster := synv1alpha1.Cluster{}
 	for _, c := range clusterList.Items {
 		if bToken := c.Status.BootstrapToken; bToken != nil {
 			if len(bToken.Token) > 0 && bToken.Token == *params.Token {
@@ -54,7 +55,7 @@ func (s *APIImpl) InstallSteward(c echo.Context, params api.InstallStewardParams
 						return err
 					}
 					token = t
-					cluster = &c
+					cluster = c
 				} else {
 					return echo.NewHTTPError(http.StatusUnauthorized, "Token already used or expired")
 				}
@@ -71,7 +72,7 @@ func (s *APIImpl) InstallSteward(c echo.Context, params api.InstallStewardParams
 			Kind:       "List",
 		},
 	}
-	apiHost := ctx.Request().URL.Scheme + ctx.Request().Host + ctx.Request().URL.Port()
+	apiHost := ctx.Scheme() + "://" + ctx.Request().Host
 	stewardDeployment := createStewardDeployment(apiHost, cluster.Name)
 	installList.Items = append(installList.Items, createRBAC()...)
 	installList.Items = append(installList.Items, runtime.RawExtension{Object: &corev1.Namespace{
@@ -90,7 +91,7 @@ func (s *APIImpl) InstallSteward(c echo.Context, params api.InstallStewardParams
 		return err
 	}
 	cluster.Status.BootstrapToken.TokenValid = false
-	return ctx.client.Status().Update(ctx.context, cluster)
+	return ctx.client.Status().Update(ctx.context, &cluster)
 }
 
 func (s *APIImpl) getServiceAccountToken(ctx *APIContext, saName string) (string, error) {
