@@ -81,6 +81,11 @@ components:
           type: string
           description: Id of the tenant this cluster belongs to
           example: aezoo6
+        installURL:
+          type: string
+          readOnly: true
+          description: URL to fetch install manifests for Steward cluster agent. This will only be set if the cluster's token is still valid.
+          example: https://api.syn.vshn.net/install/steward.json?token=<secretToken>
     ClusterId:
       type: object
       required:

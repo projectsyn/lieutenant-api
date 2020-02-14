@@ -79,6 +79,11 @@ func (s *APIImpl) GetCluster(c echo.Context, clusterID api.ClusterIdParameter) e
 		return err
 	}
 	apiCluster := api.NewAPIClusterFromCRD(*cluster)
+	if cluster.Status.BootstrapToken != nil &&
+		cluster.Status.BootstrapToken.TokenValid {
+		installURL := ctx.Scheme() + "://" + ctx.Request().Host + "/install/steward.json?token=" + cluster.Status.BootstrapToken.Token
+		apiCluster.InstallURL = &installURL
+	}
 	return ctx.JSON(http.StatusOK, apiCluster)
 }
 

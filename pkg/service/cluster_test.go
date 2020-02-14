@@ -2,6 +2,7 @@ package service
 
 import (
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/AlekSi/pointer"
@@ -123,6 +124,24 @@ func TestClusterGet(t *testing.T) {
 	assert.Equal(t, clusterA.Name, string(cluster.ClusterId.Id))
 	assert.Equal(t, tenantA.Name, cluster.Tenant)
 	assert.Equal(t, clusterA.Spec.GitHostKeys, *cluster.GitRepo.HostKeys)
+	assert.True(t, strings.HasSuffix(*cluster.InstallURL, clusterA.Status.BootstrapToken.Token))
+}
+
+func TestClusterGetNoToken(t *testing.T) {
+	e := setupTest(t)
+
+	result := testutil.NewRequest().
+		Get("/clusters/"+clusterB.Name).
+		WithHeader(echo.HeaderAuthorization, bearerToken).
+		Go(t, e)
+	assert.Equal(t, http.StatusOK, result.Code())
+	cluster := &api.Cluster{}
+	err := result.UnmarshalJsonToObject(cluster)
+	assert.NoError(t, err)
+	assert.NotNil(t, cluster)
+	assert.Equal(t, clusterB.Name, string(cluster.ClusterId.Id))
+	assert.Equal(t, tenantB.Name, cluster.Tenant)
+	assert.Nil(t, cluster.InstallURL)
 }
 
 func TestClusterGetNotFound(t *testing.T) {
