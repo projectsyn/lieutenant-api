@@ -26,6 +26,7 @@ func TestListTenants(t *testing.T) {
 	assert.GreaterOrEqual(t, len(tenants), 2)
 	assert.Equal(t, tenantA.Spec.DisplayName, *tenants[0].DisplayName)
 	assert.Equal(t, tenantB.Spec.DisplayName, *tenants[1].DisplayName)
+	assert.Equal(t, string(tenantB.Spec.GitRepoTemplate.RepoType), *tenants[1].GitRepo.Type)
 }
 
 func TestCreateTenant(t *testing.T) {

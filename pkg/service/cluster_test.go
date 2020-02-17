@@ -26,6 +26,7 @@ func TestListCluster(t *testing.T) {
 	assert.GreaterOrEqual(t, len(clusters), 2)
 	assert.Equal(t, clusterA.Spec.DisplayName, *clusters[0].DisplayName)
 	assert.Equal(t, clusterB.Spec.DisplayName, *clusters[1].DisplayName)
+	assert.Equal(t, string(clusterB.Spec.GitRepoTemplate.RepoType), *clusters[1].GitRepo.Type)
 }
 
 func TestListClusterMissingBearer(t *testing.T) {
