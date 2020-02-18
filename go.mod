@@ -60,3 +60,5 @@ replace (
 )
 
 replace github.com/docker/docker => github.com/moby/moby v1.13.1 // Required by Helm
+
+replace github.com/projectsyn/lieutenant-operator => github.com/projectsyn/lieutenant-operator v0.0.4-0.20200217133006-a6a360eb75e3

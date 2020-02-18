@@ -42,6 +42,7 @@ var (
 			GitRepoTemplate: &synv1alpha1.GitRepoTemplate{
 				RepoName: "defaults",
 				Path:     "tenant-a",
+				RepoType: synv1alpha1.AutoRepoType,
 				APISecretRef: corev1.SecretReference{
 					Name:      "api-creds",
 					Namespace: "default",
@@ -87,6 +88,7 @@ var (
 				Path:         tenantB.Spec.GitRepoTemplate.Path,
 				APISecretRef: tenantB.Spec.GitRepoTemplate.APISecretRef,
 				RepoName:     "cluster-b",
+				RepoType:     synv1alpha1.AutoRepoType,
 			},
 			Facts: &synv1alpha1.Facts{
 				"cloud": "cloudscale",

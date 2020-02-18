@@ -132,6 +132,11 @@ components:
           type: string
           description: Full URL of the git repo
           example: ssh://git@github.com/acmecorp/gitops-mycluster.git
+        type:
+          type: string
+          description: Specifies if a repo should be managed by the git controller. A value of 'unmanaged' means it's not manged by the controller
+          example: auto
+          default: auto
         deployKey:
           type: string
           description: SSH public key / deploy key for clusterconfiguration catalog Git repository. This property is managed by Steward.

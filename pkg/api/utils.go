@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"math/big"
+	"net/url"
 	"strings"
 
 	synv1alpha1 "github.com/projectsyn/lieutenant-operator/pkg/apis/syn/v1alpha1"
@@ -78,6 +79,13 @@ func NewAPITenantFromCRD(tenant synv1alpha1.Tenant) *Tenant {
 		apiTenant.GitRepo.Url = &tenant.Spec.GitRepoURL
 	}
 
+	if tenant.Spec.GitRepoTemplate != nil {
+		if len(tenant.Spec.GitRepoTemplate.RepoType) > 0 {
+			repoType := string(tenant.Spec.GitRepoTemplate.RepoType)
+			apiTenant.GitRepo.Type = &repoType
+		}
+	}
+
 	return apiTenant
 }
 
@@ -92,21 +100,12 @@ func NewCRDFromAPITenant(apiTenant Tenant) *synv1alpha1.Tenant {
 		tenant.Spec.DisplayName = *apiTenant.DisplayName
 	}
 
+	tenant.Spec.GitRepoTemplate = newGitRepoTemplate(apiTenant.GitRepo, string(apiTenant.Id))
 	if apiTenant.GitRepo != nil {
 		if apiTenant.GitRepo.Url != nil {
 			tenant.Spec.GitRepoURL = *apiTenant.GitRepo.Url
 		}
-	} else {
-		// TODO: properly generate GitRepoTemplate
-		tenant.Spec.GitRepoTemplate = &synv1alpha1.GitRepoTemplate{
-			Path:     "syn/customers",
-			RepoName: string(apiTenant.Id),
-			APISecretRef: corev1.SecretReference{
-				Name: "vshn-gitlab",
-			},
-		}
 	}
-
 	return tenant
 }
 
@@ -145,6 +144,10 @@ func NewAPIClusterFromCRD(cluster synv1alpha1.Cluster) *Cluster {
 			sshKey := fmt.Sprintf("%s %s", stewardKey.Type, stewardKey.Key)
 			apiCluster.GitRepo.DeployKey = &sshKey
 		}
+		if len(cluster.Spec.GitRepoTemplate.RepoType) > 0 {
+			repoType := string(cluster.Spec.GitRepoTemplate.RepoType)
+			apiCluster.GitRepo.Type = &repoType
+		}
 	}
 
 	return apiCluster
@@ -165,22 +168,13 @@ func NewCRDFromAPICluster(apiCluster Cluster) *synv1alpha1.Cluster {
 	if apiCluster.DisplayName != nil {
 		cluster.Spec.DisplayName = *apiCluster.DisplayName
 	}
+	cluster.Spec.GitRepoTemplate = newGitRepoTemplate(apiCluster.GitRepo, string(apiCluster.Id))
 	if apiCluster.GitRepo != nil {
 		if apiCluster.GitRepo.HostKeys != nil {
 			cluster.Spec.GitHostKeys = *apiCluster.GitRepo.HostKeys
 		}
 		if apiCluster.GitRepo.Url != nil {
 			cluster.Spec.GitRepoURL = *apiCluster.GitRepo.Url
-		}
-	}
-	if apiCluster.GitRepo == nil || apiCluster.GitRepo.Url == nil {
-		// TODO: properly generate GitRepoTemplate
-		cluster.Spec.GitRepoTemplate = &synv1alpha1.GitRepoTemplate{
-			Path:     "syn/cluster-catalogs",
-			RepoName: string(apiCluster.Id),
-			APISecretRef: corev1.SecretReference{
-				Name: "vshn-gitlab",
-			},
 		}
 	}
 	if apiCluster.Facts != nil {
@@ -192,4 +186,46 @@ func NewCRDFromAPICluster(apiCluster Cluster) *synv1alpha1.Cluster {
 		}
 	}
 	return cluster
+}
+
+func newGitRepoTemplate(repo *GitRepo, name string) *synv1alpha1.GitRepoTemplate {
+	//TODO: this default repoTemplate should be configurable (ideally per tenant)
+	repoTemplate := &synv1alpha1.GitRepoTemplate{
+		Path:     "syn/cluster-catalogs",
+		RepoName: name,
+		RepoType: synv1alpha1.AutoRepoType,
+		APISecretRef: corev1.SecretReference{
+			Name: "vshn-gitlab",
+		},
+	}
+	if repo == nil {
+		// No git info was specified, just return the default
+		return repoTemplate
+	}
+
+	if repo.Type == nil || *repo.Type != string(synv1alpha1.UnmanagedRepoType) {
+		if repo.Url != nil && len(*repo.Url) > 0 {
+			// It's not unmanaged and the URL was specified, take it apart
+			url, err := url.Parse(*repo.Url)
+			if err != nil {
+				return &synv1alpha1.GitRepoTemplate{}
+			}
+			pathParts := strings.Split(url.Path, "/")
+			pathParts = pathParts[1:len(pathParts)]
+			if len(pathParts) < 2 {
+				return &synv1alpha1.GitRepoTemplate{}
+			}
+			// remove .git extension
+			repoName := strings.ReplaceAll(pathParts[len(pathParts)-1], ".git", "")
+			repoPath := strings.Join(pathParts[:len(pathParts)-1], "/")
+			repoTemplate.Path = repoPath
+			repoTemplate.RepoName = repoName
+		}
+	} else if repo.Type != nil {
+		repoTemplate.RepoType = synv1alpha1.UnmanagedRepoType
+		// Repo is unmanaged, remove name and path
+		repoTemplate.RepoName = ""
+		repoTemplate.Path = ""
+	}
+	return repoTemplate
 }
