@@ -184,6 +184,7 @@ func NewCRDFromAPICluster(apiCluster Cluster) *synv1alpha1.Cluster {
 				facts[key] = valueStr
 			}
 		}
+		cluster.Spec.Facts = &facts
 	}
 	return cluster
 }

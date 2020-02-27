@@ -54,6 +54,10 @@ func TestCreateCluster(t *testing.T) {
 	newCluster := api.ClusterProperties{
 		DisplayName: pointer.ToString("My test cluster"),
 		Tenant:      tenantA.Name,
+		Facts: &api.ClusterFacts{
+			"cloud":  "cloudscale",
+			"region": "test",
+		},
 	}
 	result := testutil.NewRequest().
 		Post("/clusters").
@@ -67,6 +71,7 @@ func TestCreateCluster(t *testing.T) {
 	assert.NotNil(t, cluster)
 	assert.Contains(t, cluster.Id, api.ClusterIDPrefix)
 	assert.Equal(t, cluster.DisplayName, newCluster.DisplayName)
+	assert.Equal(t, newCluster.Facts, cluster.Facts)
 }
 
 func TestCreateClusterNoJSON(t *testing.T) {
