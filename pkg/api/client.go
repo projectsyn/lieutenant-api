@@ -395,7 +395,13 @@ func NewListClustersRequest(server string, params *ListClustersParams) (*http.Re
 	if err != nil {
 		return nil, err
 	}
-	queryUrl, err = queryUrl.Parse(fmt.Sprintf("/clusters"))
+
+	basePath := fmt.Sprintf("/clusters")
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
 	if err != nil {
 		return nil, err
 	}
@@ -447,7 +453,13 @@ func NewCreateClusterRequestWithBody(server string, contentType string, body io.
 	if err != nil {
 		return nil, err
 	}
-	queryUrl, err = queryUrl.Parse(fmt.Sprintf("/clusters"))
+
+	basePath := fmt.Sprintf("/clusters")
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
 	if err != nil {
 		return nil, err
 	}
@@ -476,7 +488,13 @@ func NewDeleteClusterRequest(server string, clusterId ClusterIdParameter) (*http
 	if err != nil {
 		return nil, err
 	}
-	queryUrl, err = queryUrl.Parse(fmt.Sprintf("/clusters/%s", pathParam0))
+
+	basePath := fmt.Sprintf("/clusters/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
 	if err != nil {
 		return nil, err
 	}
@@ -504,7 +522,13 @@ func NewGetClusterRequest(server string, clusterId ClusterIdParameter) (*http.Re
 	if err != nil {
 		return nil, err
 	}
-	queryUrl, err = queryUrl.Parse(fmt.Sprintf("/clusters/%s", pathParam0))
+
+	basePath := fmt.Sprintf("/clusters/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
 	if err != nil {
 		return nil, err
 	}
@@ -532,7 +556,13 @@ func NewUpdateClusterRequestWithBody(server string, clusterId ClusterIdParameter
 	if err != nil {
 		return nil, err
 	}
-	queryUrl, err = queryUrl.Parse(fmt.Sprintf("/clusters/%s", pathParam0))
+
+	basePath := fmt.Sprintf("/clusters/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
 	if err != nil {
 		return nil, err
 	}
@@ -554,7 +584,13 @@ func NewHealthzRequest(server string) (*http.Request, error) {
 	if err != nil {
 		return nil, err
 	}
-	queryUrl, err = queryUrl.Parse(fmt.Sprintf("/healthz"))
+
+	basePath := fmt.Sprintf("/healthz")
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
 	if err != nil {
 		return nil, err
 	}
@@ -575,7 +611,13 @@ func NewInstallStewardRequest(server string, params *InstallStewardParams) (*htt
 	if err != nil {
 		return nil, err
 	}
-	queryUrl, err = queryUrl.Parse(fmt.Sprintf("/install/steward.json"))
+
+	basePath := fmt.Sprintf("/install/steward.json")
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
 	if err != nil {
 		return nil, err
 	}
@@ -616,7 +658,13 @@ func NewQueryInventoryRequest(server string, params *QueryInventoryParams) (*htt
 	if err != nil {
 		return nil, err
 	}
-	queryUrl, err = queryUrl.Parse(fmt.Sprintf("/inventory"))
+
+	basePath := fmt.Sprintf("/inventory")
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
 	if err != nil {
 		return nil, err
 	}
@@ -668,7 +716,13 @@ func NewUpdateInventoryRequestWithBody(server string, contentType string, body i
 	if err != nil {
 		return nil, err
 	}
-	queryUrl, err = queryUrl.Parse(fmt.Sprintf("/inventory"))
+
+	basePath := fmt.Sprintf("/inventory")
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
 	if err != nil {
 		return nil, err
 	}
@@ -690,7 +744,13 @@ func NewListTenantsRequest(server string) (*http.Request, error) {
 	if err != nil {
 		return nil, err
 	}
-	queryUrl, err = queryUrl.Parse(fmt.Sprintf("/tenants"))
+
+	basePath := fmt.Sprintf("/tenants")
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
 	if err != nil {
 		return nil, err
 	}
@@ -722,7 +782,13 @@ func NewCreateTenantRequestWithBody(server string, contentType string, body io.R
 	if err != nil {
 		return nil, err
 	}
-	queryUrl, err = queryUrl.Parse(fmt.Sprintf("/tenants"))
+
+	basePath := fmt.Sprintf("/tenants")
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
 	if err != nil {
 		return nil, err
 	}
@@ -751,7 +817,13 @@ func NewDeleteTenantRequest(server string, tenantId TenantIdParameter) (*http.Re
 	if err != nil {
 		return nil, err
 	}
-	queryUrl, err = queryUrl.Parse(fmt.Sprintf("/tenants/%s", pathParam0))
+
+	basePath := fmt.Sprintf("/tenants/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
 	if err != nil {
 		return nil, err
 	}
@@ -779,7 +851,13 @@ func NewGetTenantRequest(server string, tenantId TenantIdParameter) (*http.Reque
 	if err != nil {
 		return nil, err
 	}
-	queryUrl, err = queryUrl.Parse(fmt.Sprintf("/tenants/%s", pathParam0))
+
+	basePath := fmt.Sprintf("/tenants/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
 	if err != nil {
 		return nil, err
 	}
@@ -807,7 +885,13 @@ func NewUpdateTenantRequestWithBody(server string, tenantId TenantIdParameter, c
 	if err != nil {
 		return nil, err
 	}
-	queryUrl, err = queryUrl.Parse(fmt.Sprintf("/tenants/%s", pathParam0))
+
+	basePath := fmt.Sprintf("/tenants/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
 	if err != nil {
 		return nil, err
 	}
