@@ -7,7 +7,7 @@
   ],
   "packageRules": [
     {
-      "packagePatterns": ["^k8s.io"],
+      "packagePatterns": ["^k8s.io", "^sigs.k8s.io"],
       "enabled": false
     }
   ]
