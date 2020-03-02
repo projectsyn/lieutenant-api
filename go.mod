@@ -13,15 +13,11 @@ require (
 	github.com/go-openapi/swag v0.19.7 // indirect
 	github.com/google/gofuzz v1.1.0 // indirect
 	github.com/json-iterator/go v1.1.9 // indirect
-	github.com/labstack/echo/v4 v4.1.14
-	github.com/mattn/go-isatty v0.0.12 // indirect
+	github.com/labstack/echo/v4 v4.1.15
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/projectsyn/lieutenant-operator v0.0.5
 	github.com/stretchr/testify v1.5.1
-	golang.org/x/crypto v0.0.0-20200210222208-86ce3cb69678 // indirect
-	golang.org/x/net v0.0.0-20200202094626-16171245cfb2 // indirect
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d // indirect
-	golang.org/x/sys v0.0.0-20200202164722-d101bd2416d5 // indirect
 	golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543 // indirect
 	k8s.io/api v0.17.3
 	k8s.io/apimachinery v0.17.3
