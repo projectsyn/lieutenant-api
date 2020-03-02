@@ -15,7 +15,7 @@ require (
 	github.com/json-iterator/go v1.1.9 // indirect
 	github.com/labstack/echo/v4 v4.1.15
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/projectsyn/lieutenant-operator v0.0.5
+	github.com/projectsyn/lieutenant-operator v0.1.0
 	github.com/stretchr/testify v1.5.1
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d // indirect
 	golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543 // indirect
