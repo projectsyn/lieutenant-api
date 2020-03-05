@@ -1424,16 +1424,18 @@ func ParseListClustersResponse(rsp *http.Response) (*listClustersResponse, error
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		response.JSON200 = &[]Cluster{}
-		if err := json.Unmarshal(bodyBytes, response.JSON200); err != nil {
+		var dest []Cluster
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
+		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json"):
-		response.JSONDefault = &Reason{}
-		if err := json.Unmarshal(bodyBytes, response.JSONDefault); err != nil {
+		var dest Reason
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
+		response.JSONDefault = &dest
 
 	}
 
@@ -1455,22 +1457,25 @@ func ParseCreateClusterResponse(rsp *http.Response) (*createClusterResponse, err
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
-		response.JSON201 = &Cluster{}
-		if err := json.Unmarshal(bodyBytes, response.JSON201); err != nil {
+		var dest Cluster
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
+		response.JSON201 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		response.JSON400 = &Reason{}
-		if err := json.Unmarshal(bodyBytes, response.JSON400); err != nil {
+		var dest Reason
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
+		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json"):
-		response.JSONDefault = &Reason{}
-		if err := json.Unmarshal(bodyBytes, response.JSONDefault); err != nil {
+		var dest Reason
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
+		response.JSONDefault = &dest
 
 	}
 
@@ -1492,16 +1497,18 @@ func ParseDeleteClusterResponse(rsp *http.Response) (*deleteClusterResponse, err
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		response.JSON403 = &Reason{}
-		if err := json.Unmarshal(bodyBytes, response.JSON403); err != nil {
+		var dest Reason
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json"):
-		response.JSONDefault = &Reason{}
-		if err := json.Unmarshal(bodyBytes, response.JSONDefault); err != nil {
+		var dest Reason
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
+		response.JSONDefault = &dest
 
 	}
 
@@ -1523,16 +1530,18 @@ func ParseGetClusterResponse(rsp *http.Response) (*getClusterResponse, error) {
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		response.JSON200 = &Cluster{}
-		if err := json.Unmarshal(bodyBytes, response.JSON200); err != nil {
+		var dest Cluster
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
+		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json"):
-		response.JSONDefault = &Reason{}
-		if err := json.Unmarshal(bodyBytes, response.JSONDefault); err != nil {
+		var dest Reason
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
+		response.JSONDefault = &dest
 
 	}
 
@@ -1554,22 +1563,25 @@ func ParseUpdateClusterResponse(rsp *http.Response) (*updateClusterResponse, err
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		response.JSON200 = &Cluster{}
-		if err := json.Unmarshal(bodyBytes, response.JSON200); err != nil {
+		var dest Cluster
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
+		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		response.JSON403 = &Reason{}
-		if err := json.Unmarshal(bodyBytes, response.JSON403); err != nil {
+		var dest Reason
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json"):
-		response.JSONDefault = &Reason{}
-		if err := json.Unmarshal(bodyBytes, response.JSONDefault); err != nil {
+		var dest Reason
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
+		response.JSONDefault = &dest
 
 	}
 
@@ -1591,10 +1603,11 @@ func ParseHealthzResponse(rsp *http.Response) (*healthzResponse, error) {
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json"):
-		response.JSONDefault = &Reason{}
-		if err := json.Unmarshal(bodyBytes, response.JSONDefault); err != nil {
+		var dest Reason
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
+		response.JSONDefault = &dest
 
 	}
 
@@ -1616,16 +1629,18 @@ func ParseInstallStewardResponse(rsp *http.Response) (*installStewardResponse, e
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		response.JSON200 = &map[string]interface{}{}
-		if err := json.Unmarshal(bodyBytes, response.JSON200); err != nil {
+		var dest map[string]interface{}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
+		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json"):
-		response.JSONDefault = &Reason{}
-		if err := json.Unmarshal(bodyBytes, response.JSONDefault); err != nil {
+		var dest Reason
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
+		response.JSONDefault = &dest
 
 	}
 
@@ -1647,16 +1662,18 @@ func ParseQueryInventoryResponse(rsp *http.Response) (*queryInventoryResponse, e
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		response.JSON200 = &Inventory{}
-		if err := json.Unmarshal(bodyBytes, response.JSON200); err != nil {
+		var dest Inventory
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
+		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json"):
-		response.JSONDefault = &Reason{}
-		if err := json.Unmarshal(bodyBytes, response.JSONDefault); err != nil {
+		var dest Reason
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
+		response.JSONDefault = &dest
 
 	}
 
@@ -1678,10 +1695,11 @@ func ParseUpdateInventoryResponse(rsp *http.Response) (*updateInventoryResponse,
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json"):
-		response.JSONDefault = &Reason{}
-		if err := json.Unmarshal(bodyBytes, response.JSONDefault); err != nil {
+		var dest Reason
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
+		response.JSONDefault = &dest
 
 	}
 
@@ -1703,16 +1721,18 @@ func ParseListTenantsResponse(rsp *http.Response) (*listTenantsResponse, error) 
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		response.JSON200 = &[]Tenant{}
-		if err := json.Unmarshal(bodyBytes, response.JSON200); err != nil {
+		var dest []Tenant
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
+		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json"):
-		response.JSONDefault = &Reason{}
-		if err := json.Unmarshal(bodyBytes, response.JSONDefault); err != nil {
+		var dest Reason
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
+		response.JSONDefault = &dest
 
 	}
 
@@ -1734,22 +1754,25 @@ func ParseCreateTenantResponse(rsp *http.Response) (*createTenantResponse, error
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
-		response.JSON201 = &Tenant{}
-		if err := json.Unmarshal(bodyBytes, response.JSON201); err != nil {
+		var dest Tenant
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
+		response.JSON201 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		response.JSON400 = &Reason{}
-		if err := json.Unmarshal(bodyBytes, response.JSON400); err != nil {
+		var dest Reason
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
+		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json"):
-		response.JSONDefault = &Reason{}
-		if err := json.Unmarshal(bodyBytes, response.JSONDefault); err != nil {
+		var dest Reason
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
+		response.JSONDefault = &dest
 
 	}
 
@@ -1771,16 +1794,18 @@ func ParseDeleteTenantResponse(rsp *http.Response) (*deleteTenantResponse, error
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		response.JSON403 = &Reason{}
-		if err := json.Unmarshal(bodyBytes, response.JSON403); err != nil {
+		var dest Reason
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json"):
-		response.JSONDefault = &Reason{}
-		if err := json.Unmarshal(bodyBytes, response.JSONDefault); err != nil {
+		var dest Reason
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
+		response.JSONDefault = &dest
 
 	}
 
@@ -1802,16 +1827,18 @@ func ParseGetTenantResponse(rsp *http.Response) (*getTenantResponse, error) {
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		response.JSON200 = &Tenant{}
-		if err := json.Unmarshal(bodyBytes, response.JSON200); err != nil {
+		var dest Tenant
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
+		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json"):
-		response.JSONDefault = &Reason{}
-		if err := json.Unmarshal(bodyBytes, response.JSONDefault); err != nil {
+		var dest Reason
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
+		response.JSONDefault = &dest
 
 	}
 
@@ -1833,22 +1860,25 @@ func ParseUpdateTenantResponse(rsp *http.Response) (*updateTenantResponse, error
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		response.JSON200 = &Tenant{}
-		if err := json.Unmarshal(bodyBytes, response.JSON200); err != nil {
+		var dest Tenant
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
+		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
-		response.JSON403 = &Reason{}
-		if err := json.Unmarshal(bodyBytes, response.JSON403); err != nil {
+		var dest Reason
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json"):
-		response.JSONDefault = &Reason{}
-		if err := json.Unmarshal(bodyBytes, response.JSONDefault); err != nil {
+		var dest Reason
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
+		response.JSONDefault = &dest
 
 	}
 

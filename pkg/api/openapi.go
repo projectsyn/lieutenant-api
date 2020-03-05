@@ -220,9 +220,6 @@ func (w *ServerInterfaceWrapper) ListClusters(ctx echo.Context) error {
 	// Parameter object where we will unmarshal all parameters from the context
 	var params ListClustersParams
 	// ------------- Optional query parameter "tenant" -------------
-	if paramValue := ctx.QueryParam("tenant"); paramValue != "" {
-
-	}
 
 	err = runtime.BindQueryParameter("form", true, false, "tenant", ctx.QueryParams(), &params.Tenant)
 	if err != nil {
@@ -315,9 +312,6 @@ func (w *ServerInterfaceWrapper) InstallSteward(ctx echo.Context) error {
 	// Parameter object where we will unmarshal all parameters from the context
 	var params InstallStewardParams
 	// ------------- Optional query parameter "token" -------------
-	if paramValue := ctx.QueryParam("token"); paramValue != "" {
-
-	}
 
 	err = runtime.BindQueryParameter("form", true, false, "token", ctx.QueryParams(), &params.Token)
 	if err != nil {
@@ -338,9 +332,6 @@ func (w *ServerInterfaceWrapper) QueryInventory(ctx echo.Context) error {
 	// Parameter object where we will unmarshal all parameters from the context
 	var params QueryInventoryParams
 	// ------------- Optional query parameter "q" -------------
-	if paramValue := ctx.QueryParam("q"); paramValue != "" {
-
-	}
 
 	err = runtime.BindQueryParameter("form", true, false, "q", ctx.QueryParams(), &params.Q)
 	if err != nil {
