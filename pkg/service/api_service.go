@@ -64,7 +64,14 @@ func NewAPIServer(k8sMiddleware ...KubernetesAuth) (*echo.Echo, error) {
 		return value, nil
 	})
 
-	e.Use(oapimiddleware.OapiRequestValidator(swagger))
+	options := &oapimiddleware.Options{
+		Options: openapi3filter.Options{
+			AuthenticationFunc: func(c context.Context, input *openapi3filter.AuthenticationInput) error {
+				return nil
+			},
+		},
+	}
+	e.Use(oapimiddleware.OapiRequestValidatorWithOptions(swagger, options))
 	if len(k8sMiddleware) == 0 {
 		e.Use(DefaultKubernetesAuth.JWTAuth)
 	} else {
