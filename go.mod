@@ -13,7 +13,7 @@ require (
 	github.com/go-openapi/swag v0.19.7 // indirect
 	github.com/google/gofuzz v1.1.0 // indirect
 	github.com/json-iterator/go v1.1.9 // indirect
-	github.com/labstack/echo/v4 v4.1.15
+	github.com/labstack/echo/v4 v4.1.16
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/projectsyn/lieutenant-operator v0.1.0
 	github.com/stretchr/testify v1.5.1
