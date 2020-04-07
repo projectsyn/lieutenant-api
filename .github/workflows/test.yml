@@ -5,9 +5,21 @@ on:
     - master
 
 jobs:
-  test:
+  tests:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
+    - name: Generate
+      run: make generate
+    - name: No diff
+      run: git diff --exit-code
     - name: Build image
       run: make docker
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Check Docs
+      run: make check
+    - name: Compile Docs
+      run: make docs
