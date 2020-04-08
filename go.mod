@@ -17,6 +17,7 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/projectsyn/lieutenant-operator v0.1.0
 	github.com/stretchr/testify v1.5.1
+	github.com/taion809/haikunator v0.0.0-20150324135039-4e414e676fd1
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d // indirect
 	golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543 // indirect
 	k8s.io/api v0.17.3
