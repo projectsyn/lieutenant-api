@@ -1,0 +1,32 @@
+= Deployment
+
+The Lieutenant API is meant to be deployed on a Kubernetes cluster. It needs to be the same cluster it uses as a back end to store the CRDs.
+
+The xref:lieutenant-operator::index.adoc[Lieutenant Operator] needs to be deployed on the cluster and with it the accompanying CRDs. Make sure the operator watches objects in the namespace where the API is being deployed.
+
+You can find the manifests for a deployment in the "deploy/" folder. A role and service account will be created for the API. The `Cluster` and `Tenant` CRs will be stored in the same namespace as the API is deployed.
+
+[source,shell]
+----
+kubectl create ns $namespace
+
+kubectl -n $namespace apply -f deploy/
+----
+
+
+== Configuration
+
+The following environemnt variables are supported:
+
+* `NAMESPACE` - Namespace in which to store custom resource objects (default: `default`). Recommended to be the same namespace where the API is deployed
+* `STEWARD_IMAGE` - Image to use for Steward installation manifests (default: `docker.io/projectsyn/steward:v0.1.0`)
+* `API_HOST` - URL of the API to be used in the Steward installation manifests (default: host header of a request)
+
+
+== GitLab Credentials
+
+Currently the API creates `GitRepo` objects with a hard coded reference for the GitLab API credentials secret. Make sure a secret with the name `vshn-gitlab` exists in the API's namespace. The secret needs the following keys:
+
+* `endpoint` GitLab API endpoint (`https://gitlab.com`)
+* `token` GitLab API token to use
+* `hostKeys` SSH keys of GitLab (in known_hosts format)
