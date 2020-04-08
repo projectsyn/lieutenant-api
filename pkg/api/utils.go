@@ -1,9 +1,9 @@
 package api
 
 import (
-	"crypto/rand"
+	"errors"
 	"fmt"
-	"math/big"
+	"github.com/taion809/haikunator"
 	"net/url"
 	"strings"
 
@@ -19,47 +19,41 @@ const (
 	TenantIDPrefix = "t-"
 	// ContentJSONPatch is the content type to do JSON updates
 	ContentJSONPatch = "application/merge-patch+json"
+)
 
-	idCharset = "abcdefghijklmnopqrstuvwxyz" + "0123456789"
+var (
+	h = haikunator.NewHaikunator()
 )
 
 // GenerateClusterID creates a new cluster id
 func GenerateClusterID() (ClusterId, error) {
-	id, err := generateID()
-	if err != nil {
-		return ClusterId{}, err
-	}
+	id, err := generateID(ClusterIDPrefix)
 	return ClusterId{
-		Id: Id(ClusterIDPrefix + id),
-	}, nil
+		Id: id,
+	}, err
 }
 
 // GenerateTenantID creates a new tenant id
 func GenerateTenantID() (TenantId, error) {
-	id, err := generateID()
-	if err != nil {
-		return TenantId{}, err
-	}
+	id, err := generateID(TenantIDPrefix)
 	return TenantId{
-		Id: Id(TenantIDPrefix + id),
-	}, nil
+		Id: id,
+	}, err
 }
 
 // GenerateID generates a new id from random alphanumeric characters
-func generateID() (Id, error) {
-	id := strings.Builder{}
-	for i := 0; i < 6; i++ {
-		max := big.NewInt(int64(len(idCharset)))
-		r, err := rand.Int(rand.Reader, max)
-		if err != nil {
-			return "", err
-		}
-		_, err = id.WriteString(string(idCharset[r.Int64()]))
-		if err != nil {
-			return "", err
+func generateID(prefix string) (Id, error) {
+	retry := 10
+	var id = ""
+	var i int
+	// let's try a few times
+	for i = 0; i < retry; i++ {
+		id = prefix + h.Haikunate()
+		if len(id) <= 63 {
+			return Id(id), nil
 		}
 	}
-	return Id(id.String()), nil
+	return "", errors.New("could not generate a DNS-compatible ID")
 }
 
 // NewAPITenantFromCRD transforms a CRD tenant into the API representation
@@ -134,7 +128,7 @@ func NewAPIClusterFromCRD(cluster synv1alpha1.Cluster) *Cluster {
 	if cluster.Spec.Facts != nil {
 		facts := ClusterFacts{}
 		for key, value := range *cluster.Spec.Facts {
-			facts[string(key)] = value
+			facts[key] = value
 		}
 		apiCluster.Facts = &facts
 	}
