@@ -2,12 +2,14 @@ apiVersion: v1
 kind: Service
 metadata:
   name: lieutenant-api
+  labels:
+    app.kubernetes.io/name: lieutenant-api
+    app.kubernetes.io/part-of: project-syn
 spec:
-  ports:
-  - name: "8080"
-    port: 8080
-    protocol: TCP
-    targetPort: 8080
-  selector:
-    name: lieutenant-api
   type: ClusterIP
+  selector:
+    app.kubernetes.io/name: lieutenant-api
+  ports:
+  - name: http
+    port: 80
+    targetPort: http
