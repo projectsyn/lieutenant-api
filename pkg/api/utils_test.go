@@ -77,7 +77,7 @@ func TestGenerateTenantID(t *testing.T) {
 func assertGeneratedId(t *testing.T, prefix string, supplier func() string) {
 	// Verify generated ID so that it conforms to https: //kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
 	// Regex pattern tested on regexr.com
-	r := regexp.MustCompile("^[a-z]-[a-z0-9]{3,}(-|_)[a-z0-9]{3,}(-|_)[0-9]{5}$")
+	r := regexp.MustCompile("^[a-z]-[a-z0-9]{3,}(-|_)[a-z0-9]{3,}(-|_)[0-9]+$")
 	// Run the randomizer a few times
 	for i := 1; i <= 1000; i++ {
 		id := supplier()

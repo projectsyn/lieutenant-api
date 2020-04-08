@@ -4,9 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/taion809/haikunator"
-	"math/rand"
 	"net/url"
-	"strconv"
 	"strings"
 
 	synv1alpha1 "github.com/projectsyn/lieutenant-operator/pkg/apis/syn/v1alpha1"
@@ -21,6 +19,10 @@ const (
 	TenantIDPrefix = "t-"
 	// ContentJSONPatch is the content type to do JSON updates
 	ContentJSONPatch = "application/merge-patch+json"
+)
+
+var (
+	h = haikunator.NewHaikunator()
 )
 
 // GenerateClusterID creates a new cluster id
@@ -41,25 +43,17 @@ func GenerateTenantID() (TenantId, error) {
 
 // GenerateID generates a new id from random alphanumeric characters
 func generateID(prefix string) (Id, error) {
-	min := 10000
-	max := 99999
 	retry := 10
 	var id = ""
 	var i int
 	// let's try a few times
 	for i = 0; i < retry; i++ {
-		h := haikunator.NewHaikunator()
-		// haikunator only appends the amount of digits like the first word, so we add our own random numbers
-		n := rand.Intn(max-min) + min
-		id = prefix + h.DelimHaikunate("-") + "-" + strconv.Itoa(n)
+		id = prefix + h.Haikunate()
 		if len(id) <= 63 {
-			break
+			return Id(id), nil
 		}
 	}
-	if i >= retry || id == "" {
-		return "", errors.New("could not generate a DNS-compatible ID")
-	}
-	return Id(id), nil
+	return "", errors.New("could not generate a DNS-compatible ID")
 }
 
 // NewAPITenantFromCRD transforms a CRD tenant into the API representation
