@@ -23,10 +23,12 @@ The following environemnt variables are supported:
 * `API_HOST` - URL of the API to be used in the Steward installation manifests (default: host header of a request)
 
 
-== GitLab Credentials
+== GitLab
 
-Currently the API creates `GitRepo` objects with a hard coded reference for the GitLab API credentials secret. Make sure a secret with the name `vshn-gitlab` exists in the API's namespace. The secret needs the following keys:
+Currently the API creates `GitRepo` objects with a hard coded reference for the GitLab API credentials secret. This is subject to change and will be configurable on a per tenant basis. Make sure a secret with the name `vshn-gitlab` exists in the API's namespace. The secret needs the following keys:
 
 * `endpoint` GitLab API endpoint (`https://gitlab.com`)
 * `token` GitLab API token to use
 * `hostKeys` SSH keys of GitLab (in known_hosts format)
+
+IMPORTANT: Currently the groups and subgroups for git repositories aren't created automatically and need to exist.
