@@ -12,7 +12,20 @@ docker_opts ?= --rm --tty --user "$$(id -u)"
 antora_cmd  ?= $(docker_cmd) run $(docker_opts) --volume "$${PWD}":/antora vshn/antora:1.3
 antora_opts ?= --cache-dir=.cache/antora
 
-vale_cmd ?= $(docker_cmd) run $(docker_opts) --volume "$${PWD}"/docs/modules/ROOT/pages:/pages vshn/vale:1.1 --minAlertLevel=error --config=/pages/.vale.ini /pages
+vale_img ?= docker.io/vshn/vale:1.1
+openapi_generator_img ?= docker.io/openapitools/openapi-generator:cli-v4.3.0
+
+vale_cmd ?= $(docker_cmd) run $(docker_opts) --volume "$${PWD}"/docs/modules/ROOT/pages:/pages $(vale_img) \
+	--minAlertLevel=error \
+	--config=/pages/.vale.ini /pages
+
+openapi_validate_cmd ?= $(docker_cmd) run $(docker_opts) --volume "$${PWD}"/openapi.yaml:/openapi.yaml $(openapi_generator_img) \
+	validate -i /openapi.yaml
+
+openapi_generate_docs_cmd ?= $(docker_cmd) run $(docker_opts) --volume "$${PWD}":/local $(openapi_generator_img) \
+	generate -i /local/openapi.yaml \
+	--generator-name asciidoc \
+	--output /local/docs/modules/ROOT/pages
 
 # Go parameters
 GOCMD   ?= go
@@ -24,8 +37,12 @@ GOGET   ?= $(GOCMD) get
 .PHONY: all
 all: test build
 
+.PHONY: validate
+validate:
+	$(openapi_validate_cmd)
+
 .PHONY: generate
-generate:
+generate: validate
 	go generate main.go
 
 .PHONY: build
@@ -58,14 +75,16 @@ docker:
 	DOCKER_BUILDKIT=1 docker build -t $(IMAGE_NAME) .
 	@echo built image $(IMAGE_NAME)
 
+.PHONY: generate-api-docs
+generate-api-docs:
+	$(openapi_generate_docs_cmd)
+
 .PHONY: docs
-docs:    $(web_dir)/index.html
+docs: generate-api-docs $(web_dir)/index.html
 
 $(web_dir)/index.html: playbook.yml $(pages)
 	$(antora_cmd) $(antora_opts) $<
 
 .PHONY: check
-check:
+check: generate-api-docs
 	$(vale_cmd)
-
-
