@@ -1,8 +1,10 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  creationTimestamp: null
   name: lieutenant-api
+  labels:
+    app.kubernetes.io/name: lieutenant-api
+    app.kubernetes.io/part-of: project-syn
 rules:
 - apiGroups:
   - ""

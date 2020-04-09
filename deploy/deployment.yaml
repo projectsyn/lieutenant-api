@@ -2,15 +2,19 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: lieutenant-api
+  labels:
+    app.kubernetes.io/name: lieutenant-api
+    app.kubernetes.io/part-of: project-syn
 spec:
   replicas: 1
   selector:
     matchLabels:
-      name: lieutenant-api
+      app.kubernetes.io/name: lieutenant-api
   template:
     metadata:
       labels:
-        name: lieutenant-api
+        app.kubernetes.io/name: lieutenant-api
+        app.kubernetes.io/part-of: project-syn
     spec:
       serviceAccountName: lieutenant-api
       containers:
@@ -20,7 +24,27 @@ spec:
           - lieutenant-api
           imagePullPolicy: Always
           ports:
-          - containerPort: 8080
+          - name: http
+            containerPort: 8080
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 60
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+          resources:
+            requests:
+              cpu: 200m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 128Mi
           env:
             - name: NAMESPACE
               valueFrom:

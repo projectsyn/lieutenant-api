@@ -1,1 +1,3 @@
-* xref:index.adoc[Home]
+* xref:home.adoc[Home]
+* xref:deployment.adoc[Deployment]
+* xref:index.adoc[API Documentation]
