@@ -42,7 +42,7 @@ validate:
 	$(openapi_validate_cmd)
 
 .PHONY: generate
-generate: validate
+generate:
 	go generate main.go
 
 .PHONY: build
