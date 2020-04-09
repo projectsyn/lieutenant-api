@@ -1,7 +1,7 @@
 site:
   title: "PREVIEW Lieutenant API Documentation"
   url: http://localhost/
-  start_page: lieutenant-api::index.adoc
+  start_page: lieutenant-api::home.adoc
 content:
   sources:
   - url: .                 # The current folder is a git repo
