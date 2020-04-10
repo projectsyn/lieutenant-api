@@ -17,7 +17,7 @@ import (
 )
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
-type RequestEditorFn func(req *http.Request, ctx context.Context) error
+type RequestEditorFn func(ctx context.Context, req *http.Request) error
 
 // Doer performs HTTP requests.
 //
@@ -55,6 +55,10 @@ func NewClient(server string, opts ...ClientOption) (*Client, error) {
 		if err := o(&client); err != nil {
 			return nil, err
 		}
+	}
+	// ensure the server URL always has a trailing slash
+	if !strings.HasSuffix(client.Server, "/") {
+		client.Server += "/"
 	}
 	// create httpClient, if not already present
 	if client.Client == nil {
@@ -139,7 +143,7 @@ func (c *Client) ListClusters(ctx context.Context, params *ListClustersParams) (
 	}
 	req = req.WithContext(ctx)
 	if c.RequestEditor != nil {
-		err = c.RequestEditor(req, ctx)
+		err = c.RequestEditor(ctx, req)
 		if err != nil {
 			return nil, err
 		}
@@ -154,7 +158,7 @@ func (c *Client) CreateClusterWithBody(ctx context.Context, contentType string, 
 	}
 	req = req.WithContext(ctx)
 	if c.RequestEditor != nil {
-		err = c.RequestEditor(req, ctx)
+		err = c.RequestEditor(ctx, req)
 		if err != nil {
 			return nil, err
 		}
@@ -169,7 +173,7 @@ func (c *Client) CreateCluster(ctx context.Context, body CreateClusterJSONReques
 	}
 	req = req.WithContext(ctx)
 	if c.RequestEditor != nil {
-		err = c.RequestEditor(req, ctx)
+		err = c.RequestEditor(ctx, req)
 		if err != nil {
 			return nil, err
 		}
@@ -184,7 +188,7 @@ func (c *Client) DeleteCluster(ctx context.Context, clusterId ClusterIdParameter
 	}
 	req = req.WithContext(ctx)
 	if c.RequestEditor != nil {
-		err = c.RequestEditor(req, ctx)
+		err = c.RequestEditor(ctx, req)
 		if err != nil {
 			return nil, err
 		}
@@ -199,7 +203,7 @@ func (c *Client) GetCluster(ctx context.Context, clusterId ClusterIdParameter) (
 	}
 	req = req.WithContext(ctx)
 	if c.RequestEditor != nil {
-		err = c.RequestEditor(req, ctx)
+		err = c.RequestEditor(ctx, req)
 		if err != nil {
 			return nil, err
 		}
@@ -214,7 +218,7 @@ func (c *Client) UpdateClusterWithBody(ctx context.Context, clusterId ClusterIdP
 	}
 	req = req.WithContext(ctx)
 	if c.RequestEditor != nil {
-		err = c.RequestEditor(req, ctx)
+		err = c.RequestEditor(ctx, req)
 		if err != nil {
 			return nil, err
 		}
@@ -229,7 +233,7 @@ func (c *Client) Healthz(ctx context.Context) (*http.Response, error) {
 	}
 	req = req.WithContext(ctx)
 	if c.RequestEditor != nil {
-		err = c.RequestEditor(req, ctx)
+		err = c.RequestEditor(ctx, req)
 		if err != nil {
 			return nil, err
 		}
@@ -244,7 +248,7 @@ func (c *Client) InstallSteward(ctx context.Context, params *InstallStewardParam
 	}
 	req = req.WithContext(ctx)
 	if c.RequestEditor != nil {
-		err = c.RequestEditor(req, ctx)
+		err = c.RequestEditor(ctx, req)
 		if err != nil {
 			return nil, err
 		}
@@ -259,7 +263,7 @@ func (c *Client) QueryInventory(ctx context.Context, params *QueryInventoryParam
 	}
 	req = req.WithContext(ctx)
 	if c.RequestEditor != nil {
-		err = c.RequestEditor(req, ctx)
+		err = c.RequestEditor(ctx, req)
 		if err != nil {
 			return nil, err
 		}
@@ -274,7 +278,7 @@ func (c *Client) UpdateInventoryWithBody(ctx context.Context, contentType string
 	}
 	req = req.WithContext(ctx)
 	if c.RequestEditor != nil {
-		err = c.RequestEditor(req, ctx)
+		err = c.RequestEditor(ctx, req)
 		if err != nil {
 			return nil, err
 		}
@@ -289,7 +293,7 @@ func (c *Client) UpdateInventory(ctx context.Context, body UpdateInventoryJSONRe
 	}
 	req = req.WithContext(ctx)
 	if c.RequestEditor != nil {
-		err = c.RequestEditor(req, ctx)
+		err = c.RequestEditor(ctx, req)
 		if err != nil {
 			return nil, err
 		}
@@ -304,7 +308,7 @@ func (c *Client) ListTenants(ctx context.Context) (*http.Response, error) {
 	}
 	req = req.WithContext(ctx)
 	if c.RequestEditor != nil {
-		err = c.RequestEditor(req, ctx)
+		err = c.RequestEditor(ctx, req)
 		if err != nil {
 			return nil, err
 		}
@@ -319,7 +323,7 @@ func (c *Client) CreateTenantWithBody(ctx context.Context, contentType string, b
 	}
 	req = req.WithContext(ctx)
 	if c.RequestEditor != nil {
-		err = c.RequestEditor(req, ctx)
+		err = c.RequestEditor(ctx, req)
 		if err != nil {
 			return nil, err
 		}
@@ -334,7 +338,7 @@ func (c *Client) CreateTenant(ctx context.Context, body CreateTenantJSONRequestB
 	}
 	req = req.WithContext(ctx)
 	if c.RequestEditor != nil {
-		err = c.RequestEditor(req, ctx)
+		err = c.RequestEditor(ctx, req)
 		if err != nil {
 			return nil, err
 		}
@@ -349,7 +353,7 @@ func (c *Client) DeleteTenant(ctx context.Context, tenantId TenantIdParameter) (
 	}
 	req = req.WithContext(ctx)
 	if c.RequestEditor != nil {
-		err = c.RequestEditor(req, ctx)
+		err = c.RequestEditor(ctx, req)
 		if err != nil {
 			return nil, err
 		}
@@ -364,7 +368,7 @@ func (c *Client) GetTenant(ctx context.Context, tenantId TenantIdParameter) (*ht
 	}
 	req = req.WithContext(ctx)
 	if c.RequestEditor != nil {
-		err = c.RequestEditor(req, ctx)
+		err = c.RequestEditor(ctx, req)
 		if err != nil {
 			return nil, err
 		}
@@ -379,7 +383,7 @@ func (c *Client) UpdateTenantWithBody(ctx context.Context, tenantId TenantIdPara
 	}
 	req = req.WithContext(ctx)
 	if c.RequestEditor != nil {
-		err = c.RequestEditor(req, ctx)
+		err = c.RequestEditor(ctx, req)
 		if err != nil {
 			return nil, err
 		}
@@ -923,9 +927,6 @@ func NewClientWithResponses(server string, opts ...ClientOption) (*ClientWithRes
 // WithBaseURL overrides the baseURL.
 func WithBaseURL(baseURL string) ClientOption {
 	return func(c *Client) error {
-		if !strings.HasSuffix(baseURL, "/") {
-			baseURL += "/"
-		}
 		newBaseURL, err := url.Parse(baseURL)
 		if err != nil {
 			return err
