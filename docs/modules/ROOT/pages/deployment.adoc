@@ -31,4 +31,6 @@ Currently the API creates `GitRepo` objects with a hard coded reference for the 
 * `token` GitLab API token to use
 * `hostKeys` SSH keys of GitLab (in known_hosts format)
 
-IMPORTANT: Currently the groups and subgroups for git repositories aren't created automatically and need to exist.
+
+
+IMPORTANT: Currently the groups and subgroups for git repositories aren't created automatically and need to exist. The GitLab user in the group should have at least `Maintainer` privileges to be able to create, update and delete repositories.
