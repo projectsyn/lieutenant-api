@@ -33,4 +33,4 @@ Currently the API creates `GitRepo` objects with a hard coded reference for the 
 
 
 
-IMPORTANT: Currently the groups and subgroups for git repositories aren't created automatically and need to exist.The GitLab user in the group should have at least `Maintainer` privileges to be able to create repositories.
+IMPORTANT: Currently the groups and subgroups for git repositories aren't created automatically and need to exist. The GitLab user in the group should have at least `Maintainer` privileges to be able to create, update and delete repositories.
