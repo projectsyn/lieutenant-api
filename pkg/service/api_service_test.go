@@ -3,6 +3,7 @@ package service
 import (
 	"encoding/json"
 	"net/http"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -149,6 +150,7 @@ func TestNewServer(t *testing.T) {
 }
 
 func setupTest(t *testing.T, objs ...[]runtime.Object) *echo.Echo {
+	os.Setenv("NAMESPACE", "default")
 	f := fake.NewFakeClientWithScheme(scheme.Scheme, testObjects...)
 	testMiddleWare := KubernetesAuth{
 		CreateClientFunc: func(token string) (client.Client, error) {
