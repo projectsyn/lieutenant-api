@@ -104,6 +104,9 @@ type ClientInterface interface {
 	// UpdateCluster request  with any body
 	UpdateClusterWithBody(ctx context.Context, clusterId ClusterIdParameter, contentType string, body io.Reader) (*http.Response, error)
 
+	// Docs request
+	Docs(ctx context.Context) (*http.Response, error)
+
 	// Healthz request
 	Healthz(ctx context.Context) (*http.Response, error)
 
@@ -117,6 +120,9 @@ type ClientInterface interface {
 	UpdateInventoryWithBody(ctx context.Context, contentType string, body io.Reader) (*http.Response, error)
 
 	UpdateInventory(ctx context.Context, body UpdateInventoryJSONRequestBody) (*http.Response, error)
+
+	// Openapi request
+	Openapi(ctx context.Context) (*http.Response, error)
 
 	// ListTenants request
 	ListTenants(ctx context.Context) (*http.Response, error)
@@ -226,6 +232,21 @@ func (c *Client) UpdateClusterWithBody(ctx context.Context, clusterId ClusterIdP
 	return c.Client.Do(req)
 }
 
+func (c *Client) Docs(ctx context.Context) (*http.Response, error) {
+	req, err := NewDocsRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) Healthz(ctx context.Context) (*http.Response, error) {
 	req, err := NewHealthzRequest(c.Server)
 	if err != nil {
@@ -288,6 +309,21 @@ func (c *Client) UpdateInventoryWithBody(ctx context.Context, contentType string
 
 func (c *Client) UpdateInventory(ctx context.Context, body UpdateInventoryJSONRequestBody) (*http.Response, error) {
 	req, err := NewUpdateInventoryRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) Openapi(ctx context.Context) (*http.Response, error) {
+	req, err := NewOpenapiRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -580,6 +616,33 @@ func NewUpdateClusterRequestWithBody(server string, clusterId ClusterIdParameter
 	return req, nil
 }
 
+// NewDocsRequest generates requests for Docs
+func NewDocsRequest(server string) (*http.Request, error) {
+	var err error
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/docs")
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewHealthzRequest generates requests for Healthz
 func NewHealthzRequest(server string) (*http.Request, error) {
 	var err error
@@ -737,6 +800,33 @@ func NewUpdateInventoryRequestWithBody(server string, contentType string, body i
 	}
 
 	req.Header.Add("Content-Type", contentType)
+	return req, nil
+}
+
+// NewOpenapiRequest generates requests for Openapi
+func NewOpenapiRequest(server string) (*http.Request, error) {
+	var err error
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/openapi.json")
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
 	return req, nil
 }
 
@@ -1053,6 +1143,27 @@ func (r updateClusterResponse) StatusCode() int {
 	return 0
 }
 
+type docsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r docsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r docsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type healthzResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -1137,6 +1248,28 @@ func (r updateInventoryResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r updateInventoryResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type openapiResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *map[string]interface{}
+}
+
+// Status returns HTTPResponse.Status
+func (r openapiResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r openapiResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -1313,6 +1446,15 @@ func (c *ClientWithResponses) UpdateClusterWithBodyWithResponse(ctx context.Cont
 	return ParseUpdateClusterResponse(rsp)
 }
 
+// DocsWithResponse request returning *DocsResponse
+func (c *ClientWithResponses) DocsWithResponse(ctx context.Context) (*docsResponse, error) {
+	rsp, err := c.Docs(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDocsResponse(rsp)
+}
+
 // HealthzWithResponse request returning *HealthzResponse
 func (c *ClientWithResponses) HealthzWithResponse(ctx context.Context) (*healthzResponse, error) {
 	rsp, err := c.Healthz(ctx)
@@ -1355,6 +1497,15 @@ func (c *ClientWithResponses) UpdateInventoryWithResponse(ctx context.Context, b
 		return nil, err
 	}
 	return ParseUpdateInventoryResponse(rsp)
+}
+
+// OpenapiWithResponse request returning *OpenapiResponse
+func (c *ClientWithResponses) OpenapiWithResponse(ctx context.Context) (*openapiResponse, error) {
+	rsp, err := c.Openapi(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return ParseOpenapiResponse(rsp)
 }
 
 // ListTenantsWithResponse request returning *ListTenantsResponse
@@ -1589,6 +1740,25 @@ func ParseUpdateClusterResponse(rsp *http.Response) (*updateClusterResponse, err
 	return response, nil
 }
 
+// ParseDocsResponse parses an HTTP response from a DocsWithResponse call
+func ParseDocsResponse(rsp *http.Response) (*docsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &docsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	}
+
+	return response, nil
+}
+
 // ParseHealthzResponse parses an HTTP response from a HealthzWithResponse call
 func ParseHealthzResponse(rsp *http.Response) (*healthzResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -1701,6 +1871,32 @@ func ParseUpdateInventoryResponse(rsp *http.Response) (*updateInventoryResponse,
 			return nil, err
 		}
 		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseOpenapiResponse parses an HTTP response from a OpenapiWithResponse call
+func ParseOpenapiResponse(rsp *http.Response) (*openapiResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &openapiResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest map[string]interface{}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
 
 	}
 

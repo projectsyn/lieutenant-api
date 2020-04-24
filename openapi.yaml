@@ -540,3 +540,33 @@ paths:
                 example: ok
         default:
           $ref: '#/components/responses/Default'
+  /docs:
+    get:
+      operationId: docs
+      summary: API documentation
+      description: Interactive API documentation based on Swagger UI
+      security: []
+      tags:
+       - system
+      responses:
+        '200':
+          description: Swagger UI assets
+          content:
+            text/html:
+              schema:
+                type: string
+  /openapi.json:
+    get:
+      operationId: openapi
+      summary: OpenAPI JSON spec
+      description: OpenAPI JSON specification
+      security: []
+      tags:
+       - system
+      responses:
+        '200':
+          description: OpenAPI JSON spec
+          content:
+            application/json:
+              schema:
+                type: object

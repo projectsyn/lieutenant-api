@@ -15,6 +15,10 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/projectsyn/lieutenant-api/pkg/api"
+
+	// Import swagger-ui static files
+	_ "github.com/projectsyn/lieutenant-api/pkg/swaggerui"
+	"github.com/rakyll/statik/fs"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -31,11 +35,20 @@ type APIContext struct {
 	context context.Context
 }
 
+var (
+	statikFS    http.FileSystem
+	swaggerJSON []byte
+)
+
 // NewAPIServer instantiates a new Echo API server
 func NewAPIServer(k8sMiddleware ...KubernetesAuth) (*echo.Echo, error) {
 	swagger, err := api.GetSwagger()
 	if err != nil {
-		return nil, fmt.Errorf("Error loading swagger spec\n: %s", err)
+		return nil, fmt.Errorf("Error loading swagger spec: %w", err)
+	}
+	swaggerJSON, err = swagger.MarshalJSON()
+	if err != nil {
+		return nil, fmt.Errorf("Error marshalling swagger spec: %w", err)
 	}
 
 	namespace := os.Getenv("NAMESPACE")
@@ -81,6 +94,10 @@ func NewAPIServer(k8sMiddleware ...KubernetesAuth) (*echo.Echo, error) {
 	}
 	api.RegisterHandlers(e, apiImpl)
 
+	statikFS, err = fs.New()
+	if err != nil {
+		return nil, err
+	}
 	return e, nil
 }
 
@@ -106,4 +123,18 @@ func customHTTPErrorHandler(err error, c echo.Context) {
 // Healthz implements the API health check
 func (s *APIImpl) Healthz(ctx echo.Context) error {
 	return ctx.String(http.StatusOK, "ok")
+}
+
+// Docs serves the swagger UI
+func (s *APIImpl) Docs(ctx echo.Context) error {
+	file, err := fs.ReadFile(statikFS, "/index.html")
+	if err != nil {
+		return err
+	}
+	return ctx.HTMLBlob(http.StatusOK, file)
+}
+
+// Openapi serves the JSON spec
+func (s *APIImpl) Openapi(ctx echo.Context) error {
+	return ctx.JSONBlob(http.StatusOK, swaggerJSON)
 }
