@@ -3,9 +3,10 @@ package api
 import (
 	"errors"
 	"fmt"
-	"github.com/taion809/haikunator"
 	"net/url"
 	"strings"
+
+	"github.com/taion809/haikunator"
 
 	synv1alpha1 "github.com/projectsyn/lieutenant-operator/pkg/apis/syn/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
@@ -206,7 +207,7 @@ func newGitRepoTemplate(repo *GitRepo, name string) *synv1alpha1.GitRepoTemplate
 				return &synv1alpha1.GitRepoTemplate{}
 			}
 			pathParts := strings.Split(url.Path, "/")
-			pathParts = pathParts[1:len(pathParts)]
+			pathParts = pathParts[1:]
 			if len(pathParts) < 2 {
 				return &synv1alpha1.GitRepoTemplate{}
 			}
