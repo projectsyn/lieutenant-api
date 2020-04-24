@@ -12,7 +12,18 @@ import (
 )
 
 // AuthScheme to be used in the Authorization header
-const AuthScheme = "Bearer"
+const (
+	AuthScheme = "Bearer"
+)
+
+var (
+	// The following endpoints don't need auth
+	noAuth = map[string]bool{
+		"/healthz":      true,
+		"/openapi.json": true,
+		"/docs":         true,
+	}
+)
 
 func init() {
 	synv1alpha1.SchemeBuilder.AddToScheme(scheme.Scheme)
@@ -32,12 +43,14 @@ var DefaultKubernetesAuth = &KubernetesAuth{
 func (k *KubernetesAuth) JWTAuth(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		var token string
-		// No auth needed for the health endpoint
-		if strings.HasSuffix(c.Path(), "/healthz") {
+
+		if _, ok := noAuth[c.Path()]; ok {
 			return next(c)
+		}
+
+		if strings.HasSuffix(c.Path(), "/install/steward.json") {
 			// Special case for installing Steward:
 			// The bootstrap token will be used and the lieutenants kubeconfig.
-		} else if strings.HasSuffix(c.Path(), "/install/steward.json") {
 			token = ""
 		} else {
 			t, err := extractToken(c)
