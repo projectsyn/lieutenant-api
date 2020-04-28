@@ -9,10 +9,10 @@ IMAGE_NAME ?= docker.io/projectsyn/$(BINARY_NAME):$(VERSION)
 docker_cmd  ?= docker
 docker_opts ?= --rm --tty --user "$$(id -u)"
 
-antora_cmd  ?= $(docker_cmd) run $(docker_opts) --volume "$${PWD}":/antora vshn/antora:1.3
+antora_cmd  ?= $(docker_cmd) run $(docker_opts) --volume "$${PWD}":/antora vshn/antora:2.3.0
 antora_opts ?= --cache-dir=.cache/antora
 
-vale_img ?= docker.io/vshn/vale:1.1
+vale_img ?= docker.io/vshn/vale:2.1.1
 openapi_generator_img ?= docker.io/openapitools/openapi-generator:cli-v4.3.0
 
 vale_cmd ?= $(docker_cmd) run $(docker_opts) --volume "$${PWD}"/docs/modules/ROOT/pages:/pages $(vale_img) \
