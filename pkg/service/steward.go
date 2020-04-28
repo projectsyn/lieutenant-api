@@ -226,15 +226,15 @@ func createStewardDeployment(apiHost, clusterID string) *appsv1.Deployment {
 						Image:           image,
 						ImagePullPolicy: corev1.PullAlways,
 						Env: []corev1.EnvVar{
-							corev1.EnvVar{
+							{
 								Name:  "STEWARD_API",
 								Value: apiHost,
 							},
-							corev1.EnvVar{
+							{
 								Name:  "STEWARD_CLUSTER_ID",
 								Value: clusterID,
 							},
-							corev1.EnvVar{
+							{
 								Name: "STEWARD_TOKEN",
 								ValueFrom: &corev1.EnvVarSource{
 									SecretKeyRef: &corev1.SecretKeySelector{
@@ -245,7 +245,7 @@ func createStewardDeployment(apiHost, clusterID string) *appsv1.Deployment {
 									},
 								},
 							},
-							corev1.EnvVar{
+							{
 								Name: "STEWARD_NAMESPACE",
 								ValueFrom: &corev1.EnvVarSource{
 									FieldRef: &corev1.ObjectFieldSelector{

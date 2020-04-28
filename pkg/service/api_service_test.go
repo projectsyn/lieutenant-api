@@ -1,12 +1,15 @@
 package service
 
 import (
+	"encoding/json"
 	"net/http"
+	"os"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/deepmap/oapi-codegen/pkg/testutil"
+	"github.com/getkin/kin-openapi/openapi2"
 	"github.com/labstack/echo/v4"
 	"github.com/projectsyn/lieutenant-api/pkg/api"
 	synv1alpha1 "github.com/projectsyn/lieutenant-operator/pkg/apis/syn/v1alpha1"
@@ -147,6 +150,7 @@ func TestNewServer(t *testing.T) {
 }
 
 func setupTest(t *testing.T, objs ...[]runtime.Object) *echo.Echo {
+	os.Setenv("NAMESPACE", "default")
 	f := fake.NewFakeClientWithScheme(scheme.Scheme, testObjects...)
 	testMiddleWare := KubernetesAuth{
 		CreateClientFunc: func(token string) (client.Client, error) {
@@ -164,4 +168,24 @@ func TestHealthz(t *testing.T) {
 	result := testutil.NewRequest().Get("/healthz").Go(t, e)
 	assert.Equal(t, http.StatusOK, result.Code())
 	assert.Equal(t, "ok", string(result.Recorder.Body.String()))
+}
+
+func TestOpenAPI(t *testing.T) {
+	e := setupTest(t)
+
+	result := testutil.NewRequest().Get("/openapi.json").Go(t, e)
+	assert.Equal(t, http.StatusOK, result.Code())
+	swaggerSpec := &openapi2.Swagger{}
+	err := json.Unmarshal(result.Recorder.Body.Bytes(), swaggerSpec)
+	assert.NoError(t, err)
+	assert.NotNil(t, swaggerSpec)
+	assert.Equal(t, "Lieutenant API", swaggerSpec.Info.Title)
+}
+
+func TestSwaggerUI(t *testing.T) {
+	e := setupTest(t)
+
+	result := testutil.NewRequest().Get("/docs").Go(t, e)
+	assert.Equal(t, http.StatusOK, result.Code())
+	assert.NotEmpty(t, result.Recorder.Body.Bytes)
 }

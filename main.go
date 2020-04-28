@@ -1,5 +1,6 @@
 //go:generate go run github.com/deepmap/oapi-codegen/cmd/oapi-codegen -package=api -o=pkg/api/openapi.go -generate=types,server,spec openapi.yaml
 //go:generate go run github.com/deepmap/oapi-codegen/cmd/oapi-codegen -package=api -o=pkg/api/client.go -generate=client openapi.yaml
+//go:generate go run github.com/rakyll/statik -m -src=./swagger-ui -dest ./pkg/ -p swaggerui -f
 
 package main
 

@@ -794,6 +794,76 @@ endif::internal-generation[]
 === System
 
 
+[.docs]
+==== docs
+    
+`GET /docs`
+
+API documentation
+
+===== Description 
+
+Interactive API documentation based on Swagger UI
+
+
+// markup not found, no include::{specDir}docs/GET/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+
+
+
+
+
+
+===== Return Type
+
+
+<<String>>
+
+
+===== Content Type
+
+* text/html
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===         
+| Code | Message | Datatype 
+
+
+| 200
+| Swagger UI assets
+|  <<String>>
+
+|===         
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}docs/GET/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}docs/GET/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :docs/GET/GET.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}docs/GET/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
 [.healthz]
 ==== healthz
     
@@ -865,6 +935,76 @@ ifdef::internal-generation[]
 ===== Implementation
 
 // markup not found, no include::{specDir}healthz/GET/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.openapi]
+==== openapi
+    
+`GET /openapi.json`
+
+OpenAPI JSON spec
+
+===== Description 
+
+OpenAPI JSON specification
+
+
+// markup not found, no include::{specDir}openapi.json/GET/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+
+
+
+
+
+
+===== Return Type
+
+
+<<Object>>
+
+
+===== Content Type
+
+* application/json
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===         
+| Code | Message | Datatype 
+
+
+| 200
+| OpenAPI JSON spec
+|  <<Object>>
+
+|===         
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}openapi.json/GET/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}openapi.json/GET/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :openapi.json/GET/GET.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}openapi.json/GET/implementation.adoc[opts=optional]
 
 
 endif::internal-generation[]
