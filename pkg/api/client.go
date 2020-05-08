@@ -1026,7 +1026,64 @@ func WithBaseURL(baseURL string) ClientOption {
 	}
 }
 
-type listClustersResponse struct {
+// ClientWithResponsesInterface is the interface specification for the client with responses above.
+type ClientWithResponsesInterface interface {
+	// ListClusters request
+	ListClustersWithResponse(ctx context.Context, params *ListClustersParams) (*ListClustersResponse, error)
+
+	// CreateCluster request  with any body
+	CreateClusterWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*CreateClusterResponse, error)
+
+	CreateClusterWithResponse(ctx context.Context, body CreateClusterJSONRequestBody) (*CreateClusterResponse, error)
+
+	// DeleteCluster request
+	DeleteClusterWithResponse(ctx context.Context, clusterId ClusterIdParameter) (*DeleteClusterResponse, error)
+
+	// GetCluster request
+	GetClusterWithResponse(ctx context.Context, clusterId ClusterIdParameter) (*GetClusterResponse, error)
+
+	// UpdateCluster request  with any body
+	UpdateClusterWithBodyWithResponse(ctx context.Context, clusterId ClusterIdParameter, contentType string, body io.Reader) (*UpdateClusterResponse, error)
+
+	// Docs request
+	DocsWithResponse(ctx context.Context) (*DocsResponse, error)
+
+	// Healthz request
+	HealthzWithResponse(ctx context.Context) (*HealthzResponse, error)
+
+	// InstallSteward request
+	InstallStewardWithResponse(ctx context.Context, params *InstallStewardParams) (*InstallStewardResponse, error)
+
+	// QueryInventory request
+	QueryInventoryWithResponse(ctx context.Context, params *QueryInventoryParams) (*QueryInventoryResponse, error)
+
+	// UpdateInventory request  with any body
+	UpdateInventoryWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*UpdateInventoryResponse, error)
+
+	UpdateInventoryWithResponse(ctx context.Context, body UpdateInventoryJSONRequestBody) (*UpdateInventoryResponse, error)
+
+	// Openapi request
+	OpenapiWithResponse(ctx context.Context) (*OpenapiResponse, error)
+
+	// ListTenants request
+	ListTenantsWithResponse(ctx context.Context) (*ListTenantsResponse, error)
+
+	// CreateTenant request  with any body
+	CreateTenantWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*CreateTenantResponse, error)
+
+	CreateTenantWithResponse(ctx context.Context, body CreateTenantJSONRequestBody) (*CreateTenantResponse, error)
+
+	// DeleteTenant request
+	DeleteTenantWithResponse(ctx context.Context, tenantId TenantIdParameter) (*DeleteTenantResponse, error)
+
+	// GetTenant request
+	GetTenantWithResponse(ctx context.Context, tenantId TenantIdParameter) (*GetTenantResponse, error)
+
+	// UpdateTenant request  with any body
+	UpdateTenantWithBodyWithResponse(ctx context.Context, tenantId TenantIdParameter, contentType string, body io.Reader) (*UpdateTenantResponse, error)
+}
+
+type ListClustersResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *[]Cluster
@@ -1034,7 +1091,7 @@ type listClustersResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r listClustersResponse) Status() string {
+func (r ListClustersResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1042,14 +1099,14 @@ func (r listClustersResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r listClustersResponse) StatusCode() int {
+func (r ListClustersResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type createClusterResponse struct {
+type CreateClusterResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON201      *Cluster
@@ -1058,7 +1115,7 @@ type createClusterResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r createClusterResponse) Status() string {
+func (r CreateClusterResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1066,14 +1123,14 @@ func (r createClusterResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r createClusterResponse) StatusCode() int {
+func (r CreateClusterResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type deleteClusterResponse struct {
+type DeleteClusterResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON403      *Reason
@@ -1081,7 +1138,7 @@ type deleteClusterResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r deleteClusterResponse) Status() string {
+func (r DeleteClusterResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1089,14 +1146,14 @@ func (r deleteClusterResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r deleteClusterResponse) StatusCode() int {
+func (r DeleteClusterResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type getClusterResponse struct {
+type GetClusterResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Cluster
@@ -1104,7 +1161,7 @@ type getClusterResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r getClusterResponse) Status() string {
+func (r GetClusterResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1112,14 +1169,14 @@ func (r getClusterResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r getClusterResponse) StatusCode() int {
+func (r GetClusterResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type updateClusterResponse struct {
+type UpdateClusterResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Cluster
@@ -1128,7 +1185,7 @@ type updateClusterResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r updateClusterResponse) Status() string {
+func (r UpdateClusterResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1136,20 +1193,20 @@ func (r updateClusterResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r updateClusterResponse) StatusCode() int {
+func (r UpdateClusterResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type docsResponse struct {
+type DocsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 }
 
 // Status returns HTTPResponse.Status
-func (r docsResponse) Status() string {
+func (r DocsResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1157,21 +1214,21 @@ func (r docsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r docsResponse) StatusCode() int {
+func (r DocsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type healthzResponse struct {
+type HealthzResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSONDefault  *Reason
 }
 
 // Status returns HTTPResponse.Status
-func (r healthzResponse) Status() string {
+func (r HealthzResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1179,14 +1236,14 @@ func (r healthzResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r healthzResponse) StatusCode() int {
+func (r HealthzResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type installStewardResponse struct {
+type InstallStewardResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *map[string]interface{}
@@ -1194,7 +1251,7 @@ type installStewardResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r installStewardResponse) Status() string {
+func (r InstallStewardResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1202,14 +1259,14 @@ func (r installStewardResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r installStewardResponse) StatusCode() int {
+func (r InstallStewardResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type queryInventoryResponse struct {
+type QueryInventoryResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Inventory
@@ -1217,7 +1274,7 @@ type queryInventoryResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r queryInventoryResponse) Status() string {
+func (r QueryInventoryResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1225,21 +1282,21 @@ func (r queryInventoryResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r queryInventoryResponse) StatusCode() int {
+func (r QueryInventoryResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type updateInventoryResponse struct {
+type UpdateInventoryResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSONDefault  *Reason
 }
 
 // Status returns HTTPResponse.Status
-func (r updateInventoryResponse) Status() string {
+func (r UpdateInventoryResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1247,21 +1304,21 @@ func (r updateInventoryResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r updateInventoryResponse) StatusCode() int {
+func (r UpdateInventoryResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type openapiResponse struct {
+type OpenapiResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *map[string]interface{}
 }
 
 // Status returns HTTPResponse.Status
-func (r openapiResponse) Status() string {
+func (r OpenapiResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1269,14 +1326,14 @@ func (r openapiResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r openapiResponse) StatusCode() int {
+func (r OpenapiResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type listTenantsResponse struct {
+type ListTenantsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *[]Tenant
@@ -1284,7 +1341,7 @@ type listTenantsResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r listTenantsResponse) Status() string {
+func (r ListTenantsResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1292,14 +1349,14 @@ func (r listTenantsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r listTenantsResponse) StatusCode() int {
+func (r ListTenantsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type createTenantResponse struct {
+type CreateTenantResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON201      *Tenant
@@ -1308,7 +1365,7 @@ type createTenantResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r createTenantResponse) Status() string {
+func (r CreateTenantResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1316,14 +1373,14 @@ func (r createTenantResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r createTenantResponse) StatusCode() int {
+func (r CreateTenantResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type deleteTenantResponse struct {
+type DeleteTenantResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON403      *Reason
@@ -1331,7 +1388,7 @@ type deleteTenantResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r deleteTenantResponse) Status() string {
+func (r DeleteTenantResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1339,14 +1396,14 @@ func (r deleteTenantResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r deleteTenantResponse) StatusCode() int {
+func (r DeleteTenantResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type getTenantResponse struct {
+type GetTenantResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Tenant
@@ -1354,7 +1411,7 @@ type getTenantResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r getTenantResponse) Status() string {
+func (r GetTenantResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1362,14 +1419,14 @@ func (r getTenantResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r getTenantResponse) StatusCode() int {
+func (r GetTenantResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type updateTenantResponse struct {
+type UpdateTenantResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Tenant
@@ -1378,7 +1435,7 @@ type updateTenantResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r updateTenantResponse) Status() string {
+func (r UpdateTenantResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -1386,7 +1443,7 @@ func (r updateTenantResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r updateTenantResponse) StatusCode() int {
+func (r UpdateTenantResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -1394,7 +1451,7 @@ func (r updateTenantResponse) StatusCode() int {
 }
 
 // ListClustersWithResponse request returning *ListClustersResponse
-func (c *ClientWithResponses) ListClustersWithResponse(ctx context.Context, params *ListClustersParams) (*listClustersResponse, error) {
+func (c *ClientWithResponses) ListClustersWithResponse(ctx context.Context, params *ListClustersParams) (*ListClustersResponse, error) {
 	rsp, err := c.ListClusters(ctx, params)
 	if err != nil {
 		return nil, err
@@ -1403,7 +1460,7 @@ func (c *ClientWithResponses) ListClustersWithResponse(ctx context.Context, para
 }
 
 // CreateClusterWithBodyWithResponse request with arbitrary body returning *CreateClusterResponse
-func (c *ClientWithResponses) CreateClusterWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*createClusterResponse, error) {
+func (c *ClientWithResponses) CreateClusterWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*CreateClusterResponse, error) {
 	rsp, err := c.CreateClusterWithBody(ctx, contentType, body)
 	if err != nil {
 		return nil, err
@@ -1411,7 +1468,7 @@ func (c *ClientWithResponses) CreateClusterWithBodyWithResponse(ctx context.Cont
 	return ParseCreateClusterResponse(rsp)
 }
 
-func (c *ClientWithResponses) CreateClusterWithResponse(ctx context.Context, body CreateClusterJSONRequestBody) (*createClusterResponse, error) {
+func (c *ClientWithResponses) CreateClusterWithResponse(ctx context.Context, body CreateClusterJSONRequestBody) (*CreateClusterResponse, error) {
 	rsp, err := c.CreateCluster(ctx, body)
 	if err != nil {
 		return nil, err
@@ -1420,7 +1477,7 @@ func (c *ClientWithResponses) CreateClusterWithResponse(ctx context.Context, bod
 }
 
 // DeleteClusterWithResponse request returning *DeleteClusterResponse
-func (c *ClientWithResponses) DeleteClusterWithResponse(ctx context.Context, clusterId ClusterIdParameter) (*deleteClusterResponse, error) {
+func (c *ClientWithResponses) DeleteClusterWithResponse(ctx context.Context, clusterId ClusterIdParameter) (*DeleteClusterResponse, error) {
 	rsp, err := c.DeleteCluster(ctx, clusterId)
 	if err != nil {
 		return nil, err
@@ -1429,7 +1486,7 @@ func (c *ClientWithResponses) DeleteClusterWithResponse(ctx context.Context, clu
 }
 
 // GetClusterWithResponse request returning *GetClusterResponse
-func (c *ClientWithResponses) GetClusterWithResponse(ctx context.Context, clusterId ClusterIdParameter) (*getClusterResponse, error) {
+func (c *ClientWithResponses) GetClusterWithResponse(ctx context.Context, clusterId ClusterIdParameter) (*GetClusterResponse, error) {
 	rsp, err := c.GetCluster(ctx, clusterId)
 	if err != nil {
 		return nil, err
@@ -1438,7 +1495,7 @@ func (c *ClientWithResponses) GetClusterWithResponse(ctx context.Context, cluste
 }
 
 // UpdateClusterWithBodyWithResponse request with arbitrary body returning *UpdateClusterResponse
-func (c *ClientWithResponses) UpdateClusterWithBodyWithResponse(ctx context.Context, clusterId ClusterIdParameter, contentType string, body io.Reader) (*updateClusterResponse, error) {
+func (c *ClientWithResponses) UpdateClusterWithBodyWithResponse(ctx context.Context, clusterId ClusterIdParameter, contentType string, body io.Reader) (*UpdateClusterResponse, error) {
 	rsp, err := c.UpdateClusterWithBody(ctx, clusterId, contentType, body)
 	if err != nil {
 		return nil, err
@@ -1447,7 +1504,7 @@ func (c *ClientWithResponses) UpdateClusterWithBodyWithResponse(ctx context.Cont
 }
 
 // DocsWithResponse request returning *DocsResponse
-func (c *ClientWithResponses) DocsWithResponse(ctx context.Context) (*docsResponse, error) {
+func (c *ClientWithResponses) DocsWithResponse(ctx context.Context) (*DocsResponse, error) {
 	rsp, err := c.Docs(ctx)
 	if err != nil {
 		return nil, err
@@ -1456,7 +1513,7 @@ func (c *ClientWithResponses) DocsWithResponse(ctx context.Context) (*docsRespon
 }
 
 // HealthzWithResponse request returning *HealthzResponse
-func (c *ClientWithResponses) HealthzWithResponse(ctx context.Context) (*healthzResponse, error) {
+func (c *ClientWithResponses) HealthzWithResponse(ctx context.Context) (*HealthzResponse, error) {
 	rsp, err := c.Healthz(ctx)
 	if err != nil {
 		return nil, err
@@ -1465,7 +1522,7 @@ func (c *ClientWithResponses) HealthzWithResponse(ctx context.Context) (*healthz
 }
 
 // InstallStewardWithResponse request returning *InstallStewardResponse
-func (c *ClientWithResponses) InstallStewardWithResponse(ctx context.Context, params *InstallStewardParams) (*installStewardResponse, error) {
+func (c *ClientWithResponses) InstallStewardWithResponse(ctx context.Context, params *InstallStewardParams) (*InstallStewardResponse, error) {
 	rsp, err := c.InstallSteward(ctx, params)
 	if err != nil {
 		return nil, err
@@ -1474,7 +1531,7 @@ func (c *ClientWithResponses) InstallStewardWithResponse(ctx context.Context, pa
 }
 
 // QueryInventoryWithResponse request returning *QueryInventoryResponse
-func (c *ClientWithResponses) QueryInventoryWithResponse(ctx context.Context, params *QueryInventoryParams) (*queryInventoryResponse, error) {
+func (c *ClientWithResponses) QueryInventoryWithResponse(ctx context.Context, params *QueryInventoryParams) (*QueryInventoryResponse, error) {
 	rsp, err := c.QueryInventory(ctx, params)
 	if err != nil {
 		return nil, err
@@ -1483,7 +1540,7 @@ func (c *ClientWithResponses) QueryInventoryWithResponse(ctx context.Context, pa
 }
 
 // UpdateInventoryWithBodyWithResponse request with arbitrary body returning *UpdateInventoryResponse
-func (c *ClientWithResponses) UpdateInventoryWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*updateInventoryResponse, error) {
+func (c *ClientWithResponses) UpdateInventoryWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*UpdateInventoryResponse, error) {
 	rsp, err := c.UpdateInventoryWithBody(ctx, contentType, body)
 	if err != nil {
 		return nil, err
@@ -1491,7 +1548,7 @@ func (c *ClientWithResponses) UpdateInventoryWithBodyWithResponse(ctx context.Co
 	return ParseUpdateInventoryResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateInventoryWithResponse(ctx context.Context, body UpdateInventoryJSONRequestBody) (*updateInventoryResponse, error) {
+func (c *ClientWithResponses) UpdateInventoryWithResponse(ctx context.Context, body UpdateInventoryJSONRequestBody) (*UpdateInventoryResponse, error) {
 	rsp, err := c.UpdateInventory(ctx, body)
 	if err != nil {
 		return nil, err
@@ -1500,7 +1557,7 @@ func (c *ClientWithResponses) UpdateInventoryWithResponse(ctx context.Context, b
 }
 
 // OpenapiWithResponse request returning *OpenapiResponse
-func (c *ClientWithResponses) OpenapiWithResponse(ctx context.Context) (*openapiResponse, error) {
+func (c *ClientWithResponses) OpenapiWithResponse(ctx context.Context) (*OpenapiResponse, error) {
 	rsp, err := c.Openapi(ctx)
 	if err != nil {
 		return nil, err
@@ -1509,7 +1566,7 @@ func (c *ClientWithResponses) OpenapiWithResponse(ctx context.Context) (*openapi
 }
 
 // ListTenantsWithResponse request returning *ListTenantsResponse
-func (c *ClientWithResponses) ListTenantsWithResponse(ctx context.Context) (*listTenantsResponse, error) {
+func (c *ClientWithResponses) ListTenantsWithResponse(ctx context.Context) (*ListTenantsResponse, error) {
 	rsp, err := c.ListTenants(ctx)
 	if err != nil {
 		return nil, err
@@ -1518,7 +1575,7 @@ func (c *ClientWithResponses) ListTenantsWithResponse(ctx context.Context) (*lis
 }
 
 // CreateTenantWithBodyWithResponse request with arbitrary body returning *CreateTenantResponse
-func (c *ClientWithResponses) CreateTenantWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*createTenantResponse, error) {
+func (c *ClientWithResponses) CreateTenantWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*CreateTenantResponse, error) {
 	rsp, err := c.CreateTenantWithBody(ctx, contentType, body)
 	if err != nil {
 		return nil, err
@@ -1526,7 +1583,7 @@ func (c *ClientWithResponses) CreateTenantWithBodyWithResponse(ctx context.Conte
 	return ParseCreateTenantResponse(rsp)
 }
 
-func (c *ClientWithResponses) CreateTenantWithResponse(ctx context.Context, body CreateTenantJSONRequestBody) (*createTenantResponse, error) {
+func (c *ClientWithResponses) CreateTenantWithResponse(ctx context.Context, body CreateTenantJSONRequestBody) (*CreateTenantResponse, error) {
 	rsp, err := c.CreateTenant(ctx, body)
 	if err != nil {
 		return nil, err
@@ -1535,7 +1592,7 @@ func (c *ClientWithResponses) CreateTenantWithResponse(ctx context.Context, body
 }
 
 // DeleteTenantWithResponse request returning *DeleteTenantResponse
-func (c *ClientWithResponses) DeleteTenantWithResponse(ctx context.Context, tenantId TenantIdParameter) (*deleteTenantResponse, error) {
+func (c *ClientWithResponses) DeleteTenantWithResponse(ctx context.Context, tenantId TenantIdParameter) (*DeleteTenantResponse, error) {
 	rsp, err := c.DeleteTenant(ctx, tenantId)
 	if err != nil {
 		return nil, err
@@ -1544,7 +1601,7 @@ func (c *ClientWithResponses) DeleteTenantWithResponse(ctx context.Context, tena
 }
 
 // GetTenantWithResponse request returning *GetTenantResponse
-func (c *ClientWithResponses) GetTenantWithResponse(ctx context.Context, tenantId TenantIdParameter) (*getTenantResponse, error) {
+func (c *ClientWithResponses) GetTenantWithResponse(ctx context.Context, tenantId TenantIdParameter) (*GetTenantResponse, error) {
 	rsp, err := c.GetTenant(ctx, tenantId)
 	if err != nil {
 		return nil, err
@@ -1553,7 +1610,7 @@ func (c *ClientWithResponses) GetTenantWithResponse(ctx context.Context, tenantI
 }
 
 // UpdateTenantWithBodyWithResponse request with arbitrary body returning *UpdateTenantResponse
-func (c *ClientWithResponses) UpdateTenantWithBodyWithResponse(ctx context.Context, tenantId TenantIdParameter, contentType string, body io.Reader) (*updateTenantResponse, error) {
+func (c *ClientWithResponses) UpdateTenantWithBodyWithResponse(ctx context.Context, tenantId TenantIdParameter, contentType string, body io.Reader) (*UpdateTenantResponse, error) {
 	rsp, err := c.UpdateTenantWithBody(ctx, tenantId, contentType, body)
 	if err != nil {
 		return nil, err
@@ -1562,14 +1619,14 @@ func (c *ClientWithResponses) UpdateTenantWithBodyWithResponse(ctx context.Conte
 }
 
 // ParseListClustersResponse parses an HTTP response from a ListClustersWithResponse call
-func ParseListClustersResponse(rsp *http.Response) (*listClustersResponse, error) {
+func ParseListClustersResponse(rsp *http.Response) (*ListClustersResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &listClustersResponse{
+	response := &ListClustersResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -1595,14 +1652,14 @@ func ParseListClustersResponse(rsp *http.Response) (*listClustersResponse, error
 }
 
 // ParseCreateClusterResponse parses an HTTP response from a CreateClusterWithResponse call
-func ParseCreateClusterResponse(rsp *http.Response) (*createClusterResponse, error) {
+func ParseCreateClusterResponse(rsp *http.Response) (*CreateClusterResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &createClusterResponse{
+	response := &CreateClusterResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -1635,14 +1692,14 @@ func ParseCreateClusterResponse(rsp *http.Response) (*createClusterResponse, err
 }
 
 // ParseDeleteClusterResponse parses an HTTP response from a DeleteClusterWithResponse call
-func ParseDeleteClusterResponse(rsp *http.Response) (*deleteClusterResponse, error) {
+func ParseDeleteClusterResponse(rsp *http.Response) (*DeleteClusterResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &deleteClusterResponse{
+	response := &DeleteClusterResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -1668,14 +1725,14 @@ func ParseDeleteClusterResponse(rsp *http.Response) (*deleteClusterResponse, err
 }
 
 // ParseGetClusterResponse parses an HTTP response from a GetClusterWithResponse call
-func ParseGetClusterResponse(rsp *http.Response) (*getClusterResponse, error) {
+func ParseGetClusterResponse(rsp *http.Response) (*GetClusterResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &getClusterResponse{
+	response := &GetClusterResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -1701,14 +1758,14 @@ func ParseGetClusterResponse(rsp *http.Response) (*getClusterResponse, error) {
 }
 
 // ParseUpdateClusterResponse parses an HTTP response from a UpdateClusterWithResponse call
-func ParseUpdateClusterResponse(rsp *http.Response) (*updateClusterResponse, error) {
+func ParseUpdateClusterResponse(rsp *http.Response) (*UpdateClusterResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &updateClusterResponse{
+	response := &UpdateClusterResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -1741,14 +1798,14 @@ func ParseUpdateClusterResponse(rsp *http.Response) (*updateClusterResponse, err
 }
 
 // ParseDocsResponse parses an HTTP response from a DocsWithResponse call
-func ParseDocsResponse(rsp *http.Response) (*docsResponse, error) {
+func ParseDocsResponse(rsp *http.Response) (*DocsResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &docsResponse{
+	response := &DocsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -1760,14 +1817,14 @@ func ParseDocsResponse(rsp *http.Response) (*docsResponse, error) {
 }
 
 // ParseHealthzResponse parses an HTTP response from a HealthzWithResponse call
-func ParseHealthzResponse(rsp *http.Response) (*healthzResponse, error) {
+func ParseHealthzResponse(rsp *http.Response) (*HealthzResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &healthzResponse{
+	response := &HealthzResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -1786,14 +1843,14 @@ func ParseHealthzResponse(rsp *http.Response) (*healthzResponse, error) {
 }
 
 // ParseInstallStewardResponse parses an HTTP response from a InstallStewardWithResponse call
-func ParseInstallStewardResponse(rsp *http.Response) (*installStewardResponse, error) {
+func ParseInstallStewardResponse(rsp *http.Response) (*InstallStewardResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &installStewardResponse{
+	response := &InstallStewardResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -1819,14 +1876,14 @@ func ParseInstallStewardResponse(rsp *http.Response) (*installStewardResponse, e
 }
 
 // ParseQueryInventoryResponse parses an HTTP response from a QueryInventoryWithResponse call
-func ParseQueryInventoryResponse(rsp *http.Response) (*queryInventoryResponse, error) {
+func ParseQueryInventoryResponse(rsp *http.Response) (*QueryInventoryResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &queryInventoryResponse{
+	response := &QueryInventoryResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -1852,14 +1909,14 @@ func ParseQueryInventoryResponse(rsp *http.Response) (*queryInventoryResponse, e
 }
 
 // ParseUpdateInventoryResponse parses an HTTP response from a UpdateInventoryWithResponse call
-func ParseUpdateInventoryResponse(rsp *http.Response) (*updateInventoryResponse, error) {
+func ParseUpdateInventoryResponse(rsp *http.Response) (*UpdateInventoryResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &updateInventoryResponse{
+	response := &UpdateInventoryResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -1878,14 +1935,14 @@ func ParseUpdateInventoryResponse(rsp *http.Response) (*updateInventoryResponse,
 }
 
 // ParseOpenapiResponse parses an HTTP response from a OpenapiWithResponse call
-func ParseOpenapiResponse(rsp *http.Response) (*openapiResponse, error) {
+func ParseOpenapiResponse(rsp *http.Response) (*OpenapiResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &openapiResponse{
+	response := &OpenapiResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -1904,14 +1961,14 @@ func ParseOpenapiResponse(rsp *http.Response) (*openapiResponse, error) {
 }
 
 // ParseListTenantsResponse parses an HTTP response from a ListTenantsWithResponse call
-func ParseListTenantsResponse(rsp *http.Response) (*listTenantsResponse, error) {
+func ParseListTenantsResponse(rsp *http.Response) (*ListTenantsResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &listTenantsResponse{
+	response := &ListTenantsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -1937,14 +1994,14 @@ func ParseListTenantsResponse(rsp *http.Response) (*listTenantsResponse, error) 
 }
 
 // ParseCreateTenantResponse parses an HTTP response from a CreateTenantWithResponse call
-func ParseCreateTenantResponse(rsp *http.Response) (*createTenantResponse, error) {
+func ParseCreateTenantResponse(rsp *http.Response) (*CreateTenantResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &createTenantResponse{
+	response := &CreateTenantResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -1977,14 +2034,14 @@ func ParseCreateTenantResponse(rsp *http.Response) (*createTenantResponse, error
 }
 
 // ParseDeleteTenantResponse parses an HTTP response from a DeleteTenantWithResponse call
-func ParseDeleteTenantResponse(rsp *http.Response) (*deleteTenantResponse, error) {
+func ParseDeleteTenantResponse(rsp *http.Response) (*DeleteTenantResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &deleteTenantResponse{
+	response := &DeleteTenantResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -2010,14 +2067,14 @@ func ParseDeleteTenantResponse(rsp *http.Response) (*deleteTenantResponse, error
 }
 
 // ParseGetTenantResponse parses an HTTP response from a GetTenantWithResponse call
-func ParseGetTenantResponse(rsp *http.Response) (*getTenantResponse, error) {
+func ParseGetTenantResponse(rsp *http.Response) (*GetTenantResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &getTenantResponse{
+	response := &GetTenantResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -2043,14 +2100,14 @@ func ParseGetTenantResponse(rsp *http.Response) (*getTenantResponse, error) {
 }
 
 // ParseUpdateTenantResponse parses an HTTP response from a UpdateTenantWithResponse call
-func ParseUpdateTenantResponse(rsp *http.Response) (*updateTenantResponse, error) {
+func ParseUpdateTenantResponse(rsp *http.Response) (*UpdateTenantResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &updateTenantResponse{
+	response := &UpdateTenantResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
