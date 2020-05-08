@@ -15,7 +15,7 @@ require (
 	github.com/json-iterator/go v1.1.9 // indirect
 	github.com/labstack/echo/v4 v4.1.16
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/projectsyn/lieutenant-operator v0.1.0
+	github.com/projectsyn/lieutenant-operator v0.1.1
 	github.com/rakyll/statik v0.1.7
 	github.com/stretchr/testify v1.5.1
 	github.com/taion809/haikunator v0.0.0-20150324135039-4e414e676fd1
