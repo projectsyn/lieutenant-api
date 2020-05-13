@@ -2,6 +2,7 @@ package service
 
 import (
 	"net/http"
+	"os"
 	"strings"
 	"testing"
 
@@ -51,6 +52,36 @@ func TestListClusterWrongToken(t *testing.T) {
 func TestCreateCluster(t *testing.T) {
 	e := setupTest(t)
 
+	os.Setenv(LieutenantInstanceFactEnvVar, "")
+	newCluster := api.ClusterProperties{
+		DisplayName: pointer.ToString("My test cluster"),
+		Tenant:      tenantA.Name,
+		Facts: &api.ClusterFacts{
+			"cloud":                "cloudscale",
+			"region":               "test",
+			LieutenantInstanceFact: "",
+		},
+	}
+	result := testutil.NewRequest().
+		Post("/clusters").
+		WithJsonBody(newCluster).
+		WithHeader(echo.HeaderAuthorization, bearerToken).
+		Go(t, e)
+	assert.Equal(t, http.StatusCreated, result.Code())
+	cluster := &api.Cluster{}
+	err := result.UnmarshalJsonToObject(cluster)
+	assert.NoError(t, err)
+	assert.NotNil(t, cluster)
+	assert.Contains(t, cluster.Id, api.ClusterIDPrefix)
+	assert.Equal(t, cluster.DisplayName, newCluster.DisplayName)
+	assert.Equal(t, newCluster.Facts, cluster.Facts)
+}
+
+func TestCreateClusterInstanceFact(t *testing.T) {
+	e := setupTest(t)
+
+	instanceName := "lieutenant-dev"
+	os.Setenv(LieutenantInstanceFactEnvVar, instanceName)
 	newCluster := api.ClusterProperties{
 		DisplayName: pointer.ToString("My test cluster"),
 		Tenant:      tenantA.Name,
@@ -69,9 +100,20 @@ func TestCreateCluster(t *testing.T) {
 	err := result.UnmarshalJsonToObject(cluster)
 	assert.NoError(t, err)
 	assert.NotNil(t, cluster)
-	assert.Contains(t, cluster.Id, api.ClusterIDPrefix)
-	assert.Equal(t, cluster.DisplayName, newCluster.DisplayName)
-	assert.Equal(t, newCluster.Facts, cluster.Facts)
+	assert.Equal(t, instanceName, (*cluster.Facts)[LieutenantInstanceFact])
+
+	(*newCluster.Facts)[LieutenantInstanceFact] = "test"
+	result = testutil.NewRequest().
+		Post("/clusters").
+		WithJsonBody(newCluster).
+		WithHeader(echo.HeaderAuthorization, bearerToken).
+		Go(t, e)
+	assert.Equal(t, http.StatusCreated, result.Code())
+	cluster = &api.Cluster{}
+	err = result.UnmarshalJsonToObject(cluster)
+	assert.NoError(t, err)
+	assert.NotNil(t, cluster)
+	assert.Equal(t, instanceName, (*cluster.Facts)[LieutenantInstanceFact])
 }
 
 func TestCreateClusterNoJSON(t *testing.T) {

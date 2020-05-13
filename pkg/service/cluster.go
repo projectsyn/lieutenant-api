@@ -3,6 +3,7 @@ package service
 import (
 	"encoding/json"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/labstack/echo/v4"
@@ -10,6 +11,15 @@ import (
 	synv1alpha1 "github.com/projectsyn/lieutenant-operator/pkg/apis/syn/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+)
+
+const (
+	// LieutenantInstanceFact defines the name of the fact which specifies the Lieutenant instance
+	// a cluster was created on
+	LieutenantInstanceFact = "lieutenant-instance"
+
+	// LieutenantInstanceFactEnvVar is the env var name that's used to get the instance name
+	LieutenantInstanceFactEnvVar = "LIEUTENANT_INSTANCE"
 )
 
 // ListClusters lists all clusters
@@ -46,6 +56,11 @@ func (s *APIImpl) CreateCluster(c echo.Context) error {
 	apiCluster.ClusterId = id
 	cluster := api.NewCRDFromAPICluster(*apiCluster)
 	cluster.Namespace = s.namespace
+	if cluster.Spec.Facts == nil {
+		cluster.Spec.Facts = &synv1alpha1.Facts{}
+	}
+	(*cluster.Spec.Facts)[LieutenantInstanceFact] = os.Getenv(LieutenantInstanceFactEnvVar)
+
 	if err := ctx.client.Create(ctx.context, cluster); err != nil {
 		return err
 	}
