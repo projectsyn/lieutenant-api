@@ -136,7 +136,7 @@ func TestCreateClusterNoJSON(t *testing.T) {
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
-	assert.NotEmpty(t, reason.Reason)
+	assert.Contains(t, reason.Reason, "invalid character")
 }
 
 func TestCreateClusterEmpty(t *testing.T) {
@@ -151,7 +151,7 @@ func TestCreateClusterEmpty(t *testing.T) {
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
-	assert.NotEmpty(t, reason.Reason)
+	assert.Contains(t, reason.Reason, "must have a value")
 }
 
 func TestClusterDelete(t *testing.T) {
@@ -210,7 +210,7 @@ func TestClusterGetNotFound(t *testing.T) {
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
-	assert.NotEmpty(t, reason.Reason)
+	assert.Contains(t, reason.Reason, "not found")
 }
 
 func TestClusterUpdateEmpty(t *testing.T) {
@@ -224,7 +224,7 @@ func TestClusterUpdateEmpty(t *testing.T) {
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
-	assert.NotEmpty(t, reason.Reason)
+	assert.Contains(t, reason.Reason, "must have a value")
 }
 
 func TestClusterUpdateTenant(t *testing.T) {
@@ -244,7 +244,7 @@ func TestClusterUpdateTenant(t *testing.T) {
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
-	assert.NotEmpty(t, reason.Reason)
+	assert.Contains(t, reason.Reason, "unknown field")
 }
 
 func TestClusterUpdateIllegalDeployKey(t *testing.T) {
@@ -266,7 +266,7 @@ func TestClusterUpdateIllegalDeployKey(t *testing.T) {
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
-	assert.NotEmpty(t, reason.Reason)
+	assert.Contains(t, reason.Reason, "Illegal deploy key format")
 }
 
 func TestClusterUpdateNotManagedDeployKey(t *testing.T) {
@@ -288,7 +288,7 @@ func TestClusterUpdateNotManagedDeployKey(t *testing.T) {
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
-	assert.NotEmpty(t, reason.Reason)
+	assert.Contains(t, reason.Reason, "Cannot update depoy key for not-managed")
 }
 
 func TestClusterUpdate(t *testing.T) {

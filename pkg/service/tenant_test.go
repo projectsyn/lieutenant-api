@@ -65,7 +65,7 @@ func TestCreateTenantFail(t *testing.T) {
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
-	assert.NotEmpty(t, reason.Reason)
+	assert.Contains(t, reason.Reason, "invalid character")
 }
 
 func TestCreateTenantEmpty(t *testing.T) {
@@ -79,7 +79,7 @@ func TestCreateTenantEmpty(t *testing.T) {
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
-	assert.NotEmpty(t, reason.Reason)
+	assert.Contains(t, reason.Reason, "must have a value")
 }
 
 func TestTenantDelete(t *testing.T) {
@@ -119,7 +119,7 @@ func TestTenantUpdateEmpty(t *testing.T) {
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
-	assert.NotEmpty(t, reason.Reason)
+	assert.Contains(t, reason.Reason, "must have a value")
 }
 
 func TestTenantUpdate(t *testing.T) {

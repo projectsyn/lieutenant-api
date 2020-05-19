@@ -60,7 +60,7 @@ func TestInstallStewardNoToken(t *testing.T) {
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
-	assert.NotEmpty(t, reason.Reason)
+	assert.Contains(t, reason.Reason, "Missing or malformed token")
 }
 
 func TestInstallStewardInvalidToken(t *testing.T) {
@@ -73,7 +73,7 @@ func TestInstallStewardInvalidToken(t *testing.T) {
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
-	assert.NotEmpty(t, reason.Reason)
+	assert.Contains(t, reason.Reason, "Invalid token")
 }
 
 func TestInstallStewardUsedToken(t *testing.T) {
@@ -86,5 +86,5 @@ func TestInstallStewardUsedToken(t *testing.T) {
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
-	assert.NotEmpty(t, reason.Reason)
+	assert.Contains(t, reason.Reason, "Token already used or expired")
 }
