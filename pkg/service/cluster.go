@@ -116,7 +116,7 @@ func (s *APIImpl) UpdateCluster(c echo.Context, clusterID api.ClusterIdParameter
 		return err
 	}
 
-	if len(patchCluster.Tenant) > 0 {
+	if len(patchCluster.Tenant) > 0 && patchCluster.Tenant != existingCluster.Spec.TenantRef.Name {
 		return echo.NewHTTPError(http.StatusBadRequest, "Changing tenant of a cluster is not yet implemented")
 	}
 
