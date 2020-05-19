@@ -84,6 +84,7 @@ func (s *APIImpl) UpdateTenant(c echo.Context, tenantID api.TenantIdParameter) e
 
 	var patchTenant api.TenantProperties
 	dec := json.NewDecoder(ctx.Request().Body)
+	dec.DisallowUnknownFields()
 	if err := dec.Decode(&patchTenant); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}

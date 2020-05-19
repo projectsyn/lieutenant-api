@@ -122,6 +122,28 @@ func TestTenantUpdateEmpty(t *testing.T) {
 	assert.Contains(t, reason.Reason, "must have a value")
 }
 
+func TestTenantUpdateUnknown(t *testing.T) {
+	e, _ := setupTest(t)
+
+	updateTenant := map[string]string{
+		"displayName": "newName",
+		"some":        "field",
+		"unknown":     "true",
+	}
+
+	result := testutil.NewRequest().
+		Patch("/tenants/1").
+		WithJsonBody(updateTenant).
+		WithContentType(api.ContentJSONPatch).
+		WithHeader(echo.HeaderAuthorization, bearerToken).
+		Go(t, e)
+	assert.Equal(t, http.StatusBadRequest, result.Code())
+	reason := &api.Reason{}
+	err := result.UnmarshalJsonToObject(reason)
+	assert.NoError(t, err)
+	assert.Contains(t, reason.Reason, "unknown field")
+}
+
 func TestTenantUpdate(t *testing.T) {
 	e, _ := setupTest(t)
 	newDisplayName := "New Tenant Name"
@@ -145,4 +167,32 @@ func TestTenantUpdate(t *testing.T) {
 	assert.NotNil(t, tenant)
 	assert.Contains(t, string(tenant.Id), tenantB.Name)
 	assert.Equal(t, newDisplayName, *tenant.DisplayName)
+}
+
+func TestTenantUpdateDisplayName(t *testing.T) {
+	e, client := setupTest(t)
+	newDisplayName := "New Tenant Name"
+
+	updateTenant := map[string]string{
+		"displayName": newDisplayName,
+	}
+	assert.NotEqual(t, newDisplayName, tenantB.Spec.DisplayName)
+	result := testutil.NewRequest().
+		Patch("/tenants/"+tenantB.Name).
+		WithJsonBody(updateTenant).
+		WithContentType(api.ContentJSONPatch).
+		WithHeader(echo.HeaderAuthorization, bearerToken).
+		Go(t, e)
+	assert.Equal(t, http.StatusOK, result.Code())
+	tenant := &api.Tenant{}
+	err := result.UnmarshalJsonToObject(tenant)
+	assert.NoError(t, err)
+	assert.Equal(t, newDisplayName, *tenant.DisplayName)
+	tenantObj := &synv1alpha1.Tenant{}
+	err = client.Get(context.TODO(), types.NamespacedName{
+		Namespace: "default",
+		Name:      tenantB.Name,
+	}, tenantObj)
+	assert.NoError(t, err)
+	assert.Equal(t, newDisplayName, tenantObj.Spec.DisplayName)
 }

@@ -109,6 +109,7 @@ func (s *APIImpl) UpdateCluster(c echo.Context, clusterID api.ClusterIdParameter
 
 	var patchCluster api.ClusterProperties
 	dec := json.NewDecoder(ctx.Request().Body)
+	dec.DisallowUnknownFields()
 	if err := dec.Decode(&patchCluster); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}

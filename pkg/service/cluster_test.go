@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"net/http"
 	"os"
 	"strings"
@@ -139,6 +140,24 @@ func TestCreateClusterNoJSON(t *testing.T) {
 	assert.Contains(t, reason.Reason, "invalid character")
 }
 
+func TestCreateClusterNoTenant(t *testing.T) {
+	e, _ := setupTest(t)
+
+	createCluster := map[string]string{
+		"displayName": "cluster-name",
+	}
+	result := testutil.NewRequest().
+		Post("/clusters/").
+		WithJsonBody(createCluster).
+		WithHeader(echo.HeaderAuthorization, bearerToken).
+		Go(t, e)
+	assert.Equal(t, http.StatusBadRequest, result.Code())
+	reason := &api.Reason{}
+	err := result.UnmarshalJsonToObject(reason)
+	assert.NoError(t, err)
+	assert.Contains(t, reason.Reason, "Property 'tenant' is missing")
+}
+
 func TestCreateClusterEmpty(t *testing.T) {
 	e, _ := setupTest(t)
 
@@ -247,6 +266,28 @@ func TestClusterUpdateTenant(t *testing.T) {
 	assert.Contains(t, reason.Reason, "unknown field")
 }
 
+func TestClusterUpdateUnknown(t *testing.T) {
+	e, _ := setupTest(t)
+
+	updateCluster := map[string]string{
+		"displayName": "newName",
+		"some":        "field",
+		"unknown":     "true",
+	}
+
+	result := testutil.NewRequest().
+		Patch("/clusters/"+clusterA.Name).
+		WithJsonBody(updateCluster).
+		WithContentType(api.ContentJSONPatch).
+		WithHeader(echo.HeaderAuthorization, bearerToken).
+		Go(t, e)
+	assert.Equal(t, http.StatusBadRequest, result.Code())
+	reason := &api.Reason{}
+	err := result.UnmarshalJsonToObject(reason)
+	assert.NoError(t, err)
+	assert.Contains(t, reason.Reason, "unknown field")
+}
+
 func TestClusterUpdateIllegalDeployKey(t *testing.T) {
 	e, _ := setupTest(t)
 
@@ -319,4 +360,32 @@ func TestClusterUpdate(t *testing.T) {
 	assert.Equal(t, clusterB.Name, string(cluster.Id))
 	assert.Equal(t, newDisplayName, *cluster.DisplayName)
 	assert.Equal(t, *updateCluster.GitRepo.DeployKey, *cluster.GitRepo.DeployKey)
+}
+
+func TestClusterUpdateDisplayName(t *testing.T) {
+	e, client := setupTest(t)
+	newDisplayName := "New Cluster Name"
+
+	updateCluster := map[string]string{
+		"displayName": newDisplayName,
+	}
+	assert.NotEqual(t, newDisplayName, clusterB.Spec.DisplayName)
+	result := testutil.NewRequest().
+		Patch("/clusters/"+clusterB.Name).
+		WithJsonBody(updateCluster).
+		WithContentType(api.ContentJSONPatch).
+		WithHeader(echo.HeaderAuthorization, bearerToken).
+		Go(t, e)
+	assert.Equal(t, http.StatusOK, result.Code())
+	cluster := &api.Cluster{}
+	err := result.UnmarshalJsonToObject(cluster)
+	assert.NoError(t, err)
+	assert.Equal(t, newDisplayName, *cluster.DisplayName)
+	clusterObj := &synv1alpha1.Cluster{}
+	err = client.Get(context.TODO(), types.NamespacedName{
+		Namespace: "default",
+		Name:      clusterB.Name,
+	}, clusterObj)
+	assert.NoError(t, err)
+	assert.Equal(t, newDisplayName, clusterObj.Spec.DisplayName)
 }
