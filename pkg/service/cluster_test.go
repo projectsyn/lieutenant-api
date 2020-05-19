@@ -53,14 +53,16 @@ func TestCreateCluster(t *testing.T) {
 	e := setupTest(t)
 
 	os.Setenv(LieutenantInstanceFactEnvVar, "")
-	newCluster := api.ClusterProperties{
-		DisplayName: pointer.ToString("My test cluster"),
-		Tenant:      tenantA.Name,
-		Facts: &api.ClusterFacts{
-			"cloud":                "cloudscale",
-			"region":               "test",
-			LieutenantInstanceFact: "",
+	newCluster := api.CreateCluster{
+		ClusterProperties: api.ClusterProperties{
+			DisplayName: pointer.ToString("My test cluster"),
+			Facts: &api.ClusterFacts{
+				"cloud":                "cloudscale",
+				"region":               "test",
+				LieutenantInstanceFact: "",
+			},
 		},
+		ClusterTenant: api.ClusterTenant{Tenant: tenantA.Name},
 	}
 	result := testutil.NewRequest().
 		Post("/clusters").
@@ -75,6 +77,7 @@ func TestCreateCluster(t *testing.T) {
 	assert.Contains(t, cluster.Id, api.ClusterIDPrefix)
 	assert.Equal(t, cluster.DisplayName, newCluster.DisplayName)
 	assert.Equal(t, newCluster.Facts, cluster.Facts)
+	assert.Equal(t, newCluster.Tenant, cluster.Tenant)
 }
 
 func TestCreateClusterInstanceFact(t *testing.T) {
@@ -82,13 +85,15 @@ func TestCreateClusterInstanceFact(t *testing.T) {
 
 	instanceName := "lieutenant-dev"
 	os.Setenv(LieutenantInstanceFactEnvVar, instanceName)
-	newCluster := api.ClusterProperties{
-		DisplayName: pointer.ToString("My test cluster"),
-		Tenant:      tenantA.Name,
-		Facts: &api.ClusterFacts{
-			"cloud":  "cloudscale",
-			"region": "test",
+	newCluster := api.CreateCluster{
+		ClusterProperties: api.ClusterProperties{
+			DisplayName: pointer.ToString("My test cluster"),
+			Facts: &api.ClusterFacts{
+				"cloud":  "cloudscale",
+				"region": "test",
+			},
 		},
+		ClusterTenant: api.ClusterTenant{Tenant: tenantA.Name},
 	}
 	result := testutil.NewRequest().
 		Post("/clusters").
@@ -223,8 +228,8 @@ func TestClusterUpdateEmpty(t *testing.T) {
 func TestClusterUpdateTenant(t *testing.T) {
 	e := setupTest(t)
 
-	updateCluster := &api.ClusterProperties{
-		Tenant: "changed-tenant",
+	updateCluster := map[string]string{
+		"tenant": "changed-tenant",
 	}
 
 	result := testutil.NewRequest().

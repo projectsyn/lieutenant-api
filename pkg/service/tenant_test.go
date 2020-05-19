@@ -123,10 +123,10 @@ func TestTenantUpdate(t *testing.T) {
 	e := setupTest(t)
 	newDisplayName := "New Tenant Name"
 
-	updateTenant := &api.TenantProperties{
-		DisplayName: &newDisplayName,
-		GitRepo: &api.GitRepo{
-			Url: pointer.ToString("newURL"),
+	updateTenant := map[string]interface{}{
+		"displayName": newDisplayName,
+		"gitRepo": map[string]string{
+			"url": "newURL",
 		},
 	}
 	result := testutil.NewRequest().
