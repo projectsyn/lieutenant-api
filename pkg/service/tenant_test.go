@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"net/http"
 	"testing"
 
@@ -8,11 +9,13 @@ import (
 	"github.com/deepmap/oapi-codegen/pkg/testutil"
 	"github.com/labstack/echo/v4"
 	"github.com/projectsyn/lieutenant-api/pkg/api"
+	synv1alpha1 "github.com/projectsyn/lieutenant-operator/pkg/apis/syn/v1alpha1"
 	"github.com/stretchr/testify/assert"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 func TestListTenants(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	result := testutil.NewRequest().
 		Get("/tenants/").
@@ -30,7 +33,7 @@ func TestListTenants(t *testing.T) {
 }
 
 func TestCreateTenant(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	newTenant := api.TenantProperties{
 		DisplayName: pointer.ToString("My test Tenant"),
@@ -50,7 +53,7 @@ func TestCreateTenant(t *testing.T) {
 }
 
 func TestCreateTenantFail(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	result := testutil.NewRequest().
 		Post("/tenants/").
@@ -66,7 +69,7 @@ func TestCreateTenantFail(t *testing.T) {
 }
 
 func TestCreateTenantEmpty(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	result := testutil.NewRequest().
 		Post("/tenants/").
@@ -80,7 +83,7 @@ func TestCreateTenantEmpty(t *testing.T) {
 }
 
 func TestTenantDelete(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	result := testutil.NewRequest().
 		Delete("/tenants/"+tenantA.Name).
@@ -90,7 +93,7 @@ func TestTenantDelete(t *testing.T) {
 }
 
 func TestTenantGet(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	result := testutil.NewRequest().
 		Get("/tenants/"+tenantA.Name).
@@ -106,7 +109,7 @@ func TestTenantGet(t *testing.T) {
 }
 
 func TestTenantUpdateEmpty(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	result := testutil.NewRequest().
 		Patch("/tenants/1").
@@ -120,7 +123,7 @@ func TestTenantUpdateEmpty(t *testing.T) {
 }
 
 func TestTenantUpdate(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 	newDisplayName := "New Tenant Name"
 
 	updateTenant := map[string]interface{}{

@@ -10,11 +10,13 @@ import (
 	"github.com/deepmap/oapi-codegen/pkg/testutil"
 	"github.com/labstack/echo/v4"
 	"github.com/projectsyn/lieutenant-api/pkg/api"
+	synv1alpha1 "github.com/projectsyn/lieutenant-operator/pkg/apis/syn/v1alpha1"
 	"github.com/stretchr/testify/assert"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 func TestListCluster(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	result := testutil.NewRequest().
 		Get("/clusters").
@@ -31,7 +33,7 @@ func TestListCluster(t *testing.T) {
 }
 
 func TestListClusterMissingBearer(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	result := testutil.NewRequest().
 		Get("/clusters").
@@ -40,7 +42,7 @@ func TestListClusterMissingBearer(t *testing.T) {
 }
 
 func TestListClusterWrongToken(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	result := testutil.NewRequest().
 		Get("/clusters").
@@ -50,7 +52,7 @@ func TestListClusterWrongToken(t *testing.T) {
 }
 
 func TestCreateCluster(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	os.Setenv(LieutenantInstanceFactEnvVar, "")
 	newCluster := api.CreateCluster{
@@ -81,7 +83,7 @@ func TestCreateCluster(t *testing.T) {
 }
 
 func TestCreateClusterInstanceFact(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	instanceName := "lieutenant-dev"
 	os.Setenv(LieutenantInstanceFactEnvVar, instanceName)
@@ -122,7 +124,7 @@ func TestCreateClusterInstanceFact(t *testing.T) {
 }
 
 func TestCreateClusterNoJSON(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	result := testutil.NewRequest().
 		Post("/clusters/").
@@ -138,7 +140,7 @@ func TestCreateClusterNoJSON(t *testing.T) {
 }
 
 func TestCreateClusterEmpty(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	result := testutil.NewRequest().
 		Post("/clusters/").
@@ -153,7 +155,7 @@ func TestCreateClusterEmpty(t *testing.T) {
 }
 
 func TestClusterDelete(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	result := testutil.NewRequest().
 		Delete("/clusters/"+clusterA.Name).
@@ -163,7 +165,7 @@ func TestClusterDelete(t *testing.T) {
 }
 
 func TestClusterGet(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	result := testutil.NewRequest().
 		Get("/clusters/"+clusterA.Name).
@@ -181,7 +183,7 @@ func TestClusterGet(t *testing.T) {
 }
 
 func TestClusterGetNoToken(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	result := testutil.NewRequest().
 		Get("/clusters/"+clusterB.Name).
@@ -198,7 +200,7 @@ func TestClusterGetNoToken(t *testing.T) {
 }
 
 func TestClusterGetNotFound(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	result := testutil.NewRequest().
 		Get("/clusters/not-existing").
@@ -212,7 +214,7 @@ func TestClusterGetNotFound(t *testing.T) {
 }
 
 func TestClusterUpdateEmpty(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	result := testutil.NewRequest().
 		Patch("/clusters/1").
@@ -226,7 +228,7 @@ func TestClusterUpdateEmpty(t *testing.T) {
 }
 
 func TestClusterUpdateTenant(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	updateCluster := map[string]string{
 		"tenant": "changed-tenant",
@@ -246,7 +248,7 @@ func TestClusterUpdateTenant(t *testing.T) {
 }
 
 func TestClusterUpdateIllegalDeployKey(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	updateCluster := &api.ClusterProperties{
 		GitRepo: &api.GitRepo{
@@ -268,7 +270,7 @@ func TestClusterUpdateIllegalDeployKey(t *testing.T) {
 }
 
 func TestClusterUpdateNotManagedDeployKey(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	updateCluster := &api.ClusterProperties{
 		GitRepo: &api.GitRepo{
@@ -290,7 +292,7 @@ func TestClusterUpdateNotManagedDeployKey(t *testing.T) {
 }
 
 func TestClusterUpdate(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 	newDisplayName := "New Cluster Name"
 
 	updateCluster := &api.ClusterProperties{

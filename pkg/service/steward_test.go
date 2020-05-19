@@ -15,7 +15,7 @@ import (
 )
 
 func TestInstallSteward(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	result := testutil.NewRequest().
 		WithHeader("X-Forwarded-Proto", "https").
@@ -51,7 +51,7 @@ func TestInstallSteward(t *testing.T) {
 }
 
 func TestInstallStewardNoToken(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	result := testutil.NewRequest().
 		Get("/install/steward.json").
@@ -64,7 +64,7 @@ func TestInstallStewardNoToken(t *testing.T) {
 }
 
 func TestInstallStewardInvalidToken(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	result := testutil.NewRequest().
 		Get("/install/steward.json?token=NonExistentToken").
@@ -77,7 +77,7 @@ func TestInstallStewardInvalidToken(t *testing.T) {
 }
 
 func TestInstallStewardUsedToken(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	result := testutil.NewRequest().
 		Get("/install/steward.json?token="+clusterB.Status.BootstrapToken.Token).
