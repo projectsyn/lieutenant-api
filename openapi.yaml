@@ -46,11 +46,6 @@ components:
           type: string
           description: Display name of the tenant
           example: Acme Corp.
-        tenant:
-          type: string
-          description: The tenant this tenant belongs to
-          example: multicorp
-          nullable: true
         gitRepo:
           $ref: '#/components/schemas/GitRepo'
     TenantId:
@@ -216,7 +211,6 @@ paths:
                   gitRepo: https://github.com/bigcorp/commodore-config.git
                 - id: os3ce3
                   displayName: Acme Corp. (Subtenant of Big Corp)
-                  tenant: aezoo6
                   gitRepo: https://github.com/acmecorp/commodore-config.git
         default:
           $ref: '#/components/responses/Default'
@@ -250,7 +244,6 @@ paths:
               example:
                 id: aezoo6
                 displayName: Acme Corp.
-                tenant: multicorp
                 gitRepo: https://github.com/acmecorp/commodore-config.git
         '400':
           description: Tenant can't be created
