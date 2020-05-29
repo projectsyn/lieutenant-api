@@ -109,9 +109,9 @@ func NewAPIClusterFromCRD(cluster synv1alpha1.Cluster) *Cluster {
 	apiCluster := &Cluster{
 		ClusterId: ClusterId{Id: Id(cluster.Name)},
 		ClusterProperties: ClusterProperties{
-			Tenant:  cluster.Spec.TenantRef.Name,
 			GitRepo: &GitRepo{},
 		},
+		ClusterTenant: ClusterTenant{Tenant: cluster.Spec.TenantRef.Name},
 	}
 
 	if len(cluster.Spec.DisplayName) > 0 {

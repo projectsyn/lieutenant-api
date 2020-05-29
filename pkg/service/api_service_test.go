@@ -135,7 +135,7 @@ func TestNewServer(t *testing.T) {
 	swagger, err := api.GetSwagger()
 	assert.NoError(t, err)
 
-	server := setupTest(t)
+	server, _ := setupTest(t)
 	for _, route := range server.Routes() {
 		if strings.HasSuffix(route.Path, "*") {
 			continue
@@ -149,7 +149,7 @@ func TestNewServer(t *testing.T) {
 	}
 }
 
-func setupTest(t *testing.T, objs ...[]runtime.Object) *echo.Echo {
+func setupTest(t *testing.T, objs ...[]runtime.Object) (*echo.Echo, client.Client) {
 	os.Setenv("NAMESPACE", "default")
 	f := fake.NewFakeClientWithScheme(scheme.Scheme, testObjects...)
 	testMiddleWare := KubernetesAuth{
@@ -159,11 +159,11 @@ func setupTest(t *testing.T, objs ...[]runtime.Object) *echo.Echo {
 	}
 	e, err := NewAPIServer(testMiddleWare)
 	assert.NoError(t, err)
-	return e
+	return e, f
 }
 
 func TestHealthz(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	result := testutil.NewRequest().Get("/healthz").Go(t, e)
 	assert.Equal(t, http.StatusOK, result.Code())
@@ -171,7 +171,7 @@ func TestHealthz(t *testing.T) {
 }
 
 func TestOpenAPI(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	result := testutil.NewRequest().Get("/openapi.json").Go(t, e)
 	assert.Equal(t, http.StatusOK, result.Code())
@@ -183,7 +183,7 @@ func TestOpenAPI(t *testing.T) {
 }
 
 func TestSwaggerUI(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	result := testutil.NewRequest().Get("/docs").Go(t, e)
 	assert.Equal(t, http.StatusOK, result.Code())

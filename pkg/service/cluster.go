@@ -47,7 +47,8 @@ func (s *APIImpl) CreateCluster(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 	apiCluster := &api.Cluster{
-		ClusterProperties: api.ClusterProperties(*newCluster),
+		ClusterProperties: api.ClusterProperties(newCluster.ClusterProperties),
+		ClusterTenant:     api.ClusterTenant(newCluster.ClusterTenant),
 	}
 	id, err := api.GenerateClusterID()
 	if err != nil {
@@ -108,16 +109,13 @@ func (s *APIImpl) UpdateCluster(c echo.Context, clusterID api.ClusterIdParameter
 
 	var patchCluster api.ClusterProperties
 	dec := json.NewDecoder(ctx.Request().Body)
+	dec.DisallowUnknownFields()
 	if err := dec.Decode(&patchCluster); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 	existingCluster := &synv1alpha1.Cluster{}
 	if err := ctx.client.Get(ctx.context, client.ObjectKey{Name: string(clusterID), Namespace: s.namespace}, existingCluster); err != nil {
 		return err
-	}
-
-	if len(patchCluster.Tenant) > 0 {
-		return echo.NewHTTPError(http.StatusBadRequest, "Changing tenant of a cluster is not yet implemented")
 	}
 
 	if patchCluster.DisplayName != nil {

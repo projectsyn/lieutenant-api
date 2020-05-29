@@ -12,7 +12,7 @@ import (
 )
 
 func TestQueryInventory(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	query := "SELECT LAST(version,cloud) FROM mycluster"
 	result := testutil.NewRequest().
@@ -23,7 +23,7 @@ func TestQueryInventory(t *testing.T) {
 }
 
 func TestUpdateInventory(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	updateInventory := api.Inventory{
 		Cluster: "cluster-a",

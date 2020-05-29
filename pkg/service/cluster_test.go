@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"net/http"
 	"os"
 	"strings"
@@ -10,11 +11,13 @@ import (
 	"github.com/deepmap/oapi-codegen/pkg/testutil"
 	"github.com/labstack/echo/v4"
 	"github.com/projectsyn/lieutenant-api/pkg/api"
+	synv1alpha1 "github.com/projectsyn/lieutenant-operator/pkg/apis/syn/v1alpha1"
 	"github.com/stretchr/testify/assert"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 func TestListCluster(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	result := testutil.NewRequest().
 		Get("/clusters").
@@ -31,7 +34,7 @@ func TestListCluster(t *testing.T) {
 }
 
 func TestListClusterMissingBearer(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	result := testutil.NewRequest().
 		Get("/clusters").
@@ -40,7 +43,7 @@ func TestListClusterMissingBearer(t *testing.T) {
 }
 
 func TestListClusterWrongToken(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	result := testutil.NewRequest().
 		Get("/clusters").
@@ -50,17 +53,19 @@ func TestListClusterWrongToken(t *testing.T) {
 }
 
 func TestCreateCluster(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	os.Setenv(LieutenantInstanceFactEnvVar, "")
-	newCluster := api.ClusterProperties{
-		DisplayName: pointer.ToString("My test cluster"),
-		Tenant:      tenantA.Name,
-		Facts: &api.ClusterFacts{
-			"cloud":                "cloudscale",
-			"region":               "test",
-			LieutenantInstanceFact: "",
+	newCluster := api.CreateCluster{
+		ClusterProperties: api.ClusterProperties{
+			DisplayName: pointer.ToString("My test cluster"),
+			Facts: &api.ClusterFacts{
+				"cloud":                "cloudscale",
+				"region":               "test",
+				LieutenantInstanceFact: "",
+			},
 		},
+		ClusterTenant: api.ClusterTenant{Tenant: tenantA.Name},
 	}
 	result := testutil.NewRequest().
 		Post("/clusters").
@@ -75,20 +80,23 @@ func TestCreateCluster(t *testing.T) {
 	assert.Contains(t, cluster.Id, api.ClusterIDPrefix)
 	assert.Equal(t, cluster.DisplayName, newCluster.DisplayName)
 	assert.Equal(t, newCluster.Facts, cluster.Facts)
+	assert.Equal(t, newCluster.Tenant, cluster.Tenant)
 }
 
 func TestCreateClusterInstanceFact(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	instanceName := "lieutenant-dev"
 	os.Setenv(LieutenantInstanceFactEnvVar, instanceName)
-	newCluster := api.ClusterProperties{
-		DisplayName: pointer.ToString("My test cluster"),
-		Tenant:      tenantA.Name,
-		Facts: &api.ClusterFacts{
-			"cloud":  "cloudscale",
-			"region": "test",
+	newCluster := api.CreateCluster{
+		ClusterProperties: api.ClusterProperties{
+			DisplayName: pointer.ToString("My test cluster"),
+			Facts: &api.ClusterFacts{
+				"cloud":  "cloudscale",
+				"region": "test",
+			},
 		},
+		ClusterTenant: api.ClusterTenant{Tenant: tenantA.Name},
 	}
 	result := testutil.NewRequest().
 		Post("/clusters").
@@ -117,7 +125,7 @@ func TestCreateClusterInstanceFact(t *testing.T) {
 }
 
 func TestCreateClusterNoJSON(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	result := testutil.NewRequest().
 		Post("/clusters/").
@@ -129,11 +137,29 @@ func TestCreateClusterNoJSON(t *testing.T) {
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
-	assert.NotEmpty(t, reason.Reason)
+	assert.Contains(t, reason.Reason, "invalid character")
+}
+
+func TestCreateClusterNoTenant(t *testing.T) {
+	e, _ := setupTest(t)
+
+	createCluster := map[string]string{
+		"displayName": "cluster-name",
+	}
+	result := testutil.NewRequest().
+		Post("/clusters/").
+		WithJsonBody(createCluster).
+		WithHeader(echo.HeaderAuthorization, bearerToken).
+		Go(t, e)
+	assert.Equal(t, http.StatusBadRequest, result.Code())
+	reason := &api.Reason{}
+	err := result.UnmarshalJsonToObject(reason)
+	assert.NoError(t, err)
+	assert.Contains(t, reason.Reason, "Property 'tenant' is missing")
 }
 
 func TestCreateClusterEmpty(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	result := testutil.NewRequest().
 		Post("/clusters/").
@@ -144,11 +170,11 @@ func TestCreateClusterEmpty(t *testing.T) {
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
-	assert.NotEmpty(t, reason.Reason)
+	assert.Contains(t, reason.Reason, "must have a value")
 }
 
 func TestClusterDelete(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	result := testutil.NewRequest().
 		Delete("/clusters/"+clusterA.Name).
@@ -158,7 +184,7 @@ func TestClusterDelete(t *testing.T) {
 }
 
 func TestClusterGet(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	result := testutil.NewRequest().
 		Get("/clusters/"+clusterA.Name).
@@ -176,7 +202,7 @@ func TestClusterGet(t *testing.T) {
 }
 
 func TestClusterGetNoToken(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	result := testutil.NewRequest().
 		Get("/clusters/"+clusterB.Name).
@@ -193,7 +219,7 @@ func TestClusterGetNoToken(t *testing.T) {
 }
 
 func TestClusterGetNotFound(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	result := testutil.NewRequest().
 		Get("/clusters/not-existing").
@@ -203,11 +229,11 @@ func TestClusterGetNotFound(t *testing.T) {
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
-	assert.NotEmpty(t, reason.Reason)
+	assert.Contains(t, reason.Reason, "not found")
 }
 
 func TestClusterUpdateEmpty(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	result := testutil.NewRequest().
 		Patch("/clusters/1").
@@ -217,14 +243,14 @@ func TestClusterUpdateEmpty(t *testing.T) {
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
-	assert.NotEmpty(t, reason.Reason)
+	assert.Contains(t, reason.Reason, "must have a value")
 }
 
 func TestClusterUpdateTenant(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
-	updateCluster := &api.ClusterProperties{
-		Tenant: "changed-tenant",
+	updateCluster := map[string]string{
+		"tenant": "changed-tenant",
 	}
 
 	result := testutil.NewRequest().
@@ -237,11 +263,33 @@ func TestClusterUpdateTenant(t *testing.T) {
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
-	assert.NotEmpty(t, reason.Reason)
+	assert.Contains(t, reason.Reason, "unknown field")
+}
+
+func TestClusterUpdateUnknown(t *testing.T) {
+	e, _ := setupTest(t)
+
+	updateCluster := map[string]string{
+		"displayName": "newName",
+		"some":        "field",
+		"unknown":     "true",
+	}
+
+	result := testutil.NewRequest().
+		Patch("/clusters/"+clusterA.Name).
+		WithJsonBody(updateCluster).
+		WithContentType(api.ContentJSONPatch).
+		WithHeader(echo.HeaderAuthorization, bearerToken).
+		Go(t, e)
+	assert.Equal(t, http.StatusBadRequest, result.Code())
+	reason := &api.Reason{}
+	err := result.UnmarshalJsonToObject(reason)
+	assert.NoError(t, err)
+	assert.Contains(t, reason.Reason, "unknown field")
 }
 
 func TestClusterUpdateIllegalDeployKey(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	updateCluster := &api.ClusterProperties{
 		GitRepo: &api.GitRepo{
@@ -259,11 +307,11 @@ func TestClusterUpdateIllegalDeployKey(t *testing.T) {
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
-	assert.NotEmpty(t, reason.Reason)
+	assert.Contains(t, reason.Reason, "Illegal deploy key format")
 }
 
 func TestClusterUpdateNotManagedDeployKey(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 
 	updateCluster := &api.ClusterProperties{
 		GitRepo: &api.GitRepo{
@@ -281,11 +329,11 @@ func TestClusterUpdateNotManagedDeployKey(t *testing.T) {
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
-	assert.NotEmpty(t, reason.Reason)
+	assert.Contains(t, reason.Reason, "Cannot update depoy key for not-managed")
 }
 
 func TestClusterUpdate(t *testing.T) {
-	e := setupTest(t)
+	e, _ := setupTest(t)
 	newDisplayName := "New Cluster Name"
 
 	updateCluster := &api.ClusterProperties{
@@ -312,4 +360,32 @@ func TestClusterUpdate(t *testing.T) {
 	assert.Equal(t, clusterB.Name, string(cluster.Id))
 	assert.Equal(t, newDisplayName, *cluster.DisplayName)
 	assert.Equal(t, *updateCluster.GitRepo.DeployKey, *cluster.GitRepo.DeployKey)
+}
+
+func TestClusterUpdateDisplayName(t *testing.T) {
+	e, client := setupTest(t)
+	newDisplayName := "New Cluster Name"
+
+	updateCluster := map[string]string{
+		"displayName": newDisplayName,
+	}
+	assert.NotEqual(t, newDisplayName, clusterB.Spec.DisplayName)
+	result := testutil.NewRequest().
+		Patch("/clusters/"+clusterB.Name).
+		WithJsonBody(updateCluster).
+		WithContentType(api.ContentJSONPatch).
+		WithHeader(echo.HeaderAuthorization, bearerToken).
+		Go(t, e)
+	assert.Equal(t, http.StatusOK, result.Code())
+	cluster := &api.Cluster{}
+	err := result.UnmarshalJsonToObject(cluster)
+	assert.NoError(t, err)
+	assert.Equal(t, newDisplayName, *cluster.DisplayName)
+	clusterObj := &synv1alpha1.Cluster{}
+	err = client.Get(context.TODO(), types.NamespacedName{
+		Namespace: "default",
+		Name:      clusterB.Name,
+	}, clusterObj)
+	assert.NoError(t, err)
+	assert.Equal(t, newDisplayName, clusterObj.Spec.DisplayName)
 }
