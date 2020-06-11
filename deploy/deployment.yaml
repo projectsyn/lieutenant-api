@@ -2,23 +2,13 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: lieutenant-api
-  labels:
-    app.kubernetes.io/name: lieutenant-api
-    app.kubernetes.io/part-of: project-syn
 spec:
   replicas: 1
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: lieutenant-api
   template:
-    metadata:
-      labels:
-        app.kubernetes.io/name: lieutenant-api
-        app.kubernetes.io/part-of: project-syn
     spec:
       serviceAccountName: lieutenant-api
       containers:
-        - name: lieutenant-operator
+        - name: lieutenant-api
           image: docker.io/projectsyn/lieutenant-api:latest
           command:
           - lieutenant-api
