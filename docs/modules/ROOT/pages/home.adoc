@@ -2,8 +2,9 @@
 
 image::syn.png[]
 
-This is the documentation of the Lieutenant API. Also see the xref:syn:SDDs:0007-lieutenant-management-api.adoc[SDD 0007 - Lieutenant - Management API] for more information.
+Welcome to the documentation of the Lieutenant API - a Project Syn tool.
 
+Also see the xref:syn:SDDs:0007-lieutenant-management-api.adoc[SDD 0007 - Lieutenant - Management API] for more information.
 
 == Introduction
 
