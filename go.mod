@@ -15,7 +15,7 @@ require (
 	github.com/labstack/echo/v4 v4.1.16
 	github.com/projectsyn/lieutenant-operator v0.1.2
 	github.com/rakyll/statik v0.1.7
-	github.com/stretchr/testify v1.6.0
+	github.com/stretchr/testify v1.6.1
 	github.com/taion809/haikunator v0.0.0-20150324135039-4e414e676fd1
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d // indirect
 	k8s.io/api v0.17.4
