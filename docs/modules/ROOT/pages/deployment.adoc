@@ -4,13 +4,13 @@ The Lieutenant API is meant to be deployed on a Kubernetes cluster. It needs to 
 
 The xref:lieutenant-operator::index.adoc[Lieutenant Operator] needs to be deployed on the cluster and with it the accompanying CRDs. Make sure the operator watches objects in the namespace where the API is being deployed.
 
-You can find the manifests for a deployment in the "deploy/" folder. A role and service account will be created for the API. The `Cluster` and `Tenant` CRs will be stored in the same namespace as the API is deployed.
+You can find a https://kustomize.io[Kustomize] setup for a deployment in the "deploy/" folder. A role and service account will be created for the API. The `Cluster` and `Tenant` CRs will be stored in the same namespace as the API is deployed.
 
 [source,shell]
 ----
 kubectl create ns $namespace
 
-kubectl -n $namespace apply -f deploy/
+kubectl -n $namespace apply -k deploy/
 ----
 
 
