@@ -1,3 +1,13 @@
 * xref:home.adoc[Home]
-* xref:deployment.adoc[Deployment]
-* xref:index.adoc[API Documentation]
+
+.Tutorials
+include::partial$nav-tutorials.adoc[]
+
+.How-to guides
+include::partial$nav-howtos.adoc[]
+
+.Technical reference
+include::partial$nav-reference.adoc[]
+
+.Explanation
+include::partial$nav-explanation.adoc[]
