@@ -3,6 +3,9 @@ kind: Kustomization
 commonLabels:
   app.kubernetes.io/name: lieutenant-api
   app.kubernetes.io/part-of: project-syn
+images:
+- name: docker.io/projectsyn/lieutenant-api
+  newTag: v0.2.0
 resources:
 - deployment.yaml
 - role_binding.yaml
