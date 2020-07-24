@@ -3,4 +3,4 @@ title: Lieutenant API
 version: master
 start_page: ROOT:home.adoc
 nav:
-- modules/ROOT/nav.adoc
+  - modules/ROOT/nav.adoc

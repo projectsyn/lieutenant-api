@@ -124,7 +124,7 @@ components:
     Inventory:
       type: object
       required:
-      - cluster
+        - cluster
       description: Inventory data of a cluster
       properties:
         cluster:
@@ -206,12 +206,12 @@ paths:
                 items:
                   $ref: '#/components/schemas/Tenant'
                 example:
-                - id: aezoo6
-                  displayName: Big Corp.
-                  gitRepo: https://github.com/bigcorp/commodore-config.git
-                - id: os3ce3
-                  displayName: Acme Corp. (Subtenant of Big Corp)
-                  gitRepo: https://github.com/acmecorp/commodore-config.git
+                  - id: aezoo6
+                    displayName: Big Corp.
+                    gitRepo: https://github.com/bigcorp/commodore-config.git
+                  - id: os3ce3
+                    displayName: Acme Corp. (Subtenant of Big Corp)
+                    gitRepo: https://github.com/acmecorp/commodore-config.git
         default:
           $ref: '#/components/responses/Default'
     post:
@@ -390,7 +390,7 @@ paths:
       summary: Returns all values of a cluster
       description: Returns all values of a cluster
       tags:
-        - cluster 
+        - cluster
       parameters:
         - $ref: '#/components/parameters/ClusterIdParameter'
       responses:
@@ -532,7 +532,7 @@ paths:
       description: API health check
       security: []
       tags:
-       - system
+        - system
       responses:
         '200':
           description: All is fine
@@ -550,7 +550,7 @@ paths:
       description: Interactive API documentation based on Swagger UI
       security: []
       tags:
-       - system
+        - system
       responses:
         '200':
           description: Swagger UI assets
@@ -565,7 +565,7 @@ paths:
       description: OpenAPI JSON specification
       security: []
       tags:
-       - system
+        - system
       responses:
         '200':
           description: OpenAPI JSON spec
