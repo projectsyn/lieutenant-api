@@ -5,6 +5,18 @@ on:
     - master
 
 jobs:
+  linting:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        command:
+          - lint_yaml
+          - lint_adoc
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run ${{ matrix.command }}
+        run: make ${{ matrix.command }}
+
   tests:
     runs-on: ubuntu-latest
     steps:
@@ -17,11 +29,10 @@ jobs:
       run: git diff --exit-code
     - name: Build image
       run: make docker
+
   docs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - name: Check Docs
-      run: make check
     - name: Compile Docs
       run: make docs

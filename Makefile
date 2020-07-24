@@ -1,3 +1,13 @@
+MAKEFLAGS += --warn-undefined-variables
+SHELL := bash
+.SHELLFLAGS := -eu -o pipefail -c
+.DEFAULT_GOAL := all
+.DELETE_ON_ERROR:
+.SUFFIXES:
+
+DOCKER_CMD   ?= docker
+DOCKER_ARGS  ?= --rm --user "$$(id -u)" --volume "$${PWD}:/src" --workdir /src
+
 # Project parameters
 BINARY_NAME ?= lieutenant-api
 
@@ -6,26 +16,28 @@ VERSION ?= $(shell git describe --tags --always --dirty --match=v* || (echo "com
 IMAGE_NAME ?= docker.io/projectsyn/$(BINARY_NAME):$(VERSION)
 
 # Antora variables
-docker_cmd  ?= docker
-docker_opts ?= --rm --tty --user "$$(id -u)"
+ANTORA_CMD  ?= $(DOCKER_CMD) run $(DOCKER_ARGS) --volume "$${PWD}":/antora vshn/antora:2.3.0
+ANTORA_ARGS ?= --cache-dir=.cache/antora
 
-antora_cmd  ?= $(docker_cmd) run $(docker_opts) --volume "$${PWD}":/antora vshn/antora:2.3.0
-antora_opts ?= --cache-dir=.cache/antora
 
-vale_img ?= docker.io/vshn/vale:2.1.1
+VALE_CMD  ?= $(DOCKER_CMD) run $(DOCKER_ARGS) --volume "$${PWD}"/docs/modules:/pages vshn/vale:2.1.1
+VALE_ARGS ?= --minAlertLevel=error --config=/pages/ROOT/pages/.vale.ini /pages
+
 openapi_generator_img ?= docker.io/openapitools/openapi-generator:cli-v4.3.0
-
-vale_cmd ?= $(docker_cmd) run $(docker_opts) --volume "$${PWD}"/docs/modules/ROOT/pages:/pages $(vale_img) \
-	--minAlertLevel=error \
-	--config=/pages/.vale.ini /pages
-
-openapi_validate_cmd ?= $(docker_cmd) run $(docker_opts) --volume "$${PWD}"/openapi.yaml:/openapi.yaml $(openapi_generator_img) \
+openapi_validate_cmd ?= $(DOCKER_CMD) run $(DOCKER_ARGS) --volume "$${PWD}"/openapi.yaml:/openapi.yaml $(openapi_generator_img) \
 	validate -i /openapi.yaml
 
-openapi_generate_docs_cmd ?= $(docker_cmd) run $(docker_opts) --volume "$${PWD}":/local $(openapi_generator_img) \
+openapi_generate_docs_cmd ?= $(DOCKER_CMD) run $(DOCKER_ARGS) --volume "$${PWD}":/local $(openapi_generator_img) \
 	generate -i /local/openapi.yaml \
 	--generator-name asciidoc \
 	--output /local/docs/modules/ROOT/pages
+
+# Linting parameters
+YAML_FILES      ?= $(shell find . -type f -name '*.yaml' -or -name '*.yml')
+YAMLLINT_ARGS   ?= --no-warnings
+YAMLLINT_CONFIG ?= .yamllint.yml
+YAMLLINT_IMAGE  ?= docker.io/cytopia/yamllint:latest
+YAMLLINT_DOCKER ?= $(DOCKER_CMD) run $(DOCKER_ARGS) $(YAMLLINT_IMAGE)
 
 # Go parameters
 GOCMD   ?= go
@@ -35,7 +47,7 @@ GOTEST  ?= $(GOCMD) test
 GOGET   ?= $(GOCMD) get
 
 .PHONY: all
-all: test build
+all: lint test build
 
 .PHONY: validate
 validate:
@@ -83,8 +95,16 @@ generate-api-docs:
 docs: generate-api-docs $(web_dir)/index.html
 
 $(web_dir)/index.html: playbook.yml $(pages)
-	$(antora_cmd) $(antora_opts) $<
+	$(ANTORA_CMD) $(ANTORA_ARGS) $<
 
-.PHONY: check
-check: generate-api-docs
-	$(vale_cmd)
+
+.PHONY: lint
+lint: lint_yaml lint_adoc
+
+.PHONY: lint_yaml
+lint_yaml: $(YAML_FILES)
+	$(YAMLLINT_DOCKER) -f parsable -c $(YAMLLINT_CONFIG) $(YAMLLINT_ARGS) -- $?
+
+.PHONY: lint_adoc
+lint_adoc:
+	$(VALE_CMD) $(VALE_ARGS)
