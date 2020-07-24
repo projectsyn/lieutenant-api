@@ -2,26 +2,37 @@ name: Pull Request
 on:
   pull_request:
     branches:
-    - master
+      - master
 
 jobs:
+  linting:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        command:
+          - lint_yaml
+          - lint_adoc
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run ${{ matrix.command }}
+        run: make ${{ matrix.command }}
+
   tests:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
-    - name: Generate
-      run: make generate
-    - name: Validate
-      run: make validate
-    - name: No diff
-      run: git diff --exit-code
-    - name: Build image
-      run: make docker
+      - uses: actions/checkout@v1
+      - name: Generate
+        run: make generate
+      - name: Validate
+        run: make validate
+      - name: No diff
+        run: git diff --exit-code
+      - name: Build image
+        run: make docker
+
   docs:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
-    - name: Check Docs
-      run: make check
-    - name: Compile Docs
-      run: make docs
+      - uses: actions/checkout@v1
+      - name: Compile Docs
+        run: make docs

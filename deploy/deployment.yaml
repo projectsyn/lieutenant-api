@@ -10,12 +10,11 @@ spec:
       containers:
         - name: lieutenant-api
           image: docker.io/projectsyn/lieutenant-api:latest
-          command:
-          - lieutenant-api
+          command: [lieutenant-api]
           imagePullPolicy: Always
           ports:
-          - name: http
-            containerPort: 8080
+            - name: http
+              containerPort: 8080
           livenessProbe:
             httpGet:
               path: /healthz
