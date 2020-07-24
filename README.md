@@ -5,6 +5,15 @@ GitOps helper.
 
 **Please note that this project is in it's early stages and under active development**.
 
+This repository is part of Project Syn.
+For documentation on Project Syn and this component, see https://syn.tools.
+
+## Documentation
+
+Documentation for this component is written using [Asciidoc][asciidoc] and [Antora][antora].
+It is located in the [docs/](docs) folder.
+The [Divio documentation structure](https://documentation.divio.com/) is used to organize its content.
+
 ## OpenAPI Spec
 
 The API is specified in [OpenAPI 3](https://swagger.io/docs/specification/about/) format.
@@ -79,3 +88,13 @@ Some good links which help with OpenAPI development:
 * [OpenAPI.Tools](https://openapi.tools/)
 * [OpenAPI (Swagger) Editor](https://marketplace.visualstudio.com/items?itemName=42Crunch.vscode-openapi) (Visual Studio Code Extension)
 * [OpenAPI Preview](https://marketplace.visualstudio.com/items?itemName=zoellner.openapi-preview) (Visual Studio Code Extension)
+
+
+## Contributing and license
+
+This library is licensed under [BSD-3-Clause](LICENSE).
+For information about how to contribute see [CONTRIBUTING](CONTRIBUTING.md).
+
+[commodore]: https://docs.syn.tools/commodore/index.html
+[asciidoc]: https://asciidoctor.org/
+[antora]: https://antora.org/
