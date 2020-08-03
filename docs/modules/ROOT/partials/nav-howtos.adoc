@@ -1,1 +1,1 @@
-* xref:lieutenant-api:ROOT:deployment.adoc[Deployment]
+* xref:lieutenant-api:ROOT:how-tos/deployment.adoc[Deployment]

@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Applied the default Syn project meta files ([#70])
+- Rework documentation ([#71])
 
 ## [v0.2.0] - 2020-07-23
 ### Changed
@@ -46,7 +47,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [v0.1.5]: https://github.com/projectsyn/lieutenant-api/releases/tag/v0.1.5
 [v0.1.5]: https://github.com/projectsyn/lieutenant-api/releases/tag/v0.1.5
 [v0.2.0]: https://github.com/projectsyn/lieutenant-api/releases/tag/v0.2.0
+
 [#55]: https://github.com/projectsyn/lieutenant-api/pull/55
 [#61]: https://github.com/projectsyn/lieutenant-api/pull/61
 [#64]: https://github.com/projectsyn/lieutenant-api/pull/64
 [#70]: https://github.com/projectsyn/lieutenant-api/pull/70
+[#71]: https://github.com/projectsyn/lieutenant-api/pull/71

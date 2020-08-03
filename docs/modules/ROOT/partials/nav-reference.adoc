@@ -1,1 +1,2 @@
-* xref:lieutenant-api:ROOT:index.adoc[API Documentation]
+* xref:lieutenant-api:ROOT:references/index.adoc[API Documentation]
+* xref:lieutenant-api:ROOT:references/configuration.adoc[Configuration]
