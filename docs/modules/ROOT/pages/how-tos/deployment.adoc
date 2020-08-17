@@ -1,6 +1,6 @@
 = Deployment
 
-The Lieutenant API is meant to be deployed on a Kubernetes cluster. It needs to be the same cluster it uses as a back end to store the CRDs.
+The Lieutenant API is meant to be deployed on a Kubernetes cluster. It needs to be the same cluster it uses as a back end to store the CRs.
 
 The xref:lieutenant-operator::index.adoc[Lieutenant Operator] needs to be deployed on the cluster and with it the accompanying CRDs. Make sure the operator watches objects in the namespace where the API is being deployed.
 
@@ -16,12 +16,7 @@ kubectl -n $namespace apply -k deploy/
 
 == Configuration
 
-The following environemnt variables are supported:
-
-* `NAMESPACE` - Namespace in which to store custom resource objects (default: `default`). Recommended to be the same namespace where the API is deployed
-* `STEWARD_IMAGE` - Image to use for Steward installation manifests (default: `docker.io/projectsyn/steward:v0.1.0`)
-* `API_HOST` - URL of the API to be used in the Steward installation manifests (default: host header of a request)
-
+See the xref:references/configuration.adoc[Configuration] reference for available configuration options.
 
 == GitLab
 

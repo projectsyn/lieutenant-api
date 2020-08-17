@@ -1,0 +1,29 @@
+= Configuration
+
+The Lieutenant API is configured via environment variables:
+
+[cols=",,",options="header",]
+|===
+
+|Environment Variable
+|Description
+|Default
+
+|API_HOST
+|API host to be used in generated Steward deployment manifests.
+|`Host` header of HTTP requests.
+
+|LIEUTENANT_INSTANCE
+|Name of the Lieutenant instance (for example `dev`, `int`, `prod`).
+This value will be set as fact on new clusters.
+|Empty
+
+|NAMESPACE
+|Namespace where the Kubernetes objects are stored.
+|`default`
+
+|STEWARD_IMAGE
+|Image to use in generated Steward deployment manifests.
+|`docker.io/projectsyn/steward:v0.1.0`
+
+|===

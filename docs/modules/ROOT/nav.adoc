@@ -1,4 +1,4 @@
-* xref:home.adoc[Home]
+* xref:index.adoc[Home]
 
 .Tutorials
 include::partial$nav-tutorials.adoc[]

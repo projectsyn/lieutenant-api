@@ -30,7 +30,7 @@ openapi_validate_cmd ?= $(DOCKER_CMD) run $(DOCKER_ARGS) --volume "$${PWD}"/open
 openapi_generate_docs_cmd ?= $(DOCKER_CMD) run $(DOCKER_ARGS) --volume "$${PWD}":/local $(openapi_generator_img) \
 	generate -i /local/openapi.yaml \
 	--generator-name asciidoc \
-	--output /local/docs/modules/ROOT/pages
+	--output /local/docs/modules/ROOT/pages/references/
 
 # Linting parameters
 YAML_FILES      ?= $(shell find . -type f -name '*.yaml' -or -name '*.yml')
@@ -87,9 +87,11 @@ docker:
 	DOCKER_BUILDKIT=1 docker build -t $(IMAGE_NAME) .
 	@echo built image $(IMAGE_NAME)
 
-.PHONY: generate-api-docs
-generate-api-docs:
+./docs/modules/ROOT/pages/references/index.adoc:
 	$(openapi_generate_docs_cmd)
+
+.PHONY: generate-api-docs
+generate-api-docs: ./docs/modules/ROOT/pages/references/index.adoc
 
 .PHONY: docs
 docs: generate-api-docs $(web_dir)/index.html
