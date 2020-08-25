@@ -1,0 +1,17 @@
+= API Authentication
+
+== Bearer Token
+
+Authentication to the API is handled via https://kubernetes.io/docs/reference/access-authn-authz/authentication/#service-account-tokens[Kubernetes service account tokens].
+
+Except for the `/docs`, `/healthz` and `/install/steward.json` endpoints, every request must contain a bearer token. The HTTP header `Authorization` must be set to `Bearer <token>` with `<token>` being a valid https://jwt.io/[JWT token]. This JWT token will then be used by the API to authenticate against the Kubernetes cluster.
+
+== Bootstrap Token
+
+The `/install/steward.json` endpoint must provide a query parameter `token` which contains the bootstrap token of a cluster. Such a token can only be used once and has a short (for example ~30 minutes) expiry time. The API uses it's own service account to authenticate to Kubernetes and search the clusters for the provided bootstrap token. Once a cluster is found and the bootstrap token is still valid, the installation manifests will be returned and the token marked invalid.
+
+== API Service Account
+
+The API needs a service account to communicate with Kubernetes. This service account should have the minimum required rights to search for clusters, mark bootstrap tokens as invalid and read a cluster's service account token.
+Such an RBAC `Role` is included in the xref:deployment.adoc[deployment manifests].
+
