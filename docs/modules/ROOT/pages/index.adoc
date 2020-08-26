@@ -1,76 +1,12 @@
 = Lieutenant API
-:page-layout: swagger
-:page-swagger-url: https://betanet.lisk.io/api/spec
 
-Welcome to the documentation of the Lieutenant Operator - a Project Syn tool.
+Welcome to the documentation of the Lieutenant API - a Project Syn tool.
 
 image::syn.png[]
 
-Also see the xref:syn:SDDs:0007-lieutenant-management-api.adoc[SDD 0007 - Lieutenant - Management API] for more information.
+The Lieutenant API provides the central inventory of all tenants and clusters managed by Project Syn.
+
+It's a REST API based on https://github.com/projectsyn/lieutenant-api/blob/master/openapi.yaml[OpenAPI 3] and is designed to be a wrapper around the various CRDs managed by the xref:lieutenant-operator::index.adoc[Lieutenant Operator].
 
 [TIP]
 The `/docs` endpoint of the API hosts an interactive https://swagger.io/tools/swagger-ui[Swagger UI].
-See https://api.syn.vshn.net/docs for an example.
-
-
-== Introduction
-
-The Lieutenant API is the central inventory of all clusters managed by Project Syn.
-It's the main entrypoint to interact with them and query for their status.
-
-It's mainly a wraper around the various CRDs of the xref:lieutenant-operator::index.adoc[Lieutenant Operator] and makes its usage easier.
-
-
-== API Authentication
-
-=== Bearer Token
-
-Authentication to the API is handled via https://kubernetes.io/docs/reference/access-authn-authz/authentication/#service-account-tokens[Kubernetes service account tokens]. Except for the `/docs`, `/healthz` and `/install/steward.json` endpoints, every request must contain a bearer token. The HTTP header `Authorization` must be set to `Bearer <token>` with `<token>` beign a valid https://jwt.io/[JWT token]. This JWT token will then be used by the API to authenticate against the Kubernetes cluster.
-
-=== Bootstrap Token
-
-The `/install/steward.json` endpoint must provide a query parameter `token` which contains the bootstrap token of a cluster. Such a token can only be used once and has a short (for example ~30 minutes) expiry time. The API uses it's own service account to authenticate to Kubernetes and search the clusters for the provided bootstrap token. Once a cluster is found and the bootstrap token is still valid, the installation manifests will be returned and the token marked invalid.
-
-=== API Service Account
-
-The API needs a service account to communicate with Kubernetes. This service account should have the minimum required rights to search for clusters, mark bootstrap tokens as invalid and read a cluster's service account token.
-Such an RBAC `Role` is included in the xref:deployment.adoc[deployment manifests].
-
-
-== API Authorization
-
-With the exception of the `/install/steward.json` endpoint, authorization of all API requests is fully delegated to the Kubernetes cluster. The provided bearer token will be used to make requests to the Kubernetes API.
-
-
-== API Personas
-
-Consumers of the API
-
-[cols=",",options="header",]
-|===
-a|
-Consumer
-
-a|
-Use Cases
-
-|xref:commodore::index.adoc[Commodore] a|
-* Retrieve facts about a cluster
-* Read-only access to the API
-
-|xref:steward::index.adoc[Steward] a|
-* Initial installation in cluster with generated Kubernetes manifest
-including: +
-** Git repository which contains cluster configuration catalog
-** Bootstrap token
-* SSH deploy key configuration in API
-
-|Web Admin a|
-Full administration possibilities:
-
-* CRUD Tenants
-* CRUD Clusters
-* Query Facts
-
-|CLI |Full administration possibilities
-|===

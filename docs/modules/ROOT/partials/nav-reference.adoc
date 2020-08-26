@@ -1,2 +1,3 @@
-* xref:lieutenant-api:ROOT:references/index.adoc[API Documentation]
+* xref:lieutenant-api:ROOT:references/index.adoc[OpenAPI Documentation]
 * xref:lieutenant-api:ROOT:references/configuration.adoc[Configuration]
+* xref:lieutenant-api:ROOT:references/api_personas.adoc[API Personas]

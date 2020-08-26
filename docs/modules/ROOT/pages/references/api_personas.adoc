@@ -1,0 +1,30 @@
+= API Personas
+
+Consumers of the API
+
+[cols=",",options="header",]
+|===
+|Consumer
+|Use Case
+
+|xref:commodore::index.adoc[Commodore]
+a|
+* Retrieve information about a cluster
+* Read-only access to the API
+
+|xref:steward::index.adoc[Steward]
+a|
+* Initial installation in cluster with generated Kubernetes manifest
+including:
+** Git repository which contains cluster configuration catalog
+** Bootstrap token
+* SSH deploy key configuration in API
+
+|Web GUI
+a|
+Full administration possibilities:
+
+* CRUD Tenants
+* CRUD Clusters
+* Query Facts
+|===

@@ -1,1 +1,2 @@
 * xref:lieutenant-api:ROOT:how-tos/deployment.adoc[Deployment]
+* xref:lieutenant-api:ROOT:how-tos/gitlab_configuration.adoc[GitLab Configuration]

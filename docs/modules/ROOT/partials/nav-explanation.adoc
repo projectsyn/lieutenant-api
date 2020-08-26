@@ -1,0 +1,2 @@
+* xref:lieutenant-api:ROOT:explanations/api_authentication.adoc[Authentication]
+* xref:lieutenant-api:ROOT:explanations/api_authorization.adoc[Authorization]
