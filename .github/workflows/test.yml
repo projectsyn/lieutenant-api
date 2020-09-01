@@ -30,9 +30,3 @@ jobs:
       - name: Build image
         run: make docker
 
-  docs:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-      - name: Compile Docs
-        run: make docs
