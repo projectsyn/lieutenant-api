@@ -11,7 +11,7 @@ jobs:
       matrix:
         command:
           - lint_yaml
-          - lint_adoc
+          - docs-vale
     steps:
       - uses: actions/checkout@v2
       - name: Run ${{ matrix.command }}
