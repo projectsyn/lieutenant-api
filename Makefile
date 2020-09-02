@@ -93,10 +93,6 @@ generate-api-docs: ./docs/modules/ROOT/pages/references/index.adoc
 .PHONY: docs
 docs: generate-api-docs
 
-.PHONY: antora
-antora:
-	$(ANTORA_PREVIEW_CMD)
-
 .PHONY: lint
 lint: lint_yaml lint_adoc
 
@@ -104,6 +100,10 @@ lint: lint_yaml lint_adoc
 lint_yaml: $(YAML_FILES)
 	$(YAMLLINT_DOCKER) -f parsable -c $(YAMLLINT_CONFIG) $(YAMLLINT_ARGS) -- $?
 
-.PHONY: lint_adoc
-lint_adoc:
+.PHONY: docs-serve
+docs-serve:
+	$(ANTORA_PREVIEW_CMD)
+
+.PHONY: docs-vale
+docs-vale:
 	$(VALE_CMD) $(VALE_ARGS)
