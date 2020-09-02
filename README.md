@@ -14,6 +14,8 @@ Documentation for this component is written using [Asciidoc][asciidoc] and [Anto
 It is located in the [docs/](docs) folder.
 The [Divio documentation structure](https://documentation.divio.com/) is used to organize its content.
 
+You can preview the documentation using the `make antora` command, and then opening a browser to http://localhost:2020.
+
 ## OpenAPI Spec
 
 The API is specified in [OpenAPI 3](https://swagger.io/docs/specification/about/) format.
