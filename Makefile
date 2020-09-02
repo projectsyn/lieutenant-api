@@ -87,12 +87,6 @@ docker:
 ./docs/modules/ROOT/pages/references/index.adoc:
 	$(openapi_generate_docs_cmd)
 
-.PHONY: generate-api-docs
-generate-api-docs: ./docs/modules/ROOT/pages/references/index.adoc
-
-.PHONY: docs
-docs: generate-api-docs
-
 .PHONY: lint
 lint: lint_yaml lint_adoc
 
