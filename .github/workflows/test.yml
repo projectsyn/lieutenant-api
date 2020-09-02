@@ -11,7 +11,7 @@ jobs:
       matrix:
         command:
           - lint_yaml
-          - lint_adoc
+          - docs-vale
     steps:
       - uses: actions/checkout@v2
       - name: Run ${{ matrix.command }}
@@ -34,5 +34,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Compile Docs
-        run: make docs
+      - name: Validate Docs
+        run: make docs-vale
