@@ -1,7 +1,3 @@
-# Documentation products
-.cache
-_antora
-
 # Binaries for programs and plugins
 *.exe
 *.exe~
