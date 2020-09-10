@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Applied the default Syn project meta files ([#70])
 - Rework documentation ([#71])
+- Upgrade to Go 1.15 ([#77])
 - Removed playbook.yml from project and replaced with ad-hoc command ([#79])
 - Update default Steward version ([#82])
 
@@ -55,4 +56,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#64]: https://github.com/projectsyn/lieutenant-api/pull/64
 [#70]: https://github.com/projectsyn/lieutenant-api/pull/70
 [#71]: https://github.com/projectsyn/lieutenant-api/pull/71
+[#77]: https://github.com/projectsyn/lieutenant-api/pull/77
 [#82]: https://github.com/projectsyn/lieutenant-api/pull/82
