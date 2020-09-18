@@ -37,6 +37,9 @@ func TestCreateTenant(t *testing.T) {
 
 	newTenant := api.TenantProperties{
 		DisplayName: pointer.ToString("My test Tenant"),
+		GitRepo: &api.GitRepo{
+			Url: pointer.ToString("ssh://git@git.example.com/test.git"),
+		},
 	}
 	result := testutil.NewRequest().
 		Post("/tenants").
@@ -48,8 +51,10 @@ func TestCreateTenant(t *testing.T) {
 	err := result.UnmarshalJsonToObject(tenant)
 	assert.NoError(t, err)
 	assert.NotNil(t, tenant)
+	assert.NotNil(t, tenant.GitRepo)
 	assert.Contains(t, tenant.Id, api.TenantIDPrefix)
 	assert.Equal(t, newTenant.DisplayName, tenant.DisplayName)
+	assert.Equal(t, newTenant.GitRepo.Url, tenant.GitRepo.Url)
 }
 
 func TestCreateTenantFail(t *testing.T) {
@@ -80,6 +85,25 @@ func TestCreateTenantEmpty(t *testing.T) {
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
 	assert.Contains(t, reason.Reason, "must have a value")
+}
+
+func TestCreateTenantNoGitURL(t *testing.T) {
+	e, _ := setupTest(t)
+
+	newTenant := api.TenantProperties{
+		DisplayName: pointer.ToString("Tenant without a Git URL"),
+	}
+
+	result := testutil.NewRequest().
+		Post("/tenants/").
+		WithHeader(echo.HeaderAuthorization, bearerToken).
+		WithJsonBody(newTenant).
+		Go(t, e)
+	assert.Equal(t, http.StatusBadRequest, result.Code())
+	reason := &api.Reason{}
+	err := result.UnmarshalJsonToObject(reason)
+	assert.NoError(t, err)
+	assert.Contains(t, reason.Reason, "required")
 }
 
 func TestTenantDelete(t *testing.T) {

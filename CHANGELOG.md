@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Upgrade to Go 1.15 ([#77])
 - Removed playbook.yml from project and replaced with ad-hoc command ([#79])
 - Update default Steward version ([#82])
+- Make the tenant GitRepo URL required ([#83])
 
 ## [v0.2.0] - 2020-07-23
 ### Changed
@@ -58,3 +59,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#71]: https://github.com/projectsyn/lieutenant-api/pull/71
 [#77]: https://github.com/projectsyn/lieutenant-api/pull/77
 [#82]: https://github.com/projectsyn/lieutenant-api/pull/82
+[#83]: https://github.com/projectsyn/lieutenant-api/pull/83
