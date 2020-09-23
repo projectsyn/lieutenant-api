@@ -33,6 +33,11 @@ func (s *APIImpl) CreateTenant(c echo.Context) error {
 	if err := ctx.Bind(&newTenant); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
+	if newTenant.GitRepo == nil ||
+		newTenant.GitRepo.Url == nil ||
+		*newTenant.GitRepo.Url == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "GitRepo URL is required")
+	}
 	apiTenant := &api.Tenant{
 		TenantProperties: api.TenantProperties(*newTenant),
 	}
