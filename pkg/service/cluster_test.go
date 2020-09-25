@@ -31,6 +31,7 @@ func TestListCluster(t *testing.T) {
 	assert.Equal(t, clusterA.Spec.DisplayName, *clusters[0].DisplayName)
 	assert.Equal(t, clusterB.Spec.DisplayName, *clusters[1].DisplayName)
 	assert.Equal(t, string(clusterB.Spec.GitRepoTemplate.RepoType), *clusters[1].GitRepo.Type)
+	assert.Contains(t, *clusters[0].Annotations, "some")
 }
 
 func TestListClusterMissingBearer(t *testing.T) {
@@ -64,6 +65,9 @@ func TestCreateCluster(t *testing.T) {
 				"region":               "test",
 				LieutenantInstanceFact: "",
 			},
+			Annotations: &api.Annotations{
+				"new": "annotation",
+			},
 		},
 		ClusterTenant: api.ClusterTenant{Tenant: tenantA.Name},
 	}
@@ -81,6 +85,7 @@ func TestCreateCluster(t *testing.T) {
 	assert.Equal(t, cluster.DisplayName, newCluster.DisplayName)
 	assert.Equal(t, newCluster.Facts, cluster.Facts)
 	assert.Equal(t, newCluster.Tenant, cluster.Tenant)
+	assert.Equal(t, *newCluster.Annotations, *cluster.Annotations)
 }
 
 func TestCreateClusterInstanceFact(t *testing.T) {
@@ -199,6 +204,7 @@ func TestClusterGet(t *testing.T) {
 	assert.Equal(t, tenantA.Name, cluster.Tenant)
 	assert.Equal(t, clusterA.Spec.GitHostKeys, *cluster.GitRepo.HostKeys)
 	assert.True(t, strings.HasSuffix(*cluster.InstallURL, clusterA.Status.BootstrapToken.Token))
+	assert.Equal(t, clusterA.Annotations["some"], (*cluster.Annotations)["some"])
 }
 
 func TestClusterGetNoToken(t *testing.T) {
@@ -345,6 +351,10 @@ func TestClusterUpdate(t *testing.T) {
 		Facts: &api.ClusterFacts{
 			"some": "fact",
 		},
+		Annotations: &api.Annotations{
+			"existing":   "",
+			"additional": "value",
+		},
 	}
 	result := testutil.NewRequest().
 		Patch("/clusters/"+clusterB.Name).
@@ -360,6 +370,9 @@ func TestClusterUpdate(t *testing.T) {
 	assert.Equal(t, clusterB.Name, string(cluster.Id))
 	assert.Equal(t, newDisplayName, *cluster.DisplayName)
 	assert.Equal(t, *updateCluster.GitRepo.DeployKey, *cluster.GitRepo.DeployKey)
+	assert.Empty(t, (*cluster.Annotations)["existing"])
+	assert.Contains(t, *cluster.Annotations, "additional")
+	assert.Len(t, *cluster.Annotations, 2)
 }
 
 func TestClusterUpdateDisplayName(t *testing.T) {

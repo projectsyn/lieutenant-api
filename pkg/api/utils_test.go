@@ -1,11 +1,12 @@
 package api
 
 import (
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"regexp"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/AlekSi/pointer"
 )
@@ -59,7 +60,7 @@ func TestRepoConversionSpecPath(t *testing.T) {
 }
 
 func TestGenerateClusterID(t *testing.T) {
-	assertGeneratedId(t, ClusterIDPrefix, func() (s string) {
+	assertGeneratedID(t, ClusterIDPrefix, func() (s string) {
 		id, err := GenerateClusterID()
 		require.NoError(t, err)
 		return string(id.Id)
@@ -67,14 +68,14 @@ func TestGenerateClusterID(t *testing.T) {
 }
 
 func TestGenerateTenantID(t *testing.T) {
-	assertGeneratedId(t, TenantIDPrefix, func() (s string) {
+	assertGeneratedID(t, TenantIDPrefix, func() (s string) {
 		id, err := GenerateTenantID()
 		require.NoError(t, err)
 		return string(id.Id)
 	})
 }
 
-func assertGeneratedId(t *testing.T, prefix string, supplier func() string) {
+func assertGeneratedID(t *testing.T, prefix string, supplier func() string) {
 	// Verify generated ID so that it conforms to https: //kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
 	// Regex pattern tested on regexr.com
 	r := regexp.MustCompile("^[a-z]-[a-z0-9]{3,}(-|_)[a-z0-9]{3,}(-|_)[0-9]+$")
