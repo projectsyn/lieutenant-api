@@ -29,6 +29,10 @@ var (
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "tenant-a",
 			Namespace: "default",
+			Annotations: map[string]string{
+				"some":                     "annotations",
+				"monitoring.syn.tools/sla": "247",
+			},
 		},
 		Spec: synv1alpha1.TenantSpec{
 			DisplayName: "Tenant A",
@@ -57,6 +61,10 @@ var (
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "sample-cluster-a",
 			Namespace: "default",
+			Annotations: map[string]string{
+				"some":                     "value",
+				"monitoring.syn.tools/sla": "247",
+			},
 		},
 		Spec: synv1alpha1.ClusterSpec{
 			DisplayName: "Sample Cluster A",
@@ -81,6 +89,9 @@ var (
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "sample-cluster-b",
 			Namespace: "default",
+			Annotations: map[string]string{
+				"existing": "annotation",
+			},
 		},
 		Spec: synv1alpha1.ClusterSpec{
 			DisplayName: "Sample Cluster B",

@@ -66,6 +66,13 @@ func NewAPITenantFromCRD(tenant synv1alpha1.Tenant) *Tenant {
 		},
 	}
 
+	if len(tenant.Annotations) > 0 {
+		apiTenant.Annotations = &Annotations{}
+		for key, val := range tenant.Annotations {
+			(*apiTenant.Annotations)[key] = val
+		}
+	}
+
 	if len(tenant.Spec.DisplayName) > 0 {
 		apiTenant.DisplayName = &tenant.Spec.DisplayName
 	}
@@ -88,9 +95,19 @@ func NewAPITenantFromCRD(tenant synv1alpha1.Tenant) *Tenant {
 func NewCRDFromAPITenant(apiTenant Tenant) *synv1alpha1.Tenant {
 	tenant := &synv1alpha1.Tenant{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: string(apiTenant.TenantId.Id),
+			Name:        string(apiTenant.TenantId.Id),
+			Annotations: map[string]string{},
 		},
 	}
+
+	if apiTenant.Annotations != nil {
+		for key, val := range *apiTenant.Annotations {
+			if str, ok := val.(string); ok {
+				tenant.Annotations[key] = str
+			}
+		}
+	}
+
 	if apiTenant.DisplayName != nil {
 		tenant.Spec.DisplayName = *apiTenant.DisplayName
 	}
@@ -112,6 +129,13 @@ func NewAPIClusterFromCRD(cluster synv1alpha1.Cluster) *Cluster {
 			GitRepo: &GitRepo{},
 		},
 		ClusterTenant: ClusterTenant{Tenant: cluster.Spec.TenantRef.Name},
+	}
+
+	if len(cluster.Annotations) > 0 {
+		apiCluster.Annotations = &Annotations{}
+		for key, val := range cluster.Annotations {
+			(*apiCluster.Annotations)[key] = val
+		}
 	}
 
 	if len(cluster.Spec.DisplayName) > 0 {
@@ -152,13 +176,21 @@ func NewAPIClusterFromCRD(cluster synv1alpha1.Cluster) *Cluster {
 func NewCRDFromAPICluster(apiCluster Cluster) *synv1alpha1.Cluster {
 	cluster := &synv1alpha1.Cluster{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: string(apiCluster.ClusterId.Id),
+			Name:        string(apiCluster.ClusterId.Id),
+			Annotations: map[string]string{},
 		},
 		Spec: synv1alpha1.ClusterSpec{
 			TenantRef: corev1.LocalObjectReference{
 				Name: apiCluster.Tenant,
 			},
 		},
+	}
+	if apiCluster.Annotations != nil {
+		for key, val := range *apiCluster.Annotations {
+			if str, ok := val.(string); ok {
+				cluster.Annotations[key] = str
+			}
+		}
 	}
 	if apiCluster.DisplayName != nil {
 		cluster.Spec.DisplayName = *apiCluster.DisplayName
