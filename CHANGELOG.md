@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed playbook.yml from project and replaced with ad-hoc command ([#79])
 - Update default Steward version ([#82])
 - Make the tenant GitRepo URL required ([#83])
+- Make the cluster GitRepo URL optional ([#86])
 
 ### Added
 - Expose tenant and cluster annotations in API ([#84])
@@ -63,3 +64,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#82]: https://github.com/projectsyn/lieutenant-api/pull/82
 [#83]: https://github.com/projectsyn/lieutenant-api/pull/83
 [#84]: https://github.com/projectsyn/lieutenant-api/pull/84
+[#86]: https://github.com/projectsyn/lieutenant-api/pull/86

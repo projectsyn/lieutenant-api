@@ -18,8 +18,8 @@ func TestRepoConversionDefaultAuto(t *testing.T) {
 	}
 	repoName := "c-dshfjuhrtu"
 	repoTemplate := newGitRepoTemplate(apiRepo, repoName)
-	assert.Equal(t, repoName, repoTemplate.RepoName)
-	assert.Equal(t, "vshn-gitlab", repoTemplate.APISecretRef.Name)
+	assert.Nil(t, repoTemplate)
+	assert.Nil(t, newGitRepoTemplate(nil, repoName))
 }
 
 func TestRepoConversionUnmanagedo(t *testing.T) {
@@ -30,7 +30,6 @@ func TestRepoConversionUnmanagedo(t *testing.T) {
 	repoTemplate := newGitRepoTemplate(apiRepo, "some-name")
 	assert.Empty(t, repoTemplate.RepoName)
 	assert.Empty(t, repoTemplate.Path)
-	assert.Equal(t, "vshn-gitlab", repoTemplate.APISecretRef.Name)
 }
 
 func TestRepoConversionSpecSubGroupPath(t *testing.T) {
@@ -43,7 +42,7 @@ func TestRepoConversionSpecSubGroupPath(t *testing.T) {
 	repoTemplate := newGitRepoTemplate(apiRepo, "some-name")
 	assert.Equal(t, repoName, repoTemplate.RepoName)
 	assert.Equal(t, repoPath, repoTemplate.Path)
-	assert.Equal(t, "vshn-gitlab", repoTemplate.APISecretRef.Name)
+	assert.Empty(t, repoTemplate.APISecretRef.Name)
 }
 
 func TestRepoConversionSpecPath(t *testing.T) {
@@ -56,7 +55,20 @@ func TestRepoConversionSpecPath(t *testing.T) {
 	repoTemplate := newGitRepoTemplate(apiRepo, "some-name")
 	assert.Equal(t, repoName, repoTemplate.RepoName)
 	assert.Equal(t, repoPath, repoTemplate.Path)
-	assert.Equal(t, "vshn-gitlab", repoTemplate.APISecretRef.Name)
+	assert.Empty(t, repoTemplate.APISecretRef.Name)
+}
+
+func TestRepoConversionFail(t *testing.T) {
+	apiRepo := &GitRepo{
+		Url: pointer.ToString("://git@some.host/group/example.git"),
+	}
+	repoTemplate := newGitRepoTemplate(apiRepo, "some-name")
+	assert.Nil(t, repoTemplate)
+
+	repoTemplate = newGitRepoTemplate(&GitRepo{
+		Url: pointer.ToString("ssh://git@some.host/example.git"),
+	}, "test")
+	assert.Nil(t, repoTemplate)
 }
 
 func TestGenerateClusterID(t *testing.T) {

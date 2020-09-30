@@ -217,18 +217,9 @@ func NewCRDFromAPICluster(apiCluster Cluster) *synv1alpha1.Cluster {
 }
 
 func newGitRepoTemplate(repo *GitRepo, name string) *synv1alpha1.GitRepoTemplate {
-	//TODO: this default repoTemplate should be configurable (ideally per tenant)
-	repoTemplate := &synv1alpha1.GitRepoTemplate{
-		Path:     "syn/cluster-catalogs",
-		RepoName: name,
-		RepoType: synv1alpha1.AutoRepoType,
-		APISecretRef: corev1.SecretReference{
-			Name: "vshn-gitlab",
-		},
-	}
 	if repo == nil {
-		// No git info was specified, just return the default
-		return repoTemplate
+		// No git info was specified
+		return nil
 	}
 
 	if repo.Type == nil || *repo.Type != string(synv1alpha1.UnmanagedRepoType) {
@@ -236,24 +227,27 @@ func newGitRepoTemplate(repo *GitRepo, name string) *synv1alpha1.GitRepoTemplate
 			// It's not unmanaged and the URL was specified, take it apart
 			url, err := url.Parse(*repo.Url)
 			if err != nil {
-				return &synv1alpha1.GitRepoTemplate{}
+				return nil
 			}
 			pathParts := strings.Split(url.Path, "/")
 			pathParts = pathParts[1:]
 			if len(pathParts) < 2 {
-				return &synv1alpha1.GitRepoTemplate{}
+				return nil
 			}
 			// remove .git extension
 			repoName := strings.ReplaceAll(pathParts[len(pathParts)-1], ".git", "")
 			repoPath := strings.Join(pathParts[:len(pathParts)-1], "/")
-			repoTemplate.Path = repoPath
-			repoTemplate.RepoName = repoName
+			return &synv1alpha1.GitRepoTemplate{
+				RepoType: synv1alpha1.AutoRepoType,
+				Path:     repoPath,
+				RepoName: repoName,
+			}
 		}
 	} else if repo.Type != nil {
-		repoTemplate.RepoType = synv1alpha1.UnmanagedRepoType
 		// Repo is unmanaged, remove name and path
-		repoTemplate.RepoName = ""
-		repoTemplate.Path = ""
+		return &synv1alpha1.GitRepoTemplate{
+			RepoType: synv1alpha1.UnmanagedRepoType,
+		}
 	}
-	return repoTemplate
+	return nil
 }
