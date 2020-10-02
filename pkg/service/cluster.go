@@ -118,6 +118,17 @@ func (s *APIImpl) UpdateCluster(c echo.Context, clusterID api.ClusterIdParameter
 		return err
 	}
 
+	if patchCluster.Annotations != nil {
+		if existingCluster.Annotations == nil {
+			existingCluster.Annotations = map[string]string{}
+		}
+		for key, val := range *patchCluster.Annotations {
+			if str, ok := val.(string); ok {
+				existingCluster.Annotations[key] = str
+			}
+		}
+	}
+
 	if patchCluster.DisplayName != nil {
 		existingCluster.Spec.DisplayName = *patchCluster.DisplayName
 	}

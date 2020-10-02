@@ -1,6 +1,6 @@
 # syntax = docker/dockerfile:experimental
 
-FROM docker.io/golang:1.14 as build
+FROM docker.io/golang:1.15 as build
 
 WORKDIR /app
 

@@ -4,16 +4,16 @@ go 1.13
 
 require (
 	github.com/AlekSi/pointer v1.1.0
-	github.com/cosmtrek/air v1.12.1
-	github.com/deepmap/oapi-codegen v1.3.8
+	github.com/cosmtrek/air v1.12.4
+	github.com/deepmap/oapi-codegen v1.3.13
 	github.com/emicklei/go-restful v2.11.2+incompatible // indirect
 	github.com/fatih/color v1.9.0 // indirect
-	github.com/getkin/kin-openapi v0.9.0
+	github.com/getkin/kin-openapi v0.22.1
 	github.com/go-openapi/spec v0.19.6 // indirect
 	github.com/go-openapi/swag v0.19.7 // indirect
 	github.com/google/gofuzz v1.1.0 // indirect
-	github.com/labstack/echo/v4 v4.1.16
-	github.com/projectsyn/lieutenant-operator v0.1.4
+	github.com/labstack/echo/v4 v4.1.17
+	github.com/projectsyn/lieutenant-operator v0.2.2
 	github.com/rakyll/statik v0.1.7
 	github.com/stretchr/testify v1.6.1
 	github.com/taion809/haikunator v0.0.0-20150324135039-4e414e676fd1

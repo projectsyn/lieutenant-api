@@ -30,6 +30,8 @@ func TestListTenants(t *testing.T) {
 	assert.Equal(t, tenantA.Spec.DisplayName, *tenants[0].DisplayName)
 	assert.Equal(t, tenantB.Spec.DisplayName, *tenants[1].DisplayName)
 	assert.Equal(t, string(tenantB.Spec.GitRepoTemplate.RepoType), *tenants[1].GitRepo.Type)
+	assert.Equal(t, tenantA.Annotations["some"], (*tenants[0].Annotations)["some"])
+	assert.Nil(t, tenants[1].Annotations)
 }
 
 func TestCreateTenant(t *testing.T) {
@@ -37,6 +39,12 @@ func TestCreateTenant(t *testing.T) {
 
 	newTenant := api.TenantProperties{
 		DisplayName: pointer.ToString("My test Tenant"),
+		GitRepo: &api.GitRepo{
+			Url: pointer.ToString("ssh://git@git.example.com/test.git"),
+		},
+		Annotations: &api.Annotations{
+			"new": "annotation",
+		},
 	}
 	result := testutil.NewRequest().
 		Post("/tenants").
@@ -48,8 +56,12 @@ func TestCreateTenant(t *testing.T) {
 	err := result.UnmarshalJsonToObject(tenant)
 	assert.NoError(t, err)
 	assert.NotNil(t, tenant)
+	assert.NotNil(t, tenant.GitRepo)
 	assert.Contains(t, tenant.Id, api.TenantIDPrefix)
 	assert.Equal(t, newTenant.DisplayName, tenant.DisplayName)
+	assert.Equal(t, newTenant.GitRepo.Url, tenant.GitRepo.Url)
+	assert.Contains(t, *tenant.Annotations, "new")
+	assert.Len(t, *tenant.Annotations, 1)
 }
 
 func TestCreateTenantFail(t *testing.T) {
@@ -82,6 +94,25 @@ func TestCreateTenantEmpty(t *testing.T) {
 	assert.Contains(t, reason.Reason, "must have a value")
 }
 
+func TestCreateTenantNoGitURL(t *testing.T) {
+	e, _ := setupTest(t)
+
+	newTenant := api.TenantProperties{
+		DisplayName: pointer.ToString("Tenant without a Git URL"),
+	}
+
+	result := testutil.NewRequest().
+		Post("/tenants/").
+		WithHeader(echo.HeaderAuthorization, bearerToken).
+		WithJsonBody(newTenant).
+		Go(t, e)
+	assert.Equal(t, http.StatusBadRequest, result.Code())
+	reason := &api.Reason{}
+	err := result.UnmarshalJsonToObject(reason)
+	assert.NoError(t, err)
+	assert.Contains(t, reason.Reason, "required")
+}
+
 func TestTenantDelete(t *testing.T) {
 	e, _ := setupTest(t)
 
@@ -106,6 +137,8 @@ func TestTenantGet(t *testing.T) {
 	assert.Equal(t, tenantA.Name, string(tenant.Id))
 	assert.Equal(t, tenantA.Spec.DisplayName, *tenant.DisplayName)
 	assert.Equal(t, tenantA.Spec.GitRepoURL, *tenant.GitRepo.Url)
+	assert.Contains(t, *tenant.Annotations, "monitoring.syn.tools/sla")
+	assert.Len(t, *tenant.Annotations, 2)
 }
 
 func TestTenantUpdateEmpty(t *testing.T) {
@@ -153,6 +186,9 @@ func TestTenantUpdate(t *testing.T) {
 		"gitRepo": map[string]string{
 			"url": "newURL",
 		},
+		"annotations": map[string]string{
+			"some": "new",
+		},
 	}
 	result := testutil.NewRequest().
 		Patch("/tenants/"+tenantB.Name).
@@ -167,6 +203,8 @@ func TestTenantUpdate(t *testing.T) {
 	assert.NotNil(t, tenant)
 	assert.Contains(t, string(tenant.Id), tenantB.Name)
 	assert.Equal(t, newDisplayName, *tenant.DisplayName)
+	assert.Contains(t, *tenant.Annotations, "some")
+	assert.Len(t, *tenant.Annotations, 1)
 }
 
 func TestTenantUpdateDisplayName(t *testing.T) {
