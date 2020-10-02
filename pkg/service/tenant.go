@@ -3,6 +3,7 @@ package service
 import (
 	"encoding/json"
 	"net/http"
+	"os"
 
 	"github.com/labstack/echo/v4"
 	"github.com/projectsyn/lieutenant-api/pkg/api"
@@ -10,6 +11,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
+
+// DefaultAPISecretRefNameEnvVar is the name of the env var which specifies the default APISecretRef name
+const DefaultAPISecretRefNameEnvVar = "DEFAULT_API_SECRET_REF_NAME"
 
 // ListTenants lists all tenants
 func (s *APIImpl) ListTenants(c echo.Context) error {
@@ -48,6 +52,11 @@ func (s *APIImpl) CreateTenant(c echo.Context) error {
 	apiTenant.TenantId = id
 	tenant := api.NewCRDFromAPITenant(*apiTenant)
 	tenant.Namespace = s.namespace
+	if name, ok := os.LookupEnv(DefaultAPISecretRefNameEnvVar); ok &&
+		tenant.Spec.GitRepoTemplate != nil &&
+		tenant.Spec.GitRepoTemplate.RepoType == synv1alpha1.AutoRepoType {
+		tenant.Spec.GitRepoTemplate.APISecretRef.Name = name
+	}
 	if err := ctx.client.Create(ctx.context, tenant); err != nil {
 		return err
 	}
