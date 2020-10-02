@@ -13,7 +13,7 @@ require (
 	github.com/go-openapi/swag v0.19.7 // indirect
 	github.com/google/gofuzz v1.1.0 // indirect
 	github.com/labstack/echo/v4 v4.1.17
-	github.com/projectsyn/lieutenant-operator v0.2.2
+	github.com/projectsyn/lieutenant-operator v0.3.0
 	github.com/rakyll/statik v0.1.7
 	github.com/stretchr/testify v1.6.1
 	github.com/taion809/haikunator v0.0.0-20150324135039-4e414e676fd1
