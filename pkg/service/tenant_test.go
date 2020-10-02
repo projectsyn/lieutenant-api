@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"net/http"
+	"os"
 	"testing"
 
 	"github.com/AlekSi/pointer"
@@ -35,12 +36,15 @@ func TestListTenants(t *testing.T) {
 }
 
 func TestCreateTenant(t *testing.T) {
-	e, _ := setupTest(t)
+	e, client := setupTest(t)
+
+	secretName := "test-secret-name"
+	os.Setenv(DefaultAPISecretRefNameEnvVar, secretName)
 
 	newTenant := api.TenantProperties{
 		DisplayName: pointer.ToString("My test Tenant"),
 		GitRepo: &api.GitRepo{
-			Url: pointer.ToString("ssh://git@git.example.com/test.git"),
+			Url: pointer.ToString("ssh://git@git.example.com/group/test.git"),
 		},
 		Annotations: &api.Annotations{
 			"new": "annotation",
@@ -62,6 +66,13 @@ func TestCreateTenant(t *testing.T) {
 	assert.Equal(t, newTenant.GitRepo.Url, tenant.GitRepo.Url)
 	assert.Contains(t, *tenant.Annotations, "new")
 	assert.Len(t, *tenant.Annotations, 1)
+
+	tenantCRD := &synv1alpha1.Tenant{}
+	err = client.Get(context.TODO(), types.NamespacedName{
+		Name: string(tenant.Id),
+	}, tenantCRD)
+	assert.NoError(t, err)
+	assert.Equal(t, secretName, tenantCRD.Spec.GitRepoTemplate.APISecretRef.Name)
 }
 
 func TestCreateTenantFail(t *testing.T) {
