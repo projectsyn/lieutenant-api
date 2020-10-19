@@ -62,7 +62,7 @@ func NewAPITenantFromCRD(tenant synv1alpha1.Tenant) *Tenant {
 	apiTenant := &Tenant{
 		TenantId: TenantId{Id: Id(tenant.Name)},
 		TenantProperties: TenantProperties{
-			GitRepo: &GitRepo{},
+			GitRepo: &RevisionedGitRepo{},
 		},
 	}
 
@@ -79,6 +79,10 @@ func NewAPITenantFromCRD(tenant synv1alpha1.Tenant) *Tenant {
 
 	if len(tenant.Spec.GitRepoURL) > 0 {
 		apiTenant.GitRepo.Url = &tenant.Spec.GitRepoURL
+	}
+
+	if len(tenant.Spec.GitRepoRevision) > 0 {
+		apiTenant.GitRepo.Revision = Revision{&tenant.Spec.GitRepoRevision}
 	}
 
 	if tenant.Spec.GitRepoTemplate != nil {
@@ -112,10 +116,13 @@ func NewCRDFromAPITenant(apiTenant Tenant) *synv1alpha1.Tenant {
 		tenant.Spec.DisplayName = *apiTenant.DisplayName
 	}
 
-	tenant.Spec.GitRepoTemplate = newGitRepoTemplate(apiTenant.GitRepo, string(apiTenant.Id))
+	tenant.Spec.GitRepoTemplate = newGitRepoTemplate(&apiTenant.GitRepo.GitRepo, string(apiTenant.Id))
 	if apiTenant.GitRepo != nil {
 		if apiTenant.GitRepo.Url != nil {
 			tenant.Spec.GitRepoURL = *apiTenant.GitRepo.Url
+		}
+		if apiTenant.GitRepo.Revision.Revision != nil {
+			tenant.Spec.GitRepoRevision = *apiTenant.GitRepo.Revision.Revision
 		}
 	}
 	return tenant

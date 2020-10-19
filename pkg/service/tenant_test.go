@@ -43,8 +43,8 @@ func TestCreateTenant(t *testing.T) {
 
 	newTenant := api.TenantProperties{
 		DisplayName: pointer.ToString("My test Tenant"),
-		GitRepo: &api.GitRepo{
-			Url: pointer.ToString("ssh://git@git.example.com/group/test.git"),
+		GitRepo: &api.RevisionedGitRepo{
+			GitRepo: api.GitRepo{Url: pointer.ToString("ssh://git@git.example.com/group/test.git")},
 		},
 		Annotations: &api.Annotations{
 			"new": "annotation",
