@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+### Added
+- Add configurable revisions for git repositories ([#90])
+
 ## [v0.3.0] - 2020-10-01
 ### Changed
 - Applied the default Syn project meta files ([#70])
@@ -66,3 +70,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#83]: https://github.com/projectsyn/lieutenant-api/pull/83
 [#84]: https://github.com/projectsyn/lieutenant-api/pull/84
 [#86]: https://github.com/projectsyn/lieutenant-api/pull/86
+[#90]: https://github.com/projectsyn/lieutenant-api/pull/90
