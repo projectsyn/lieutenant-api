@@ -85,6 +85,14 @@ func NewAPITenantFromCRD(tenant synv1alpha1.Tenant) *Tenant {
 		apiTenant.GitRepo.Revision = Revision{&tenant.Spec.GitRepoRevision}
 	}
 
+	if len(tenant.Spec.GlobalGitRepoURL) > 0 {
+		apiTenant.GlobalGitRepoURL = &tenant.Spec.GlobalGitRepoURL
+	}
+
+	if len(tenant.Spec.GlobalGitRepoRevision) > 0 {
+		apiTenant.GlobalGitRepoRevision = &tenant.Spec.GlobalGitRepoRevision
+	}
+
 	if tenant.Spec.GitRepoTemplate != nil {
 		if len(tenant.Spec.GitRepoTemplate.RepoType) > 0 {
 			repoType := string(tenant.Spec.GitRepoTemplate.RepoType)
@@ -125,6 +133,15 @@ func NewCRDFromAPITenant(apiTenant Tenant) *synv1alpha1.Tenant {
 			tenant.Spec.GitRepoRevision = *apiTenant.GitRepo.Revision.Revision
 		}
 	}
+
+	if apiTenant.GlobalGitRepoURL != nil {
+		tenant.Spec.GlobalGitRepoURL = *apiTenant.GlobalGitRepoURL
+	}
+
+	if apiTenant.GlobalGitRepoRevision != nil {
+		tenant.Spec.GlobalGitRepoRevision = *apiTenant.GlobalGitRepoRevision
+	}
+
 	return tenant
 }
 

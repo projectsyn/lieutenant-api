@@ -49,6 +49,14 @@ components:
           example: Acme Corp.
         gitRepo:
           $ref: '#/components/schemas/RevisionedGitRepo'
+        globalGitRepoURL:
+          type: string
+          description: Full URL of the global configuration git repo
+          example: ssh://git@github.com/acmecorp/gitops-global.git
+        globalGitRepoRevision:
+          type: string
+          description: Git revision to use with the global configruation git repository.
+          example: v1.2.3
     TenantId:
       type: object
       required:
