@@ -85,6 +85,18 @@ components:
           $ref: '#/components/schemas/ClusterFacts'
         gitRepo:
           $ref: '#/components/schemas/GitRepo'
+        tenantGitRepoRevision:
+          type: string
+          description: |-
+            Git revision to use with the tenant configruation git repository.
+            This takes precedence over the revision configured on the Tenant.
+          example: v1.2.3
+        globalGitRepoRevision:
+          type: string
+          description: |-
+            Git revision to use with the global configruation git repository.
+            This takes precedence over the revision configured on the Tenant.
+          example: v1.2.3
         installURL:
           type: string
           readOnly: true

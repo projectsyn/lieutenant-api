@@ -174,6 +174,14 @@ func NewAPIClusterFromCRD(cluster synv1alpha1.Cluster) *Cluster {
 		apiCluster.GitRepo.HostKeys = &cluster.Spec.GitHostKeys
 	}
 
+	if len(cluster.Spec.TenantGitRepoRevision) > 0 {
+		apiCluster.TenantGitRepoRevision = &cluster.Spec.TenantGitRepoRevision
+	}
+
+	if len(cluster.Spec.GlobalGitRepoRevision) > 0 {
+		apiCluster.GlobalGitRepoRevision = &cluster.Spec.GlobalGitRepoRevision
+	}
+
 	if cluster.Spec.Facts != nil {
 		facts := ClusterFacts{}
 		for key, value := range *cluster.Spec.Facts {
@@ -228,6 +236,15 @@ func NewCRDFromAPICluster(apiCluster Cluster) *synv1alpha1.Cluster {
 			cluster.Spec.GitRepoURL = *apiCluster.GitRepo.Url
 		}
 	}
+
+	if apiCluster.TenantGitRepoRevision != nil {
+		cluster.Spec.TenantGitRepoRevision = *apiCluster.TenantGitRepoRevision
+	}
+
+	if apiCluster.GlobalGitRepoRevision != nil {
+		cluster.Spec.GlobalGitRepoRevision = *apiCluster.GlobalGitRepoRevision
+	}
+
 	if apiCluster.Facts != nil {
 		facts := synv1alpha1.Facts{}
 		for key, value := range *apiCluster.Facts {
