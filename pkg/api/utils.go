@@ -124,8 +124,9 @@ func NewCRDFromAPITenant(apiTenant Tenant) *synv1alpha1.Tenant {
 		tenant.Spec.DisplayName = *apiTenant.DisplayName
 	}
 
-	tenant.Spec.GitRepoTemplate = newGitRepoTemplate(&apiTenant.GitRepo.GitRepo, string(apiTenant.Id))
 	if apiTenant.GitRepo != nil {
+		tenant.Spec.GitRepoTemplate = newGitRepoTemplate(&apiTenant.GitRepo.GitRepo, string(apiTenant.Id))
+
 		if apiTenant.GitRepo.Url != nil {
 			tenant.Spec.GitRepoURL = *apiTenant.GitRepo.Url
 		}
