@@ -1,10 +1,12 @@
 package api
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 	"testing"
 
+	"github.com/projectsyn/lieutenant-operator/pkg/apis/syn/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -97,5 +99,129 @@ func assertGeneratedID(t *testing.T, prefix string, supplier func() string) {
 		require.LessOrEqualf(t, len(id), 63, "Iteration %d: too long for a DNS-compatible name: %s", i, id)
 		require.Regexpf(t, r, id, "Iteration %d: not in the form of 'adjective-noun-number' %s", i, id)
 		require.True(t, strings.HasPrefix(id, prefix))
+	}
+}
+
+var tenantTests = map[string]struct{
+  properties TenantProperties
+  spec v1alpha1.TenantSpec
+}{
+	"empty": {
+		TenantProperties{},
+		v1alpha1.TenantSpec{},
+	},
+	"global git URL": {
+		TenantProperties{
+			GlobalGitRepoURL: pointer.ToString("ssh://git@example.com/foo/bar.git"),
+		},
+		v1alpha1.TenantSpec{
+			GlobalGitRepoURL: "ssh://git@example.com/foo/bar.git",
+		},
+	},
+	"global git revision": {
+		TenantProperties{
+			GlobalGitRepoRevision: pointer.ToString("v1.2.3"),
+		},
+		v1alpha1.TenantSpec{
+			GlobalGitRepoRevision: "v1.2.3",
+		},
+	},
+	"git revision": {
+		TenantProperties{
+			GitRepo: &RevisionedGitRepo{Revision: Revision{pointer.ToString("v1.2.3")}},
+		},
+		v1alpha1.TenantSpec{
+			GitRepoRevision: "v1.2.3",
+		},
+	},
+}
+
+func TestNewCRDFromAPITenant(t *testing.T) {
+	for name, test := range tenantTests {
+		t.Run(name, func(t *testing.T) {
+			apiTenant := Tenant{
+				TenantId{
+					Id: Id(fmt.Sprintf("t-%s", t.Name())),
+				},
+				test.properties,
+			}
+			tenant := NewCRDFromAPITenant(apiTenant)
+			assert.Equal(t, test.spec, tenant.Spec)
+		})
+	}
+}
+
+func TestNewAPITenantFromCRD(t *testing.T) {
+	for name, test := range tenantTests {
+		t.Run(name, func(t *testing.T) {
+			tenant := v1alpha1.Tenant{
+				Spec: test.spec,
+			}
+			apiTenant := NewAPITenantFromCRD(tenant)
+			if test.properties.GitRepo == nil {
+				test.properties.GitRepo = &RevisionedGitRepo{}
+			}
+			assert.Equal(t, test.properties, apiTenant.TenantProperties)
+		})
+	}
+}
+
+var clusterTests = map[string]struct{
+	properties ClusterProperties
+	spec v1alpha1.ClusterSpec
+}{
+	"empty": {
+		ClusterProperties{},
+		v1alpha1.ClusterSpec{},
+	},
+	"global git revision": {
+		ClusterProperties{
+			GlobalGitRepoRevision: pointer.ToString("v1.2.3"),
+		},
+		v1alpha1.ClusterSpec{
+			GlobalGitRepoRevision: "v1.2.3",
+		},
+	},
+	"tenant git revision": {
+		ClusterProperties{
+			TenantGitRepoRevision: pointer.ToString("v1.2.3"),
+		},
+		v1alpha1.ClusterSpec{
+			TenantGitRepoRevision: "v1.2.3",
+		},
+	},
+}
+
+func TestNewCRDFromAPICluster(t *testing.T) {
+	for name, test := range clusterTests {
+		t.Run(name, func(t *testing.T) {
+			apiCluster := Cluster{
+				ClusterId{
+					Id: Id(fmt.Sprintf("c-%s", t.Name())),
+				},
+				ClusterTenant{fmt.Sprintf("t-%s", t.Name())},
+				test.properties,
+			}
+			cluster := NewCRDFromAPICluster(apiCluster)
+			if len(test.spec.TenantRef.Name) == 0 {
+				test.spec.TenantRef.Name = fmt.Sprintf("t-%s", t.Name())
+			}
+			assert.Equal(t, test.spec, cluster.Spec)
+		})
+	}
+}
+
+func TestNewAPIClusterFromCRD(t *testing.T) {
+	for name, test := range clusterTests {
+		t.Run(name, func(t *testing.T) {
+			cluster := v1alpha1.Cluster{
+				Spec: test.spec,
+			}
+			apiCluster := NewAPIClusterFromCRD(cluster)
+			if test.properties.GitRepo == nil {
+				test.properties.GitRepo = &GitRepo{}
+			}
+			assert.Equal(t, test.properties, apiCluster.ClusterProperties)
+		})
 	}
 }

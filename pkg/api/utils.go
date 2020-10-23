@@ -62,7 +62,7 @@ func NewAPITenantFromCRD(tenant synv1alpha1.Tenant) *Tenant {
 	apiTenant := &Tenant{
 		TenantId: TenantId{Id: Id(tenant.Name)},
 		TenantProperties: TenantProperties{
-			GitRepo: &GitRepo{},
+			GitRepo: &RevisionedGitRepo{},
 		},
 	}
 
@@ -79,6 +79,18 @@ func NewAPITenantFromCRD(tenant synv1alpha1.Tenant) *Tenant {
 
 	if len(tenant.Spec.GitRepoURL) > 0 {
 		apiTenant.GitRepo.Url = &tenant.Spec.GitRepoURL
+	}
+
+	if len(tenant.Spec.GitRepoRevision) > 0 {
+		apiTenant.GitRepo.Revision = Revision{&tenant.Spec.GitRepoRevision}
+	}
+
+	if len(tenant.Spec.GlobalGitRepoURL) > 0 {
+		apiTenant.GlobalGitRepoURL = &tenant.Spec.GlobalGitRepoURL
+	}
+
+	if len(tenant.Spec.GlobalGitRepoRevision) > 0 {
+		apiTenant.GlobalGitRepoRevision = &tenant.Spec.GlobalGitRepoRevision
 	}
 
 	if tenant.Spec.GitRepoTemplate != nil {
@@ -112,12 +124,25 @@ func NewCRDFromAPITenant(apiTenant Tenant) *synv1alpha1.Tenant {
 		tenant.Spec.DisplayName = *apiTenant.DisplayName
 	}
 
-	tenant.Spec.GitRepoTemplate = newGitRepoTemplate(apiTenant.GitRepo, string(apiTenant.Id))
 	if apiTenant.GitRepo != nil {
+		tenant.Spec.GitRepoTemplate = newGitRepoTemplate(&apiTenant.GitRepo.GitRepo, string(apiTenant.Id))
+
 		if apiTenant.GitRepo.Url != nil {
 			tenant.Spec.GitRepoURL = *apiTenant.GitRepo.Url
 		}
+		if apiTenant.GitRepo.Revision.Revision != nil {
+			tenant.Spec.GitRepoRevision = *apiTenant.GitRepo.Revision.Revision
+		}
 	}
+
+	if apiTenant.GlobalGitRepoURL != nil {
+		tenant.Spec.GlobalGitRepoURL = *apiTenant.GlobalGitRepoURL
+	}
+
+	if apiTenant.GlobalGitRepoRevision != nil {
+		tenant.Spec.GlobalGitRepoRevision = *apiTenant.GlobalGitRepoRevision
+	}
+
 	return tenant
 }
 
@@ -148,6 +173,14 @@ func NewAPIClusterFromCRD(cluster synv1alpha1.Cluster) *Cluster {
 
 	if len(cluster.Spec.GitHostKeys) > 0 {
 		apiCluster.GitRepo.HostKeys = &cluster.Spec.GitHostKeys
+	}
+
+	if len(cluster.Spec.TenantGitRepoRevision) > 0 {
+		apiCluster.TenantGitRepoRevision = &cluster.Spec.TenantGitRepoRevision
+	}
+
+	if len(cluster.Spec.GlobalGitRepoRevision) > 0 {
+		apiCluster.GlobalGitRepoRevision = &cluster.Spec.GlobalGitRepoRevision
 	}
 
 	if cluster.Spec.Facts != nil {
@@ -204,6 +237,15 @@ func NewCRDFromAPICluster(apiCluster Cluster) *synv1alpha1.Cluster {
 			cluster.Spec.GitRepoURL = *apiCluster.GitRepo.Url
 		}
 	}
+
+	if apiCluster.TenantGitRepoRevision != nil {
+		cluster.Spec.TenantGitRepoRevision = *apiCluster.TenantGitRepoRevision
+	}
+
+	if apiCluster.GlobalGitRepoRevision != nil {
+		cluster.Spec.GlobalGitRepoRevision = *apiCluster.GlobalGitRepoRevision
+	}
+
 	if apiCluster.Facts != nil {
 		facts := synv1alpha1.Facts{}
 		for key, value := range *apiCluster.Facts {
