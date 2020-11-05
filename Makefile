@@ -81,7 +81,7 @@ clean:
 
 .PHONY: docker
 docker:
-	DOCKER_BUILDKIT=1 docker build -t $(IMAGE_NAME) .
+	DOCKER_BUILDKIT=1 docker build -t $(IMAGE_NAME) --build-arg VERSION="$(VERSION)" .
 	@echo built image $(IMAGE_NAME)
 
 ./docs/modules/ROOT/pages/references/index.adoc:
