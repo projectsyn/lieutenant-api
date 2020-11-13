@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+- Update steward to v0.2.2 ([#103])
+
 ## [v0.4.0] - 2020-11-05
 ### Added
 - Add configurable revisions for git repositories ([#90])
@@ -72,3 +77,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#84]: https://github.com/projectsyn/lieutenant-api/pull/84
 [#86]: https://github.com/projectsyn/lieutenant-api/pull/86
 [#90]: https://github.com/projectsyn/lieutenant-api/pull/90
+[#103]: https://github.com/projectsyn/lieutenant-api/pull/103

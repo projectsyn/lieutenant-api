@@ -24,7 +24,7 @@ This value will be set as fact on new clusters.
 
 |STEWARD_IMAGE
 |Image to use in generated Steward deployment manifests.
-|`docker.io/projectsyn/steward:v0.2.1`
+|`docker.io/projectsyn/steward:v0.2.2`
 
 |DEFAULT_API_SECRET_REF_NAME
 |Name of a secret to be used as default for tenant's APISecretRef.

@@ -22,7 +22,7 @@ import (
 const (
 	namespace           = "syn"
 	appName             = "steward"
-	stewardImageDefault = "docker.io/projectsyn/steward:v0.2.1"
+	stewardImageDefault = "docker.io/projectsyn/steward:v0.2.2"
 )
 
 var (
