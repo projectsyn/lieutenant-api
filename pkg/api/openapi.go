@@ -519,27 +519,33 @@ type EchoRouter interface {
 
 // RegisterHandlers adds each server route to the EchoRouter.
 func RegisterHandlers(router EchoRouter, si ServerInterface) {
+	RegisterHandlersWithBaseURL(router, si, "")
+}
+
+// Registers handlers, and prepends BaseURL to the paths, so that the paths
+// can be served under a prefix.
+func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL string) {
 
 	wrapper := ServerInterfaceWrapper{
 		Handler: si,
 	}
 
-	router.GET("/clusters", wrapper.ListClusters)
-	router.POST("/clusters", wrapper.CreateCluster)
-	router.DELETE("/clusters/:clusterId", wrapper.DeleteCluster)
-	router.GET("/clusters/:clusterId", wrapper.GetCluster)
-	router.PATCH("/clusters/:clusterId", wrapper.UpdateCluster)
-	router.GET("/docs", wrapper.Docs)
-	router.GET("/healthz", wrapper.Healthz)
-	router.GET("/install/steward.json", wrapper.InstallSteward)
-	router.GET("/inventory", wrapper.QueryInventory)
-	router.POST("/inventory", wrapper.UpdateInventory)
-	router.GET("/openapi.json", wrapper.Openapi)
-	router.GET("/tenants", wrapper.ListTenants)
-	router.POST("/tenants", wrapper.CreateTenant)
-	router.DELETE("/tenants/:tenantId", wrapper.DeleteTenant)
-	router.GET("/tenants/:tenantId", wrapper.GetTenant)
-	router.PATCH("/tenants/:tenantId", wrapper.UpdateTenant)
+	router.GET(baseURL+"/clusters", wrapper.ListClusters)
+	router.POST(baseURL+"/clusters", wrapper.CreateCluster)
+	router.DELETE(baseURL+"/clusters/:clusterId", wrapper.DeleteCluster)
+	router.GET(baseURL+"/clusters/:clusterId", wrapper.GetCluster)
+	router.PATCH(baseURL+"/clusters/:clusterId", wrapper.UpdateCluster)
+	router.GET(baseURL+"/docs", wrapper.Docs)
+	router.GET(baseURL+"/healthz", wrapper.Healthz)
+	router.GET(baseURL+"/install/steward.json", wrapper.InstallSteward)
+	router.GET(baseURL+"/inventory", wrapper.QueryInventory)
+	router.POST(baseURL+"/inventory", wrapper.UpdateInventory)
+	router.GET(baseURL+"/openapi.json", wrapper.Openapi)
+	router.GET(baseURL+"/tenants", wrapper.ListTenants)
+	router.POST(baseURL+"/tenants", wrapper.CreateTenant)
+	router.DELETE(baseURL+"/tenants/:tenantId", wrapper.DeleteTenant)
+	router.GET(baseURL+"/tenants/:tenantId", wrapper.GetTenant)
+	router.PATCH(baseURL+"/tenants/:tenantId", wrapper.UpdateTenant)
 
 }
 
