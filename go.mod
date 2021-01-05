@@ -7,7 +7,7 @@ require (
 	github.com/cosmtrek/air v1.15.1
 	github.com/deepmap/oapi-codegen v1.3.13
 	github.com/emicklei/go-restful v2.11.2+incompatible // indirect
-	github.com/getkin/kin-openapi v0.33.0
+	github.com/getkin/kin-openapi v0.35.0
 	github.com/go-openapi/spec v0.19.6 // indirect
 	github.com/go-openapi/swag v0.19.7 // indirect
 	github.com/google/gofuzz v1.1.0 // indirect
