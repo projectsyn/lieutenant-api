@@ -112,38 +112,47 @@ func NewCRDFromAPITenant(apiTenant Tenant) *synv1alpha1.Tenant {
 		},
 	}
 
-	if apiTenant.Annotations != nil {
-		for key, val := range *apiTenant.Annotations {
+	if apiTenant.GitRepo != nil {
+		tenant.Spec.GitRepoTemplate = newGitRepoTemplate(&apiTenant.GitRepo.GitRepo, string(apiTenant.Id))
+	}
+
+	SyncCRDFromAPITenant(apiTenant.TenantProperties, tenant)
+
+	return tenant
+}
+
+func SyncCRDFromAPITenant(source TenantProperties, target *synv1alpha1.Tenant) {
+	if source.Annotations != nil {
+		if target.Annotations == nil {
+			target.Annotations = map[string]string{}
+		}
+		for key, val := range *source.Annotations {
 			if str, ok := val.(string); ok {
-				tenant.Annotations[key] = str
+				target.Annotations[key] = str
 			}
 		}
 	}
 
-	if apiTenant.DisplayName != nil {
-		tenant.Spec.DisplayName = *apiTenant.DisplayName
+	if source.DisplayName != nil {
+		target.Spec.DisplayName = *source.DisplayName
 	}
 
-	if apiTenant.GitRepo != nil {
-		tenant.Spec.GitRepoTemplate = newGitRepoTemplate(&apiTenant.GitRepo.GitRepo, string(apiTenant.Id))
-
-		if apiTenant.GitRepo.Url != nil {
-			tenant.Spec.GitRepoURL = *apiTenant.GitRepo.Url
+	if source.GitRepo != nil {
+		if source.GitRepo.Url != nil {
+			target.Spec.GitRepoURL = *source.GitRepo.Url
 		}
-		if apiTenant.GitRepo.Revision.Revision != nil {
-			tenant.Spec.GitRepoRevision = *apiTenant.GitRepo.Revision.Revision
+		if source.GitRepo.Revision.Revision != nil {
+			target.Spec.GitRepoRevision = *source.GitRepo.Revision.Revision
 		}
 	}
 
-	if apiTenant.GlobalGitRepoURL != nil {
-		tenant.Spec.GlobalGitRepoURL = *apiTenant.GlobalGitRepoURL
+	if source.GlobalGitRepoURL != nil {
+		target.Spec.GlobalGitRepoURL = *source.GlobalGitRepoURL
 	}
 
-	if apiTenant.GlobalGitRepoRevision != nil {
-		tenant.Spec.GlobalGitRepoRevision = *apiTenant.GlobalGitRepoRevision
+	if source.GlobalGitRepoRevision != nil {
+		target.Spec.GlobalGitRepoRevision = *source.GlobalGitRepoRevision
 	}
-
-	return tenant
 }
 
 // NewAPIClusterFromCRD transforms a CRD cluster into the API representation
