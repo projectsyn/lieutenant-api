@@ -355,6 +355,8 @@ func TestClusterUpdate(t *testing.T) {
 			"existing":   "",
 			"additional": "value",
 		},
+		GlobalGitRepoRevision: pointer.ToString("my-global-revision"),
+		TenantGitRepoRevision: pointer.ToString("my-tenant-revision"),
 	}
 	result := testutil.NewRequest().
 		Patch("/clusters/"+clusterB.Name).
@@ -373,6 +375,8 @@ func TestClusterUpdate(t *testing.T) {
 	assert.Empty(t, (*cluster.Annotations)["existing"])
 	assert.Contains(t, *cluster.Annotations, "additional")
 	assert.Len(t, *cluster.Annotations, 2)
+	assert.Equal(t, "my-global-revision", pointer.GetString(cluster.GlobalGitRepoRevision))
+	assert.Equal(t, "my-tenant-revision", pointer.GetString(cluster.TenantGitRepoRevision))
 }
 
 func TestClusterUpdateDisplayName(t *testing.T) {

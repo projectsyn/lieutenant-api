@@ -196,10 +196,13 @@ func TestTenantUpdate(t *testing.T) {
 		"displayName": newDisplayName,
 		"gitRepo": map[string]string{
 			"url": "newURL",
+			"revision": "my-revision",
 		},
 		"annotations": map[string]string{
 			"some": "new",
 		},
+		"globalGitRepoRevision": "my-global-revision",
+		"globalGitRepoURL": "ssh://git@example.com/my-global-config.git",
 	}
 	result := testutil.NewRequest().
 		Patch("/tenants/"+tenantB.Name).
@@ -216,6 +219,9 @@ func TestTenantUpdate(t *testing.T) {
 	assert.Equal(t, newDisplayName, *tenant.DisplayName)
 	assert.Contains(t, *tenant.Annotations, "some")
 	assert.Len(t, *tenant.Annotations, 1)
+	assert.Equal(t, "my-revision", pointer.GetString(tenant.GitRepo.Revision.Revision))
+	assert.Equal(t, "my-global-revision", pointer.GetString(tenant.GlobalGitRepoRevision))
+	assert.Equal(t, "ssh://git@example.com/my-global-config.git", pointer.GetString(tenant.GlobalGitRepoURL))
 }
 
 func TestTenantUpdateDisplayName(t *testing.T) {
