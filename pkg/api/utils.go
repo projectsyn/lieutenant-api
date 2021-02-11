@@ -227,44 +227,75 @@ func NewCRDFromAPICluster(apiCluster Cluster) *synv1alpha1.Cluster {
 			},
 		},
 	}
-	if apiCluster.Annotations != nil {
-		for key, val := range *apiCluster.Annotations {
-			if str, ok := val.(string); ok {
-				cluster.Annotations[key] = str
-			}
-		}
-	}
-	if apiCluster.DisplayName != nil {
-		cluster.Spec.DisplayName = *apiCluster.DisplayName
-	}
+
 	cluster.Spec.GitRepoTemplate = newGitRepoTemplate(apiCluster.GitRepo, string(apiCluster.Id))
-	if apiCluster.GitRepo != nil {
-		if apiCluster.GitRepo.HostKeys != nil {
-			cluster.Spec.GitHostKeys = *apiCluster.GitRepo.HostKeys
+
+	if apiCluster.GitRepo != nil && apiCluster.GitRepo.HostKeys != nil {
+		cluster.Spec.GitHostKeys = *apiCluster.GitRepo.HostKeys
+	}
+
+	SyncCRDFromAPICluster(apiCluster.ClusterProperties, cluster)
+
+	return cluster
+}
+
+func SyncCRDFromAPICluster(source ClusterProperties, target *synv1alpha1.Cluster) {
+	if source.Annotations != nil {
+		if target.Annotations == nil {
+			target.Annotations = map[string]string{}
 		}
-		if apiCluster.GitRepo.Url != nil {
-			cluster.Spec.GitRepoURL = *apiCluster.GitRepo.Url
-		}
-	}
-
-	if apiCluster.TenantGitRepoRevision != nil {
-		cluster.Spec.TenantGitRepoRevision = *apiCluster.TenantGitRepoRevision
-	}
-
-	if apiCluster.GlobalGitRepoRevision != nil {
-		cluster.Spec.GlobalGitRepoRevision = *apiCluster.GlobalGitRepoRevision
-	}
-
-	if apiCluster.Facts != nil {
-		facts := synv1alpha1.Facts{}
-		for key, value := range *apiCluster.Facts {
-			if valueStr, ok := value.(string); ok {
-				facts[key] = valueStr
+		for key, val := range *source.Annotations {
+			if str, ok := val.(string); ok {
+				target.Annotations[key] = str
 			}
 		}
-		cluster.Spec.Facts = &facts
 	}
-	return cluster
+
+	if source.DisplayName != nil {
+		target.Spec.DisplayName = *source.DisplayName
+	}
+
+	if source.GitRepo != nil {
+		if source.GitRepo.Url != nil {
+			target.Spec.GitRepoURL = *source.GitRepo.Url
+		}
+		if source.GitRepo.HostKeys != nil {
+			target.Spec.GitHostKeys = *source.GitRepo.HostKeys
+		}
+
+		if source.GitRepo.DeployKey != nil {
+			if target.Spec.GitRepoTemplate.DeployKeys == nil {
+				target.Spec.GitRepoTemplate.DeployKeys = make(map[string]synv1alpha1.DeployKey)
+			}
+
+			k := strings.Split(*source.GitRepo.DeployKey, " ")
+			target.Spec.GitRepoTemplate.DeployKeys["steward"] = synv1alpha1.DeployKey{
+				Type:        k[0],
+				Key:         k[1],
+				WriteAccess: false,
+			}
+		}
+	}
+
+	if source.TenantGitRepoRevision != nil {
+		target.Spec.TenantGitRepoRevision = *source.TenantGitRepoRevision
+	}
+
+	if source.GlobalGitRepoRevision != nil {
+		target.Spec.GlobalGitRepoRevision = *source.GlobalGitRepoRevision
+	}
+
+	if source.Facts != nil {
+		if target.Spec.Facts == nil {
+			target.Spec.Facts = &synv1alpha1.Facts{}
+		}
+
+		for key, value := range *source.Facts {
+			if valueStr, ok := value.(string); ok {
+				(*target.Spec.Facts)[key] = valueStr
+			}
+		}
+	}
 }
 
 func newGitRepoTemplate(repo *GitRepo, name string) *synv1alpha1.GitRepoTemplate {
