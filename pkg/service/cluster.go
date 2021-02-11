@@ -124,7 +124,7 @@ func (s *APIImpl) UpdateCluster(c echo.Context, clusterID api.ClusterIdParameter
 			return echo.NewHTTPError(http.StatusBadRequest, "Illegal deploy key format. Expected '<type> <public key>'")
 		}
 		if existingCluster.Spec.GitRepoTemplate == nil {
-			return echo.NewHTTPError(http.StatusBadRequest, "Cannot update depoy key for not-managed git repo")
+			return echo.NewHTTPError(http.StatusBadRequest, "Cannot update deploy key for unmanaged git repo")
 		}
 	}
 

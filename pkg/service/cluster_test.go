@@ -335,7 +335,7 @@ func TestClusterUpdateNotManagedDeployKey(t *testing.T) {
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
-	assert.Contains(t, reason.Reason, "Cannot update depoy key for not-managed")
+	assert.Contains(t, reason.Reason, "Cannot update deploy key for unmanaged git repo")
 }
 
 func TestClusterUpdate(t *testing.T) {
