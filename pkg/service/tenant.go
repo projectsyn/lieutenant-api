@@ -106,24 +106,9 @@ func (s *APIImpl) UpdateTenant(c echo.Context, tenantID api.TenantIdParameter) e
 	if err := ctx.client.Get(ctx.context, client.ObjectKey{Name: string(tenantID), Namespace: s.namespace}, existingTenant); err != nil {
 		return err
 	}
-	if patchTenant.Annotations != nil {
-		if existingTenant.Annotations == nil {
-			existingTenant.Annotations = map[string]string{}
-		}
-		for key, val := range *patchTenant.Annotations {
-			if str, ok := val.(string); ok {
-				existingTenant.Annotations[key] = str
-			}
-		}
-	}
-	if patchTenant.DisplayName != nil {
-		existingTenant.Spec.DisplayName = *patchTenant.DisplayName
-	}
-	if patchTenant.GitRepo != nil {
-		if patchTenant.GitRepo.Url != nil {
-			existingTenant.Spec.GitRepoURL = *patchTenant.GitRepo.Url
-		}
-	}
+
+	api.SyncCRDFromAPITenant(patchTenant, existingTenant)
+
 	if err := ctx.client.Update(ctx.context, existingTenant); err != nil {
 		return err
 	}

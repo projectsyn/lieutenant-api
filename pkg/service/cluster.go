@@ -118,57 +118,18 @@ func (s *APIImpl) UpdateCluster(c echo.Context, clusterID api.ClusterIdParameter
 		return err
 	}
 
-	if patchCluster.Annotations != nil {
-		if existingCluster.Annotations == nil {
-			existingCluster.Annotations = map[string]string{}
+	if patchCluster.GitRepo != nil && patchCluster.GitRepo.DeployKey != nil {
+		k := strings.Split(*patchCluster.GitRepo.DeployKey, " ")
+		if len(k) != 2 {
+			return echo.NewHTTPError(http.StatusBadRequest, "Illegal deploy key format. Expected '<type> <public key>'")
 		}
-		for key, val := range *patchCluster.Annotations {
-			if str, ok := val.(string); ok {
-				existingCluster.Annotations[key] = str
-			}
+		if existingCluster.Spec.GitRepoTemplate == nil {
+			return echo.NewHTTPError(http.StatusBadRequest, "Cannot update deploy key for unmanaged git repo")
 		}
 	}
 
-	if patchCluster.DisplayName != nil {
-		existingCluster.Spec.DisplayName = *patchCluster.DisplayName
-	}
-	if patchCluster.GitRepo != nil {
-		if patchCluster.GitRepo.Url != nil {
-			existingCluster.Spec.GitRepoURL = *patchCluster.GitRepo.Url
-		}
-		if patchCluster.GitRepo.HostKeys != nil {
-			existingCluster.Spec.GitHostKeys = *patchCluster.GitRepo.HostKeys
-		}
+	api.SyncCRDFromAPICluster(patchCluster, existingCluster)
 
-		if patchCluster.GitRepo.DeployKey != nil {
-			k := strings.Split(*patchCluster.GitRepo.DeployKey, " ")
-			if len(k) != 2 {
-				return echo.NewHTTPError(http.StatusBadRequest, "Illegal deploy key format. Expected '<type> <public key>'")
-			}
-			stewardKey := synv1alpha1.DeployKey{
-				Type:        k[0],
-				Key:         k[1],
-				WriteAccess: false,
-			}
-			if existingCluster.Spec.GitRepoTemplate == nil {
-				return echo.NewHTTPError(http.StatusBadRequest, "Cannot update depoy key for not-managed git repo")
-			}
-			if existingCluster.Spec.GitRepoTemplate.DeployKeys == nil {
-				existingCluster.Spec.GitRepoTemplate.DeployKeys = make(map[string]synv1alpha1.DeployKey)
-			}
-			existingCluster.Spec.GitRepoTemplate.DeployKeys["steward"] = stewardKey
-		}
-	}
-	if patchCluster.Facts != nil {
-		if existingCluster.Spec.Facts == nil {
-			existingCluster.Spec.Facts = &synv1alpha1.Facts{}
-		}
-		for key, value := range *patchCluster.Facts {
-			if valueStr, ok := value.(string); ok {
-				(*existingCluster.Spec.Facts)[key] = valueStr
-			}
-		}
-	}
 	if err := ctx.client.Update(ctx.context, existingCluster); err != nil {
 		return err
 	}

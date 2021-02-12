@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Update steward to v0.2.2 ([#103])
 
+### Fixed
+- Allow updating git repository overrides ([#120])
+
 ## [v0.4.0] - 2020-11-05
 ### Added
 - Add configurable revisions for git repositories ([#90])
@@ -78,3 +81,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [#86]: https://github.com/projectsyn/lieutenant-api/pull/86
 [#90]: https://github.com/projectsyn/lieutenant-api/pull/90
 [#103]: https://github.com/projectsyn/lieutenant-api/pull/103
+[#120]: https://github.com/projectsyn/lieutenant-api/pull/120
