@@ -75,6 +75,49 @@ func TestCreateTenant(t *testing.T) {
 	assert.Equal(t, secretName, tenantCRD.Spec.GitRepoTemplate.APISecretRef.Name)
 }
 
+var createTenantWithIDTests = map[string]struct{
+	request api.Id
+	response api.Id
+}{
+	"requested ID gets accepted": {
+		request: "t-my-custom-id",
+		response: "t-my-custom-id",
+	},
+	"ID without prefix gets prefixed": {
+		request: "my-custom-id",
+		response: "t-my-custom-id",
+	},
+}
+func TestCreateTenantWithID(t *testing.T) {
+	for name, tt := range createTenantWithIDTests {
+		t.Run(name, func(t *testing.T) {
+			e, _ := setupTest(t)
+
+			requestBody := api.Tenant{
+				TenantId: api.TenantId{
+					Id: tt.request,
+				},
+				TenantProperties:	api.TenantProperties{
+					DisplayName: pointer.ToString("Tenant with ID"),
+					GitRepo: &api.RevisionedGitRepo{
+						GitRepo: api.GitRepo{Url: pointer.ToString("ssh://git@git.example.com/group/test.git")},
+					},
+				},
+			}
+
+			response := testutil.NewRequest().
+				Post("/tenants/").
+				WithHeader(echo.HeaderAuthorization, bearerToken).
+				WithJsonBody(requestBody).
+				Go(t, e)
+			assert.Equal(t, http.StatusCreated, response.Code())
+			tenant := &api.Tenant{}
+			assert.NoError(t, response.UnmarshalJsonToObject(tenant))
+			assert.Equal(t, tt.response, tenant.Id)
+		})
+	}
+}
+
 func TestCreateTenantFail(t *testing.T) {
 	e, _ := setupTest(t)
 

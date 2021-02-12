@@ -57,7 +57,7 @@ func TestCreateCluster(t *testing.T) {
 	e, _ := setupTest(t)
 
 	os.Setenv(LieutenantInstanceFactEnvVar, "")
-	newCluster := api.CreateCluster{
+	newCluster := api.Cluster{
 		ClusterProperties: api.ClusterProperties{
 			DisplayName: pointer.ToString("My test cluster"),
 			Facts: &api.ClusterFacts{
@@ -93,7 +93,7 @@ func TestCreateClusterInstanceFact(t *testing.T) {
 
 	instanceName := "lieutenant-dev"
 	os.Setenv(LieutenantInstanceFactEnvVar, instanceName)
-	newCluster := api.CreateCluster{
+	newCluster := api.Cluster{
 		ClusterProperties: api.ClusterProperties{
 			DisplayName: pointer.ToString("My test cluster"),
 			Facts: &api.ClusterFacts{
