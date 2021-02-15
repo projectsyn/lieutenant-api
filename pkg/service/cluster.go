@@ -46,16 +46,19 @@ func (s *APIImpl) CreateCluster(c echo.Context) error {
 	if err := ctx.Bind(&newCluster); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
-	apiCluster := &api.Cluster{
-		ClusterProperties: api.ClusterProperties(newCluster.ClusterProperties),
-		ClusterTenant:     api.ClusterTenant(newCluster.ClusterTenant),
+	apiCluster := api.Cluster(*newCluster)
+	if !strings.HasPrefix(string(apiCluster.Id), api.ClusterIDPrefix) {
+		if apiCluster.Id == "" {
+			id, err := api.GenerateClusterID()
+			if err != nil {
+				return err
+			}
+			apiCluster.ClusterId = id
+		} else {
+			apiCluster.Id = api.ClusterIDPrefix+apiCluster.Id
+		}
 	}
-	id, err := api.GenerateClusterID()
-	if err != nil {
-		return err
-	}
-	apiCluster.ClusterId = id
-	cluster := api.NewCRDFromAPICluster(*apiCluster)
+	cluster := api.NewCRDFromAPICluster(apiCluster)
 	cluster.Namespace = s.namespace
 	if cluster.Spec.Facts == nil {
 		cluster.Spec.Facts = &synv1alpha1.Facts{}
@@ -65,7 +68,7 @@ func (s *APIImpl) CreateCluster(c echo.Context) error {
 	if err := ctx.client.Create(ctx.context, cluster); err != nil {
 		return err
 	}
-	apiCluster = api.NewAPIClusterFromCRD(*cluster)
+	apiCluster = *api.NewAPIClusterFromCRD(*cluster)
 	return ctx.JSON(http.StatusCreated, apiCluster)
 }
 

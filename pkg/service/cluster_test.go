@@ -88,6 +88,48 @@ func TestCreateCluster(t *testing.T) {
 	assert.Equal(t, *newCluster.Annotations, *cluster.Annotations)
 }
 
+var createClusterWithIDTests = map[string]struct{
+	request api.Id
+	response api.Id
+}{
+	"requested ID gets accepted": {
+		request: "c-my-custom-id",
+		response: "c-my-custom-id",
+	},
+	"ID without prefix gets prefixed": {
+		request: "my-custom-id",
+		response: "c-my-custom-id",
+	},
+}
+
+func TestCreateClusterWithId(t *testing.T) {
+	for name, tt := range createClusterWithIDTests {
+		t.Run(name, func(t *testing.T) {
+			e, _ := setupTest(t)
+
+			request := api.Cluster{
+				ClusterId: api.ClusterId{
+					Id: tt.request,
+				},
+				ClusterProperties: api.ClusterProperties{
+				DisplayName: pointer.ToString("My test cluster"),
+			},
+				ClusterTenant: api.ClusterTenant{Tenant: tenantA.Name},
+			}
+			result := testutil.NewRequest().
+				Post("/clusters").
+				WithJsonBody(request).
+				WithHeader(echo.HeaderAuthorization, bearerToken).
+				Go(t, e)
+			assert.Equal(t, http.StatusCreated, result.Code())
+			cluster := &api.Cluster{}
+			err := result.UnmarshalJsonToObject(cluster)
+			assert.NoError(t, err)
+			assert.Equal(t, tt.response, cluster.Id)
+		})
+	}
+}
+
 func TestCreateClusterInstanceFact(t *testing.T) {
 	e, _ := setupTest(t)
 
