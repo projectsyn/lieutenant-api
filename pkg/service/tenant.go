@@ -44,7 +44,7 @@ func (s *APIImpl) CreateTenant(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "GitRepo URL is required")
 	}
 	apiTenant := api.Tenant(*newTenant)
-	if !strings.HasPrefix(string(apiTenant.Id), api.TenantIDPrefix) {
+	if !strings.HasPrefix(apiTenant.Id.String(), api.TenantIDPrefix) {
 		if apiTenant.Id == "" {
 			id, err := api.GenerateTenantID()
 			if err != nil {

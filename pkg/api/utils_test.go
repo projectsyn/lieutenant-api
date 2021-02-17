@@ -85,7 +85,7 @@ func TestGenerateTenantID(t *testing.T) {
 	assertGeneratedID(t, TenantIDPrefix, func() (s string) {
 		id, err := GenerateTenantID()
 		require.NoError(t, err)
-		return string(id.Id)
+		return id.Id.String()
 	})
 }
 

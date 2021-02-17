@@ -107,7 +107,7 @@ func NewAPITenantFromCRD(tenant synv1alpha1.Tenant) *Tenant {
 func NewCRDFromAPITenant(apiTenant Tenant) *synv1alpha1.Tenant {
 	tenant := &synv1alpha1.Tenant{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        string(apiTenant.TenantId.Id),
+			Name:        apiTenant.Id.String(),
 			Annotations: map[string]string{},
 		},
 	}
