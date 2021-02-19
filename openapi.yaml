@@ -270,7 +270,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TenantProperties'
+              $ref: '#/components/schemas/Tenant'
       responses:
         '201':
           description: Tenant created
@@ -403,7 +403,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateCluster'
+              $ref: '#/components/schemas/Cluster'
       responses:
         '201':
           description: Cluster created
