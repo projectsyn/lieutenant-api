@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	github.com/AlekSi/pointer v1.1.0
-	github.com/cosmtrek/air v1.15.1
+	github.com/cosmtrek/air v1.26.0
 	github.com/deepmap/oapi-codegen v1.4.1
 	github.com/emicklei/go-restful v2.11.2+incompatible // indirect
 	github.com/getkin/kin-openapi v0.35.0
