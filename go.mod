@@ -20,6 +20,6 @@ require (
 
 replace k8s.io/client-go => k8s.io/client-go v0.20.4
 
-replace github.com/docker/docker => github.com/moby/moby v1.13.1 // Required by github.com/operator-framework/operator-lifecycle-manager, from lieutenant-operator
+replace github.com/docker/docker => github.com/moby/moby/v20 v20.10.6 // Required by github.com/operator-framework/operator-lifecycle-manager, from lieutenant-operator
 
 // replace github.com/projectsyn/lieutenant-operator => github.com/projectsyn/lieutenant-operator v0.0.5
