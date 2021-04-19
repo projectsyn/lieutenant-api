@@ -5,13 +5,13 @@ import (
 	"testing"
 
 	"github.com/deepmap/oapi-codegen/pkg/testutil"
-	"github.com/projectsyn/lieutenant-api/pkg/api"
 	"github.com/stretchr/testify/assert"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer/json"
-	"k8s.io/client-go/kubernetes/scheme"
+
+	"github.com/projectsyn/lieutenant-api/pkg/api"
 )
 
 func TestInstallSteward(t *testing.T) {
@@ -26,7 +26,7 @@ func TestInstallSteward(t *testing.T) {
 	err := result.UnmarshalJsonToObject(&manifests)
 	assert.NoError(t, err)
 	assert.Len(t, manifests.Items, 6)
-	decoder := json.NewSerializer(json.DefaultMetaFactory, scheme.Scheme, scheme.Scheme, true)
+	decoder := json.NewSerializer(json.DefaultMetaFactory, scheme, scheme, true)
 	foundSecret := false
 	foundDeployment := false
 	for i, item := range manifests.Items {

@@ -7,8 +7,9 @@ import (
 
 	"github.com/deepmap/oapi-codegen/pkg/testutil"
 	"github.com/labstack/echo/v4"
-	"github.com/projectsyn/lieutenant-api/pkg/api"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/projectsyn/lieutenant-api/pkg/api"
 )
 
 func TestQueryInventory(t *testing.T) {

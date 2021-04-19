@@ -11,15 +11,15 @@ import (
 	"github.com/deepmap/oapi-codegen/pkg/testutil"
 	"github.com/getkin/kin-openapi/openapi2"
 	"github.com/labstack/echo/v4"
-	"github.com/projectsyn/lieutenant-api/pkg/api"
 	synv1alpha1 "github.com/projectsyn/lieutenant-operator/pkg/apis/syn/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
+
+	"github.com/projectsyn/lieutenant-api/pkg/api"
 )
 
 const bearerToken = AuthScheme + " eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
@@ -123,7 +123,7 @@ var (
 		},
 		Data: map[string][]byte{"token": []byte("sometoken")},
 	}
-	testObjects = []runtime.Object{
+	testObjects = []client.Object{
 		tenantA,
 		tenantB,
 		clusterA,
@@ -162,11 +162,12 @@ func TestNewServer(t *testing.T) {
 
 func setupTest(t *testing.T, objs ...[]runtime.Object) (*echo.Echo, client.Client) {
 	os.Setenv("NAMESPACE", "default")
-	f := fake.NewFakeClientWithScheme(scheme.Scheme, testObjects...)
+	f := fake.NewClientBuilder().WithScheme(scheme).WithObjects(testObjects...).Build()
 	testMiddleWare := KubernetesAuth{
 		CreateClientFunc: func(token string) (client.Client, error) {
 			return f, nil
 		},
+		cache: createCache(),
 	}
 	e, err := NewAPIServer(testMiddleWare)
 	assert.NoError(t, err)

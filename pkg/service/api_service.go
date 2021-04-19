@@ -14,13 +14,15 @@ import (
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+
 	"github.com/projectsyn/lieutenant-api/pkg/api"
 
-	// Import swagger-ui static files
-	_ "github.com/projectsyn/lieutenant-api/pkg/swaggerui"
 	"github.com/rakyll/statik/fs"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	// Import swagger-ui static files
+	_ "github.com/projectsyn/lieutenant-api/pkg/swaggerui"
 )
 
 // APIImpl implements the API interface
@@ -32,7 +34,6 @@ type APIImpl struct {
 type APIContext struct {
 	echo.Context
 	client  client.Client
-	context context.Context
 }
 
 var (

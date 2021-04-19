@@ -7,10 +7,11 @@ import (
 	"strings"
 
 	"github.com/labstack/echo/v4"
-	"github.com/projectsyn/lieutenant-api/pkg/api"
 	synv1alpha1 "github.com/projectsyn/lieutenant-operator/pkg/apis/syn/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/projectsyn/lieutenant-api/pkg/api"
 )
 
 const (
@@ -27,7 +28,7 @@ func (s *APIImpl) ListClusters(c echo.Context, params api.ListClustersParams) er
 	ctx := c.(*APIContext)
 
 	clusterList := &synv1alpha1.ClusterList{}
-	if err := ctx.client.List(ctx.context, clusterList, client.InNamespace(s.namespace)); err != nil {
+	if err := ctx.client.List(ctx.Request().Context(), clusterList, client.InNamespace(s.namespace)); err != nil {
 		return err
 	}
 	clusters := []api.Cluster{}
@@ -55,7 +56,7 @@ func (s *APIImpl) CreateCluster(c echo.Context) error {
 			}
 			apiCluster.ClusterId = id
 		} else {
-			apiCluster.Id = api.ClusterIDPrefix+apiCluster.Id
+			apiCluster.Id = api.ClusterIDPrefix + apiCluster.Id
 		}
 	}
 	cluster := api.NewCRDFromAPICluster(apiCluster)
@@ -65,7 +66,7 @@ func (s *APIImpl) CreateCluster(c echo.Context) error {
 	}
 	(*cluster.Spec.Facts)[LieutenantInstanceFact] = os.Getenv(LieutenantInstanceFactEnvVar)
 
-	if err := ctx.client.Create(ctx.context, cluster); err != nil {
+	if err := ctx.client.Create(ctx.Request().Context(), cluster); err != nil {
 		return err
 	}
 	apiCluster = *api.NewAPIClusterFromCRD(*cluster)
@@ -83,7 +84,7 @@ func (s *APIImpl) DeleteCluster(c echo.Context, clusterID api.ClusterIdParameter
 		},
 	}
 
-	if err := ctx.client.Delete(ctx.context, deleteCluster); err != nil {
+	if err := ctx.client.Delete(ctx.Request().Context(), deleteCluster); err != nil {
 		return err
 	}
 	return ctx.NoContent(http.StatusNoContent)
@@ -94,7 +95,7 @@ func (s *APIImpl) GetCluster(c echo.Context, clusterID api.ClusterIdParameter) e
 	ctx := c.(*APIContext)
 
 	cluster := &synv1alpha1.Cluster{}
-	if err := ctx.client.Get(ctx.context, client.ObjectKey{Name: string(clusterID), Namespace: s.namespace}, cluster); err != nil {
+	if err := ctx.client.Get(ctx.Request().Context(), client.ObjectKey{Name: string(clusterID), Namespace: s.namespace}, cluster); err != nil {
 		return err
 	}
 	apiCluster := api.NewAPIClusterFromCRD(*cluster)
@@ -117,7 +118,7 @@ func (s *APIImpl) UpdateCluster(c echo.Context, clusterID api.ClusterIdParameter
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 	existingCluster := &synv1alpha1.Cluster{}
-	if err := ctx.client.Get(ctx.context, client.ObjectKey{Name: string(clusterID), Namespace: s.namespace}, existingCluster); err != nil {
+	if err := ctx.client.Get(ctx.Request().Context(), client.ObjectKey{Name: string(clusterID), Namespace: s.namespace}, existingCluster); err != nil {
 		return err
 	}
 
@@ -133,7 +134,7 @@ func (s *APIImpl) UpdateCluster(c echo.Context, clusterID api.ClusterIdParameter
 
 	api.SyncCRDFromAPICluster(patchCluster, existingCluster)
 
-	if err := ctx.client.Update(ctx.context, existingCluster); err != nil {
+	if err := ctx.client.Update(ctx.Request().Context(), existingCluster); err != nil {
 		return err
 	}
 	apiCluster := api.NewAPIClusterFromCRD(*existingCluster)

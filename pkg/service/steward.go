@@ -7,7 +7,6 @@ import (
 
 	"github.com/AlekSi/pointer"
 	"github.com/labstack/echo/v4"
-	"github.com/projectsyn/lieutenant-api/pkg/api"
 	synv1alpha1 "github.com/projectsyn/lieutenant-operator/pkg/apis/syn/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -17,6 +16,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/projectsyn/lieutenant-api/pkg/api"
 )
 
 const (
@@ -41,7 +42,7 @@ func (s *APIImpl) InstallSteward(c echo.Context, params api.InstallStewardParams
 	}
 
 	clusterList := &synv1alpha1.ClusterList{}
-	if err := ctx.client.List(ctx.context, clusterList, client.InNamespace(s.namespace)); err != nil {
+	if err := ctx.client.List(ctx.Request().Context(), clusterList, client.InNamespace(s.namespace)); err != nil {
 		return err
 	}
 	var token string
@@ -91,12 +92,12 @@ func (s *APIImpl) InstallSteward(c echo.Context, params api.InstallStewardParams
 		return err
 	}
 	cluster.Status.BootstrapToken.TokenValid = false
-	return ctx.client.Status().Update(ctx.context, &cluster)
+	return ctx.client.Status().Update(ctx.Request().Context(), &cluster)
 }
 
 func (s *APIImpl) getServiceAccountToken(ctx *APIContext, saName string) (string, error) {
 	serviceAccount := &corev1.ServiceAccount{}
-	if err := ctx.client.Get(ctx.context, types.NamespacedName{Name: saName, Namespace: s.namespace}, serviceAccount); err != nil {
+	if err := ctx.client.Get(ctx.Request().Context(), types.NamespacedName{Name: saName, Namespace: s.namespace}, serviceAccount); err != nil {
 		return "", err
 	}
 
@@ -105,7 +106,7 @@ func (s *APIImpl) getServiceAccountToken(ctx *APIContext, saName string) (string
 	}
 	secretName := serviceAccount.Secrets[0]
 	secret := &corev1.Secret{}
-	if err := ctx.client.Get(ctx.context, types.NamespacedName{Name: secretName.Name, Namespace: serviceAccount.Namespace}, secret); err != nil {
+	if err := ctx.client.Get(ctx.Request().Context(), types.NamespacedName{Name: secretName.Name, Namespace: serviceAccount.Namespace}, secret); err != nil {
 		return "", err
 	}
 
