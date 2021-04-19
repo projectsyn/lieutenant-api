@@ -203,7 +203,7 @@ func TestCreateClusterNoTenant(t *testing.T) {
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
-	assert.Contains(t, reason.Reason, "Property 'tenant' is missing")
+	assert.Contains(t, reason.Reason, "property \"tenant\" is missing")
 }
 
 func TestCreateClusterEmpty(t *testing.T) {
@@ -218,7 +218,7 @@ func TestCreateClusterEmpty(t *testing.T) {
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
-	assert.Contains(t, reason.Reason, "must have a value")
+	assert.Contains(t, reason.Reason, "value is required but missing")
 }
 
 func TestClusterDelete(t *testing.T) {
@@ -292,7 +292,7 @@ func TestClusterUpdateEmpty(t *testing.T) {
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
-	assert.Contains(t, reason.Reason, "must have a value")
+	assert.Contains(t, reason.Reason, "value is required but missing")
 }
 
 func TestClusterUpdateTenant(t *testing.T) {

@@ -147,7 +147,7 @@ func TestCreateTenantEmpty(t *testing.T) {
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
-	assert.Contains(t, reason.Reason, "must have a value")
+	assert.Contains(t, reason.Reason, "value is required but missing")
 }
 
 func TestCreateTenantNoGitURL(t *testing.T) {
@@ -208,7 +208,7 @@ func TestTenantUpdateEmpty(t *testing.T) {
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
-	assert.Contains(t, reason.Reason, "must have a value")
+	assert.Contains(t, reason.Reason, "value is required but missing")
 }
 
 func TestTenantUpdateUnknown(t *testing.T) {
