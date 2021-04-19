@@ -1,7 +1,6 @@
 package service
 
 import (
-	"context"
 	"os"
 	"strconv"
 	"strings"
@@ -92,7 +91,6 @@ func (k *KubernetesAuth) JWTAuth(next echo.HandlerFunc) echo.HandlerFunc {
 
 		apiContext := &APIContext{
 			Context: c,
-			context: context.TODO(),
 			client:  cachedClient.(client.Client),
 		}
 		return next(apiContext)

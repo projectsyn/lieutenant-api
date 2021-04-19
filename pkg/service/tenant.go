@@ -21,7 +21,7 @@ const DefaultAPISecretRefNameEnvVar = "DEFAULT_API_SECRET_REF_NAME"
 func (s *APIImpl) ListTenants(c echo.Context) error {
 	ctx := c.(*APIContext)
 	tenantList := &synv1alpha1.TenantList{}
-	if err := ctx.client.List(ctx.context, tenantList, client.InNamespace(s.namespace)); err != nil {
+	if err := ctx.client.List(ctx.Request().Context(), tenantList, client.InNamespace(s.namespace)); err != nil {
 		return err
 	}
 	tenants := []api.Tenant{}
@@ -63,7 +63,7 @@ func (s *APIImpl) CreateTenant(c echo.Context) error {
 		tenant.Spec.GitRepoTemplate.RepoType == synv1alpha1.AutoRepoType {
 		tenant.Spec.GitRepoTemplate.APISecretRef.Name = name
 	}
-	if err := ctx.client.Create(ctx.context, tenant); err != nil {
+	if err := ctx.client.Create(ctx.Request().Context(), tenant); err != nil {
 		return err
 	}
 	apiTenant = *api.NewAPITenantFromCRD(*tenant)
@@ -80,7 +80,7 @@ func (s *APIImpl) DeleteTenant(c echo.Context, tenantID api.TenantIdParameter) e
 			Namespace: s.namespace,
 		},
 	}
-	if err := ctx.client.Delete(ctx.context, deleteTenant); err != nil {
+	if err := ctx.client.Delete(ctx.Request().Context(), deleteTenant); err != nil {
 		return err
 	}
 	return ctx.NoContent(http.StatusNoContent)
@@ -91,7 +91,7 @@ func (s *APIImpl) GetTenant(c echo.Context, tenantID api.TenantIdParameter) erro
 	ctx := c.(*APIContext)
 
 	tenant := &synv1alpha1.Tenant{}
-	if err := ctx.client.Get(ctx.context, client.ObjectKey{Name: string(tenantID), Namespace: s.namespace}, tenant); err != nil {
+	if err := ctx.client.Get(ctx.Request().Context(), client.ObjectKey{Name: string(tenantID), Namespace: s.namespace}, tenant); err != nil {
 		return err
 	}
 	apiTenant := api.NewAPITenantFromCRD(*tenant)
@@ -109,13 +109,13 @@ func (s *APIImpl) UpdateTenant(c echo.Context, tenantID api.TenantIdParameter) e
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 	existingTenant := &synv1alpha1.Tenant{}
-	if err := ctx.client.Get(ctx.context, client.ObjectKey{Name: string(tenantID), Namespace: s.namespace}, existingTenant); err != nil {
+	if err := ctx.client.Get(ctx.Request().Context(), client.ObjectKey{Name: string(tenantID), Namespace: s.namespace}, existingTenant); err != nil {
 		return err
 	}
 
 	api.SyncCRDFromAPITenant(patchTenant, existingTenant)
 
-	if err := ctx.client.Update(ctx.context, existingTenant); err != nil {
+	if err := ctx.client.Update(ctx.Request().Context(), existingTenant); err != nil {
 		return err
 	}
 	apiTenant := api.NewAPITenantFromCRD(*existingTenant)

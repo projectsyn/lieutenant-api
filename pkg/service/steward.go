@@ -42,7 +42,7 @@ func (s *APIImpl) InstallSteward(c echo.Context, params api.InstallStewardParams
 	}
 
 	clusterList := &synv1alpha1.ClusterList{}
-	if err := ctx.client.List(ctx.context, clusterList, client.InNamespace(s.namespace)); err != nil {
+	if err := ctx.client.List(ctx.Request().Context(), clusterList, client.InNamespace(s.namespace)); err != nil {
 		return err
 	}
 	var token string
@@ -92,12 +92,12 @@ func (s *APIImpl) InstallSteward(c echo.Context, params api.InstallStewardParams
 		return err
 	}
 	cluster.Status.BootstrapToken.TokenValid = false
-	return ctx.client.Status().Update(ctx.context, &cluster)
+	return ctx.client.Status().Update(ctx.Request().Context(), &cluster)
 }
 
 func (s *APIImpl) getServiceAccountToken(ctx *APIContext, saName string) (string, error) {
 	serviceAccount := &corev1.ServiceAccount{}
-	if err := ctx.client.Get(ctx.context, types.NamespacedName{Name: saName, Namespace: s.namespace}, serviceAccount); err != nil {
+	if err := ctx.client.Get(ctx.Request().Context(), types.NamespacedName{Name: saName, Namespace: s.namespace}, serviceAccount); err != nil {
 		return "", err
 	}
 
@@ -106,7 +106,7 @@ func (s *APIImpl) getServiceAccountToken(ctx *APIContext, saName string) (string
 	}
 	secretName := serviceAccount.Secrets[0]
 	secret := &corev1.Secret{}
-	if err := ctx.client.Get(ctx.context, types.NamespacedName{Name: secretName.Name, Namespace: serviceAccount.Namespace}, secret); err != nil {
+	if err := ctx.client.Get(ctx.Request().Context(), types.NamespacedName{Name: secretName.Name, Namespace: serviceAccount.Namespace}, secret); err != nil {
 		return "", err
 	}
 

@@ -34,7 +34,6 @@ type APIImpl struct {
 type APIContext struct {
 	echo.Context
 	client  client.Client
-	context context.Context
 }
 
 var (
