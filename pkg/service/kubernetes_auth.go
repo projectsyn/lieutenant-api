@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	"os"
+	"strconv"
 	"strings"
 
 	lruCache "github.com/hashicorp/golang-lru"
@@ -14,7 +16,8 @@ import (
 
 // AuthScheme to be used in the Authorization header
 const (
-	AuthScheme = "Bearer"
+	AuthScheme         = "Bearer"
+	K8sCacheSizeEnvKey = "K8S_AUTH_CLIENT_CACHE_SIZE"
 )
 
 var (
@@ -26,8 +29,20 @@ var (
 	}
 )
 
+func getCacheSizeOrDefault(def int) int {
+	rawSize := os.Getenv(K8sCacheSizeEnvKey)
+	if rawSize == "" {
+		return def
+	}
+	parsed, err := strconv.Atoi(rawSize)
+	if err != nil || parsed <= 0 {
+		return def
+	}
+	return parsed
+}
+
 func createCache() *lruCache.Cache {
-	cache, err := lruCache.NewWithEvict(128, nil)
+	cache, err := lruCache.NewWithEvict(getCacheSizeOrDefault(128), nil)
 	runtime.Must(err)
 	return cache
 }
