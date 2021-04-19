@@ -4,8 +4,10 @@ import (
 	"context"
 	"strings"
 
+	lruCache "github.com/hashicorp/golang-lru"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"k8s.io/apimachinery/pkg/util/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
@@ -24,14 +26,22 @@ var (
 	}
 )
 
+func createCache() *lruCache.Cache {
+	cache, err := lruCache.NewWithEvict(128, nil)
+	runtime.Must(err)
+	return cache
+}
+
 // KubernetesAuth provides middleware to authenticate with Kubernetes JWT tokens
 type KubernetesAuth struct {
 	CreateClientFunc func(string) (client.Client, error)
+	cache            *lruCache.Cache
 }
 
 // DefaultKubernetesAuth uses the JWT bearer token to authenticate
 var DefaultKubernetesAuth = &KubernetesAuth{
 	CreateClientFunc: getClientFromToken,
+	cache:            createCache(),
 }
 
 // JWTAuth makes sure a JWT bearer token is provided and creates a Kubernetes client
@@ -55,15 +65,20 @@ func (k *KubernetesAuth) JWTAuth(next echo.HandlerFunc) echo.HandlerFunc {
 			token = t
 		}
 
-		client, err := k.CreateClientFunc(token)
-		if err != nil {
-			return err
+		cachedClient, exists := k.cache.Get(token)
+		if !exists {
+			var err error
+			cachedClient, err = k.CreateClientFunc(token)
+			if err != nil {
+				return err
+			}
+			k.cache.Add(token, cachedClient)
 		}
 
 		apiContext := &APIContext{
 			Context: c,
 			context: context.TODO(),
-			client:  client,
+			client:  cachedClient.(client.Client),
 		}
 		return next(apiContext)
 	}

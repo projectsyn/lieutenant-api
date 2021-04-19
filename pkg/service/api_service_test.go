@@ -167,6 +167,7 @@ func setupTest(t *testing.T, objs ...[]runtime.Object) (*echo.Echo, client.Clien
 		CreateClientFunc: func(token string) (client.Client, error) {
 			return f, nil
 		},
+		cache: createCache(),
 	}
 	e, err := NewAPIServer(testMiddleWare)
 	assert.NoError(t, err)

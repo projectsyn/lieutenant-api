@@ -7,6 +7,7 @@ require (
 	github.com/cosmtrek/air v1.26.0
 	github.com/deepmap/oapi-codegen v1.4.1
 	github.com/getkin/kin-openapi v0.35.0
+	github.com/hashicorp/golang-lru v0.5.4
 	github.com/labstack/echo/v4 v4.2.2
 	github.com/projectsyn/lieutenant-operator v0.5.2
 	github.com/rakyll/statik v0.1.7
