@@ -1,12 +1,11 @@
 package service
 
 import (
+	"context"
 	"strings"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	synv1alpha1 "github.com/projectsyn/lieutenant-operator/pkg/apis/syn/v1alpha1"
-	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
@@ -24,10 +23,6 @@ var (
 		"/docs":         true,
 	}
 )
-
-func init() {
-	synv1alpha1.SchemeBuilder.AddToScheme(scheme.Scheme)
-}
 
 // KubernetesAuth provides middleware to authenticate with Kubernetes JWT tokens
 type KubernetesAuth struct {
@@ -67,6 +62,7 @@ func (k *KubernetesAuth) JWTAuth(next echo.HandlerFunc) echo.HandlerFunc {
 
 		apiContext := &APIContext{
 			Context: c,
+			context: context.TODO(),
 			client:  client,
 		}
 		return next(apiContext)
@@ -89,7 +85,7 @@ func getClientFromToken(token string) (client.Client, error) {
 		cfg.TLSClientConfig.CertData = []byte{}
 	}
 	return client.New(cfg, client.Options{
-		Scheme: scheme.Scheme,
+		Scheme: scheme,
 	})
 }
 

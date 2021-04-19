@@ -7,10 +7,11 @@ import (
 	"strings"
 
 	"github.com/labstack/echo/v4"
-	"github.com/projectsyn/lieutenant-api/pkg/api"
 	synv1alpha1 "github.com/projectsyn/lieutenant-operator/pkg/apis/syn/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/projectsyn/lieutenant-api/pkg/api"
 )
 
 // DefaultAPISecretRefNameEnvVar is the name of the env var which specifies the default APISecretRef name

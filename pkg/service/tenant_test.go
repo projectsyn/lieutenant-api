@@ -9,10 +9,11 @@ import (
 	"github.com/AlekSi/pointer"
 	"github.com/deepmap/oapi-codegen/pkg/testutil"
 	"github.com/labstack/echo/v4"
-	"github.com/projectsyn/lieutenant-api/pkg/api"
 	synv1alpha1 "github.com/projectsyn/lieutenant-operator/pkg/apis/syn/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/types"
+
+	"github.com/projectsyn/lieutenant-api/pkg/api"
 )
 
 func TestListTenants(t *testing.T) {
@@ -70,6 +71,7 @@ func TestCreateTenant(t *testing.T) {
 	tenantCRD := &synv1alpha1.Tenant{}
 	err = client.Get(context.TODO(), types.NamespacedName{
 		Name: string(tenant.Id),
+		Namespace: "default",
 	}, tenantCRD)
 	assert.NoError(t, err)
 	assert.Equal(t, secretName, tenantCRD.Spec.GitRepoTemplate.APISecretRef.Name)

@@ -7,10 +7,11 @@ import (
 	"strings"
 
 	"github.com/labstack/echo/v4"
-	"github.com/projectsyn/lieutenant-api/pkg/api"
 	synv1alpha1 "github.com/projectsyn/lieutenant-operator/pkg/apis/syn/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/projectsyn/lieutenant-api/pkg/api"
 )
 
 const (
@@ -55,7 +56,7 @@ func (s *APIImpl) CreateCluster(c echo.Context) error {
 			}
 			apiCluster.ClusterId = id
 		} else {
-			apiCluster.Id = api.ClusterIDPrefix+apiCluster.Id
+			apiCluster.Id = api.ClusterIDPrefix + apiCluster.Id
 		}
 	}
 	cluster := api.NewCRDFromAPICluster(apiCluster)
