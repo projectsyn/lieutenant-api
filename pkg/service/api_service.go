@@ -14,15 +14,11 @@ import (
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-
-	"github.com/projectsyn/lieutenant-api/pkg/api"
-
-	"github.com/rakyll/statik/fs"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	// Import swagger-ui static files
-	_ "github.com/projectsyn/lieutenant-api/pkg/swaggerui"
+	"github.com/projectsyn/lieutenant-api/pkg/api"
+	"github.com/projectsyn/lieutenant-api/swagger-ui"
 )
 
 // APIImpl implements the API interface
@@ -33,11 +29,10 @@ type APIImpl struct {
 // APIContext is a custom echo context
 type APIContext struct {
 	echo.Context
-	client  client.Client
+	client client.Client
 }
 
 var (
-	statikFS    http.FileSystem
 	swaggerJSON []byte
 )
 
@@ -45,11 +40,11 @@ var (
 func NewAPIServer(k8sMiddleware ...KubernetesAuth) (*echo.Echo, error) {
 	swagger, err := api.GetSwagger()
 	if err != nil {
-		return nil, fmt.Errorf("Error loading swagger spec: %w", err)
+		return nil, fmt.Errorf("error loading swagger spec: %w", err)
 	}
 	swaggerJSON, err = swagger.MarshalJSON()
 	if err != nil {
-		return nil, fmt.Errorf("Error marshalling swagger spec: %w", err)
+		return nil, fmt.Errorf("error marshalling swagger spec: %w", err)
 	}
 
 	namespace := os.Getenv("NAMESPACE")
@@ -94,11 +89,6 @@ func NewAPIServer(k8sMiddleware ...KubernetesAuth) (*echo.Echo, error) {
 		}
 	}
 	api.RegisterHandlers(e, apiImpl)
-
-	statikFS, err = fs.New()
-	if err != nil {
-		return nil, err
-	}
 	return e, nil
 }
 
@@ -128,11 +118,7 @@ func (s *APIImpl) Healthz(ctx echo.Context) error {
 
 // Docs serves the swagger UI
 func (s *APIImpl) Docs(ctx echo.Context) error {
-	file, err := fs.ReadFile(statikFS, "/index.html")
-	if err != nil {
-		return err
-	}
-	return ctx.HTMLBlob(http.StatusOK, file)
+	return ctx.HTMLBlob(http.StatusOK, swaggerui.SwaggerHTML)
 }
 
 // Openapi serves the JSON spec
