@@ -9,10 +9,11 @@ import (
 	"time"
 
 	"github.com/deepmap/oapi-codegen/pkg/testutil"
-	"github.com/getkin/kin-openapi/openapi2"
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v4"
 	synv1alpha1 "github.com/projectsyn/lieutenant-operator/pkg/apis/syn/v1alpha1"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -160,8 +161,10 @@ func TestNewServer(t *testing.T) {
 	}
 }
 
-func setupTest(t *testing.T, objs ...[]runtime.Object) (*echo.Echo, client.Client) {
-	os.Setenv("NAMESPACE", "default")
+func setupTest(t *testing.T, _ ...[]runtime.Object) (*echo.Echo, client.Client) {
+	err := os.Setenv("NAMESPACE", "default")
+	require.NoError(t, err)
+
 	f := fake.NewClientBuilder().WithScheme(scheme).WithObjects(testObjects...).Build()
 	testMiddleWare := KubernetesAuth{
 		CreateClientFunc: func(token string) (client.Client, error) {
@@ -169,6 +172,7 @@ func setupTest(t *testing.T, objs ...[]runtime.Object) (*echo.Echo, client.Clien
 		},
 		cache: createCache(),
 	}
+
 	e, err := NewAPIServer(testMiddleWare)
 	assert.NoError(t, err)
 	return e, f
@@ -187,7 +191,7 @@ func TestOpenAPI(t *testing.T) {
 
 	result := testutil.NewRequest().Get("/openapi.json").Go(t, e)
 	assert.Equal(t, http.StatusOK, result.Code())
-	swaggerSpec := &openapi2.Swagger{}
+	swaggerSpec := &openapi3.T{}
 	err := json.Unmarshal(result.Recorder.Body.Bytes(), swaggerSpec)
 	assert.NoError(t, err)
 	assert.NotNil(t, swaggerSpec)
