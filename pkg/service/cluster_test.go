@@ -12,6 +12,7 @@ import (
 	"github.com/labstack/echo/v4"
 	synv1alpha1 "github.com/projectsyn/lieutenant-operator/pkg/apis/syn/v1alpha1"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/types"
 
 	"github.com/projectsyn/lieutenant-api/pkg/api"
@@ -25,13 +26,16 @@ func TestListCluster(t *testing.T) {
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
 	assert.Equal(t, http.StatusOK, result.Code())
-	clusters := []api.Cluster{}
+	clusters := make([]api.Cluster, 0)
 	err := result.UnmarshalJsonToObject(&clusters)
 	assert.NoError(t, err)
 	assert.GreaterOrEqual(t, len(clusters), 2)
 	assert.Equal(t, clusterA.Spec.DisplayName, *clusters[0].DisplayName)
 	assert.Equal(t, clusterB.Spec.DisplayName, *clusters[1].DisplayName)
 	assert.Equal(t, string(clusterB.Spec.GitRepoTemplate.RepoType), *clusters[1].GitRepo.Type)
+	assert.NotNil(t, clusters[0].InstallURL)
+	assert.Nil(t, clusters[1].InstallURL)
+	assert.True(t, strings.HasSuffix(*clusters[0].InstallURL, clusterA.Status.BootstrapToken.Token))
 	assert.Contains(t, *clusters[0].Annotations, "some")
 }
 
@@ -57,7 +61,9 @@ func TestListClusterWrongToken(t *testing.T) {
 func TestCreateCluster(t *testing.T) {
 	e, _ := setupTest(t)
 
-	os.Setenv(LieutenantInstanceFactEnvVar, "")
+	err := os.Setenv(LieutenantInstanceFactEnvVar, "")
+	require.NoError(t, err)
+
 	newCluster := api.Cluster{
 		ClusterProperties: api.ClusterProperties{
 			DisplayName: pointer.ToString("My test cluster"),
@@ -72,14 +78,17 @@ func TestCreateCluster(t *testing.T) {
 		},
 		ClusterTenant: api.ClusterTenant{Tenant: tenantA.Name},
 	}
+
 	result := testutil.NewRequest().
 		Post("/clusters").
 		WithJsonBody(newCluster).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
 	assert.Equal(t, http.StatusCreated, result.Code())
+
 	cluster := &api.Cluster{}
-	err := result.UnmarshalJsonToObject(cluster)
+	err = result.UnmarshalJsonToObject(cluster)
+
 	assert.NoError(t, err)
 	assert.NotNil(t, cluster)
 	assert.Contains(t, cluster.Id, api.ClusterIDPrefix)
@@ -135,7 +144,9 @@ func TestCreateClusterInstanceFact(t *testing.T) {
 	e, _ := setupTest(t)
 
 	instanceName := "lieutenant-dev"
-	os.Setenv(LieutenantInstanceFactEnvVar, instanceName)
+	err := os.Setenv(LieutenantInstanceFactEnvVar, instanceName)
+	require.NoError(t, err)
+
 	newCluster := api.Cluster{
 		ClusterProperties: api.ClusterProperties{
 			DisplayName: pointer.ToString("My test cluster"),
@@ -146,14 +157,16 @@ func TestCreateClusterInstanceFact(t *testing.T) {
 		},
 		ClusterTenant: api.ClusterTenant{Tenant: tenantA.Name},
 	}
+
 	result := testutil.NewRequest().
 		Post("/clusters").
 		WithJsonBody(newCluster).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
 	assert.Equal(t, http.StatusCreated, result.Code())
+
 	cluster := &api.Cluster{}
-	err := result.UnmarshalJsonToObject(cluster)
+	err = result.UnmarshalJsonToObject(cluster)
 	assert.NoError(t, err)
 	assert.NotNil(t, cluster)
 	assert.Equal(t, instanceName, (*cluster.Facts)[LieutenantInstanceFact])

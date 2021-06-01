@@ -2,6 +2,7 @@ package service
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"strings"
@@ -24,18 +25,21 @@ const (
 )
 
 // ListClusters lists all clusters
-func (s *APIImpl) ListClusters(c echo.Context, params api.ListClustersParams) error {
+func (s *APIImpl) ListClusters(c echo.Context, _ api.ListClustersParams) error {
 	ctx := c.(*APIContext)
 
 	clusterList := &synv1alpha1.ClusterList{}
-	if err := ctx.client.List(ctx.Request().Context(), clusterList, client.InNamespace(s.namespace)); err != nil {
+	err := ctx.client.List(ctx.Request().Context(), clusterList, client.InNamespace(s.namespace))
+	if err != nil {
 		return err
 	}
-	clusters := []api.Cluster{}
+
+	clusters := make([]api.Cluster, 0)
 	for _, cluster := range clusterList.Items {
-		apiCluster := api.NewAPIClusterFromCRD(cluster)
+		apiCluster := apiClusterWithInstallURL(ctx, &cluster)
 		clusters = append(clusters, *apiCluster)
 	}
+
 	return ctx.JSON(http.StatusOK, clusters)
 }
 
@@ -59,6 +63,7 @@ func (s *APIImpl) CreateCluster(c echo.Context) error {
 			apiCluster.Id = api.ClusterIDPrefix + apiCluster.Id
 		}
 	}
+
 	cluster := api.NewCRDFromAPICluster(apiCluster)
 	cluster.Namespace = s.namespace
 	if cluster.Spec.Facts == nil {
@@ -69,8 +74,7 @@ func (s *APIImpl) CreateCluster(c echo.Context) error {
 	if err := ctx.client.Create(ctx.Request().Context(), cluster); err != nil {
 		return err
 	}
-	apiCluster = *api.NewAPIClusterFromCRD(*cluster)
-	return ctx.JSON(http.StatusCreated, apiCluster)
+	return ctx.JSON(http.StatusCreated, apiClusterWithInstallURL(ctx, cluster))
 }
 
 // DeleteCluster deletes a cluster
@@ -93,18 +97,14 @@ func (s *APIImpl) DeleteCluster(c echo.Context, clusterID api.ClusterIdParameter
 // GetCluster gets a cluster
 func (s *APIImpl) GetCluster(c echo.Context, clusterID api.ClusterIdParameter) error {
 	ctx := c.(*APIContext)
-
 	cluster := &synv1alpha1.Cluster{}
-	if err := ctx.client.Get(ctx.Request().Context(), client.ObjectKey{Name: string(clusterID), Namespace: s.namespace}, cluster); err != nil {
+
+	err := ctx.client.Get(ctx.Request().Context(), client.ObjectKey{Name: string(clusterID), Namespace: s.namespace}, cluster)
+	if err != nil {
 		return err
 	}
-	apiCluster := api.NewAPIClusterFromCRD(*cluster)
-	if cluster.Status.BootstrapToken != nil &&
-		cluster.Status.BootstrapToken.TokenValid {
-		installURL := ctx.Scheme() + "://" + ctx.Request().Host + "/install/steward.json?token=" + cluster.Status.BootstrapToken.Token
-		apiCluster.InstallURL = &installURL
-	}
-	return ctx.JSON(http.StatusOK, apiCluster)
+
+	return ctx.JSON(http.StatusOK, apiClusterWithInstallURL(ctx, cluster))
 }
 
 // UpdateCluster updates a cluster
@@ -137,6 +137,25 @@ func (s *APIImpl) UpdateCluster(c echo.Context, clusterID api.ClusterIdParameter
 	if err := ctx.client.Update(ctx.Request().Context(), existingCluster); err != nil {
 		return err
 	}
-	apiCluster := api.NewAPIClusterFromCRD(*existingCluster)
-	return ctx.JSON(http.StatusOK, apiCluster)
+	return ctx.JSON(http.StatusOK, apiClusterWithInstallURL(ctx, existingCluster))
+}
+
+func apiClusterWithInstallURL(ctx *APIContext, cluster *synv1alpha1.Cluster) *api.Cluster {
+	apiCluster := api.NewAPIClusterFromCRD(*cluster)
+
+	token, tokenValid := bootstrapToken(cluster)
+	if tokenValid {
+		installURL := fmt.Sprintf("%s://%s/install/steward.json?token=%s", ctx.Scheme(), ctx.Request().Host, token)
+		apiCluster.InstallURL = &installURL
+	}
+
+	return apiCluster
+}
+
+func bootstrapToken(cluster *synv1alpha1.Cluster) (token string, valid bool) {
+	if cluster.Status.BootstrapToken == nil {
+		return "", false
+	}
+
+	return cluster.Status.BootstrapToken.Token, cluster.Status.BootstrapToken.TokenValid
 }
