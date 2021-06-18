@@ -2,7 +2,7 @@
 
 Welcome to the documentation of the Lieutenant API - a Project Syn tool.
 
-image::syn.png[]
+image::projectsyn.svg[]
 
 The Lieutenant API provides the central inventory of all tenants and clusters managed by Project Syn.
 
