@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/AlekSi/pointer v1.1.0
 	github.com/cosmtrek/air v1.27.3
-	github.com/deepmap/oapi-codegen v1.7.0
+	github.com/deepmap/oapi-codegen v1.8.1
 	github.com/getkin/kin-openapi v0.61.0
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/labstack/echo/v4 v4.3.0
