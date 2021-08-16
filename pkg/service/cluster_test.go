@@ -10,7 +10,7 @@ import (
 	"github.com/AlekSi/pointer"
 	"github.com/deepmap/oapi-codegen/pkg/testutil"
 	"github.com/labstack/echo/v4"
-	synv1alpha1 "github.com/projectsyn/lieutenant-operator/pkg/apis/syn/v1alpha1"
+	synv1alpha1 "github.com/projectsyn/lieutenant-operator/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/types"
@@ -98,16 +98,16 @@ func TestCreateCluster(t *testing.T) {
 	assert.Equal(t, *newCluster.Annotations, *cluster.Annotations)
 }
 
-var createClusterWithIDTests = map[string]struct{
-	request api.Id
+var createClusterWithIDTests = map[string]struct {
+	request  api.Id
 	response api.Id
 }{
 	"requested ID gets accepted": {
-		request: "c-my-custom-id",
+		request:  "c-my-custom-id",
 		response: "c-my-custom-id",
 	},
 	"ID without prefix gets prefixed": {
-		request: "my-custom-id",
+		request:  "my-custom-id",
 		response: "c-my-custom-id",
 	},
 }
@@ -122,8 +122,8 @@ func TestCreateClusterWithId(t *testing.T) {
 					Id: tt.request,
 				},
 				ClusterProperties: api.ClusterProperties{
-				DisplayName: pointer.ToString("My test cluster"),
-			},
+					DisplayName: pointer.ToString("My test cluster"),
+				},
 				ClusterTenant: api.ClusterTenant{Tenant: tenantA.Name},
 			}
 			result := testutil.NewRequest().

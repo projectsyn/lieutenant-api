@@ -11,7 +11,7 @@ import (
 	"github.com/deepmap/oapi-codegen/pkg/testutil"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v4"
-	synv1alpha1 "github.com/projectsyn/lieutenant-operator/pkg/apis/syn/v1alpha1"
+	synv1alpha1 "github.com/projectsyn/lieutenant-operator/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
@@ -74,7 +74,7 @@ var (
 			TenantRef: corev1.LocalObjectReference{
 				Name: tenantA.Name,
 			},
-			Facts: &synv1alpha1.Facts{
+			Facts: synv1alpha1.Facts{
 				"cloud": "cloudscale",
 			},
 		},
@@ -105,7 +105,7 @@ var (
 				RepoName:     "cluster-b",
 				RepoType:     synv1alpha1.AutoRepoType,
 			},
-			Facts: &synv1alpha1.Facts{
+			Facts: synv1alpha1.Facts{
 				"cloud": "cloudscale",
 			},
 		},

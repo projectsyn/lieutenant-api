@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/projectsyn/lieutenant-operator/pkg/apis/syn/v1alpha1"
+	"github.com/projectsyn/lieutenant-operator/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -102,9 +102,9 @@ func assertGeneratedID(t *testing.T, prefix string, supplier func() string) {
 	}
 }
 
-var tenantTests = map[string]struct{
-  properties TenantProperties
-  spec v1alpha1.TenantSpec
+var tenantTests = map[string]struct {
+	properties TenantProperties
+	spec       v1alpha1.TenantSpec
 }{
 	"empty": {
 		TenantProperties{},
@@ -166,9 +166,9 @@ func TestNewAPITenantFromCRD(t *testing.T) {
 	}
 }
 
-var clusterTests = map[string]struct{
+var clusterTests = map[string]struct {
 	properties ClusterProperties
-	spec v1alpha1.ClusterSpec
+	spec       v1alpha1.ClusterSpec
 }{
 	"empty": {
 		ClusterProperties{},

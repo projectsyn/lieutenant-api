@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/labstack/echo/v4"
-	synv1alpha1 "github.com/projectsyn/lieutenant-operator/pkg/apis/syn/v1alpha1"
+	synv1alpha1 "github.com/projectsyn/lieutenant-operator/api/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -53,7 +53,7 @@ func (s *APIImpl) CreateTenant(c echo.Context) error {
 			}
 			apiTenant.TenantId = id
 		} else {
-			apiTenant.Id = api.TenantIDPrefix+apiTenant.Id
+			apiTenant.Id = api.TenantIDPrefix + apiTenant.Id
 		}
 	}
 	tenant := api.NewCRDFromAPITenant(apiTenant)
