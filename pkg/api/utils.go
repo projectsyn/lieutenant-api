@@ -8,7 +8,7 @@ import (
 
 	"github.com/taion809/haikunator"
 
-	synv1alpha1 "github.com/projectsyn/lieutenant-operator/pkg/apis/syn/v1alpha1"
+	synv1alpha1 "github.com/projectsyn/lieutenant-operator/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -194,7 +194,7 @@ func NewAPIClusterFromCRD(cluster synv1alpha1.Cluster) *Cluster {
 
 	if cluster.Spec.Facts != nil {
 		facts := ClusterFacts{}
-		for key, value := range *cluster.Spec.Facts {
+		for key, value := range cluster.Spec.Facts {
 			facts[key] = value
 		}
 		apiCluster.Facts = &facts
@@ -287,12 +287,12 @@ func SyncCRDFromAPICluster(source ClusterProperties, target *synv1alpha1.Cluster
 
 	if source.Facts != nil {
 		if target.Spec.Facts == nil {
-			target.Spec.Facts = &synv1alpha1.Facts{}
+			target.Spec.Facts = synv1alpha1.Facts{}
 		}
 
 		for key, value := range *source.Facts {
 			if valueStr, ok := value.(string); ok {
-				(*target.Spec.Facts)[key] = valueStr
+				target.Spec.Facts[key] = valueStr
 			}
 		}
 	}

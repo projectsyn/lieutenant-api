@@ -9,7 +9,7 @@ import (
 	"github.com/AlekSi/pointer"
 	"github.com/deepmap/oapi-codegen/pkg/testutil"
 	"github.com/labstack/echo/v4"
-	synv1alpha1 "github.com/projectsyn/lieutenant-operator/pkg/apis/syn/v1alpha1"
+	synv1alpha1 "github.com/projectsyn/lieutenant-operator/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/types"
 
@@ -70,26 +70,27 @@ func TestCreateTenant(t *testing.T) {
 
 	tenantCRD := &synv1alpha1.Tenant{}
 	err = client.Get(context.TODO(), types.NamespacedName{
-		Name: string(tenant.Id),
+		Name:      string(tenant.Id),
 		Namespace: "default",
 	}, tenantCRD)
 	assert.NoError(t, err)
 	assert.Equal(t, secretName, tenantCRD.Spec.GitRepoTemplate.APISecretRef.Name)
 }
 
-var createTenantWithIDTests = map[string]struct{
-	request api.Id
+var createTenantWithIDTests = map[string]struct {
+	request  api.Id
 	response api.Id
 }{
 	"requested ID gets accepted": {
-		request: "t-my-custom-id",
+		request:  "t-my-custom-id",
 		response: "t-my-custom-id",
 	},
 	"ID without prefix gets prefixed": {
-		request: "my-custom-id",
+		request:  "my-custom-id",
 		response: "t-my-custom-id",
 	},
 }
+
 func TestCreateTenantWithID(t *testing.T) {
 	for name, tt := range createTenantWithIDTests {
 		t.Run(name, func(t *testing.T) {
@@ -99,7 +100,7 @@ func TestCreateTenantWithID(t *testing.T) {
 				TenantId: api.TenantId{
 					Id: tt.request,
 				},
-				TenantProperties:	api.TenantProperties{
+				TenantProperties: api.TenantProperties{
 					DisplayName: pointer.ToString("Tenant with ID"),
 					GitRepo: &api.RevisionedGitRepo{
 						GitRepo: api.GitRepo{Url: pointer.ToString("ssh://git@git.example.com/group/test.git")},
@@ -240,14 +241,14 @@ func TestTenantUpdate(t *testing.T) {
 	updateTenant := map[string]interface{}{
 		"displayName": newDisplayName,
 		"gitRepo": map[string]string{
-			"url": "newURL",
+			"url":      "newURL",
 			"revision": "my-revision",
 		},
 		"annotations": map[string]string{
 			"some": "new",
 		},
 		"globalGitRepoRevision": "my-global-revision",
-		"globalGitRepoURL": "ssh://git@example.com/my-global-config.git",
+		"globalGitRepoURL":      "ssh://git@example.com/my-global-config.git",
 	}
 	result := testutil.NewRequest().
 		Patch("/tenants/"+tenantB.Name).

@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/labstack/echo/v4"
-	synv1alpha1 "github.com/projectsyn/lieutenant-operator/pkg/apis/syn/v1alpha1"
+	synv1alpha1 "github.com/projectsyn/lieutenant-operator/api/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -67,9 +67,9 @@ func (s *APIImpl) CreateCluster(c echo.Context) error {
 	cluster := api.NewCRDFromAPICluster(apiCluster)
 	cluster.Namespace = s.namespace
 	if cluster.Spec.Facts == nil {
-		cluster.Spec.Facts = &synv1alpha1.Facts{}
+		cluster.Spec.Facts = synv1alpha1.Facts{}
 	}
-	(*cluster.Spec.Facts)[LieutenantInstanceFact] = os.Getenv(LieutenantInstanceFactEnvVar)
+	cluster.Spec.Facts[LieutenantInstanceFact] = os.Getenv(LieutenantInstanceFactEnvVar)
 
 	if err := ctx.client.Create(ctx.Request().Context(), cluster); err != nil {
 		return err
