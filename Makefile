@@ -66,7 +66,7 @@ build: generate
 
 .PHONY: test
 test: generate
-	$(GOTEST) -v -cover ./...
+	$(GOTEST) -cover ./...
 
 .PHONY: run
 run: generate

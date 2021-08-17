@@ -64,14 +64,23 @@ func (s *APIImpl) CreateCluster(c echo.Context) error {
 		}
 	}
 
-	cluster := api.NewCRDFromAPICluster(apiCluster)
+	cluster, err := api.NewCRDFromAPICluster(apiCluster)
+	if err != nil {
+		return err
+	}
 	cluster.Namespace = s.namespace
 	if cluster.Spec.Facts == nil {
 		cluster.Spec.Facts = synv1alpha1.Facts{}
 	}
 	cluster.Spec.Facts[LieutenantInstanceFact] = os.Getenv(LieutenantInstanceFactEnvVar)
 
+	// Need to copy status as Create will modify it
+	status := cluster.Status.DeepCopy()
 	if err := ctx.client.Create(ctx.Request().Context(), cluster); err != nil {
+		return err
+	}
+	cluster.Status = *status
+	if err := ctx.client.Status().Update(ctx.Request().Context(), cluster); err != nil {
 		return err
 	}
 	return ctx.JSON(http.StatusCreated, apiClusterWithInstallURL(ctx, cluster))
@@ -134,7 +143,13 @@ func (s *APIImpl) UpdateCluster(c echo.Context, clusterID api.ClusterIdParameter
 
 	api.SyncCRDFromAPICluster(patchCluster, existingCluster)
 
+	// Need to copy status as the update will modify it
+	status := existingCluster.Status.DeepCopy()
 	if err := ctx.client.Update(ctx.Request().Context(), existingCluster); err != nil {
+		return err
+	}
+	existingCluster.Status = *status
+	if err := ctx.client.Status().Update(ctx.Request().Context(), existingCluster); err != nil {
 		return err
 	}
 	return ctx.JSON(http.StatusOK, apiClusterWithInstallURL(ctx, existingCluster))
