@@ -83,6 +83,8 @@ components:
           example: My very important cluster
         facts:
           $ref: '#/components/schemas/ClusterFacts'
+        dynamicFacts:
+          $ref: '#/components/schemas/DynamicClusterFacts'
         gitRepo:
           $ref: '#/components/schemas/GitRepo'
         tenantGitRepoRevision:
@@ -129,6 +131,11 @@ components:
         distribution: openshift4
         cloud: aws
         region: eu-west-1
+    DynamicClusterFacts:
+      type: object
+      description: Dynamic facts about a cluster object. Are periodically udpated by Project Syn and should not be set manually.
+      example:
+        kubernetesVersion: "1.21.3"
     Cluster:
       allOf:
         - $ref: '#/components/schemas/ClusterId'
