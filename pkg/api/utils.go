@@ -228,7 +228,7 @@ func unmarshalFact(fact string) interface{} {
 	err := json.Unmarshal([]byte(fact), &intFact)
 	if err != nil {
 		// The given string is not a JSON value
-		// Fall back to returning to string
+		// Fall back to returning the raw string
 		return fact
 	}
 	return intFact
