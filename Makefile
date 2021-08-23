@@ -20,6 +20,8 @@ ANTORA_PREVIEW_CMD ?= $(DOCKER_CMD) run --rm --publish 35729:35729 --publish 202
 VALE_CMD  ?= $(DOCKER_CMD) run $(DOCKER_ARGS) --volume "$${PWD}"/docs/modules:/pages vshn/vale:2.6.1
 VALE_ARGS ?= --minAlertLevel=error --config=/pages/ROOT/pages/.vale.ini /pages
 
+SWAGGER_CMD  ?= $(DOCKER_CMD) run --rm --user "$$(id -u)" --volume "$${PWD}:/src" -p 8080:8080 -e SWAGGER_JSON=/src/openapi.yaml swaggerapi/swagger-ui
+
 openapi_generator_img ?= docker.io/openapitools/openapi-generator:cli-v4.3.0
 openapi_validate_cmd ?= $(DOCKER_CMD) run $(DOCKER_ARGS) --volume "$${PWD}"/openapi.yaml:/openapi.yaml $(openapi_generator_img) \
 	validate -i /openapi.yaml
@@ -101,3 +103,7 @@ docs-serve:
 .PHONY: docs-vale
 docs-vale:
 	$(VALE_CMD) $(VALE_ARGS)
+
+.PHONY: docs-vale
+serve-api-doc:
+	$(SWAGGER_CMD)

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/url"
@@ -200,6 +201,14 @@ func NewAPIClusterFromCRD(cluster synv1alpha1.Cluster) *Cluster {
 		apiCluster.Facts = &facts
 	}
 
+	if cluster.Status.Facts != nil {
+		facts := DynamicClusterFacts{}
+		for key, value := range cluster.Status.Facts {
+			facts[key] = unmarshalFact(value)
+		}
+		apiCluster.DynamicFacts = &facts
+	}
+
 	if cluster.Spec.GitRepoTemplate != nil {
 		if stewardKey, ok := cluster.Spec.GitRepoTemplate.DeployKeys["steward"]; ok {
 			sshKey := fmt.Sprintf("%s %s", stewardKey.Type, stewardKey.Key)
@@ -214,8 +223,19 @@ func NewAPIClusterFromCRD(cluster synv1alpha1.Cluster) *Cluster {
 	return apiCluster
 }
 
+func unmarshalFact(fact string) interface{} {
+	var intFact interface{}
+	err := json.Unmarshal([]byte(fact), &intFact)
+	if err != nil {
+		// The given string is not a JSON value
+		// Fall back to returning the raw string
+		return fact
+	}
+	return intFact
+}
+
 // NewCRDFromAPICluster transforms an API cluster into the CRD representation
-func NewCRDFromAPICluster(apiCluster Cluster) *synv1alpha1.Cluster {
+func NewCRDFromAPICluster(apiCluster Cluster) (*synv1alpha1.Cluster, error) {
 	cluster := &synv1alpha1.Cluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        string(apiCluster.ClusterId.Id),
@@ -234,12 +254,11 @@ func NewCRDFromAPICluster(apiCluster Cluster) *synv1alpha1.Cluster {
 		cluster.Spec.GitHostKeys = *apiCluster.GitRepo.HostKeys
 	}
 
-	SyncCRDFromAPICluster(apiCluster.ClusterProperties, cluster)
-
-	return cluster
+	err := SyncCRDFromAPICluster(apiCluster.ClusterProperties, cluster)
+	return cluster, err
 }
 
-func SyncCRDFromAPICluster(source ClusterProperties, target *synv1alpha1.Cluster) {
+func SyncCRDFromAPICluster(source ClusterProperties, target *synv1alpha1.Cluster) error {
 	if source.Annotations != nil {
 		if target.Annotations == nil {
 			target.Annotations = map[string]string{}
@@ -296,6 +315,21 @@ func SyncCRDFromAPICluster(source ClusterProperties, target *synv1alpha1.Cluster
 			}
 		}
 	}
+
+	if source.DynamicFacts != nil {
+		if target.Status.Facts == nil {
+			target.Status.Facts = synv1alpha1.Facts{}
+		}
+
+		for key, value := range *source.DynamicFacts {
+			encodedFact, err := json.Marshal(value)
+			if err != nil {
+				return err
+			}
+			target.Status.Facts[key] = string(encodedFact)
+		}
+	}
+	return nil
 }
 
 func newGitRepoTemplate(repo *GitRepo, name string) *synv1alpha1.GitRepoTemplate {

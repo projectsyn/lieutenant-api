@@ -25,7 +25,7 @@ func TestListCluster(t *testing.T) {
 		Get("/clusters").
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
-	assert.Equal(t, http.StatusOK, result.Code())
+	require.Equal(t, http.StatusOK, result.Code())
 	clusters := make([]api.Cluster, 0)
 	err := result.UnmarshalJsonToObject(&clusters)
 	assert.NoError(t, err)
@@ -72,6 +72,9 @@ func TestCreateCluster(t *testing.T) {
 				"region":               "test",
 				LieutenantInstanceFact: "",
 			},
+			DynamicFacts: &api.DynamicClusterFacts{
+				"kubernetesVersion": "1.16",
+			},
 			Annotations: &api.Annotations{
 				"new": "annotation",
 			},
@@ -94,6 +97,7 @@ func TestCreateCluster(t *testing.T) {
 	assert.Contains(t, cluster.Id, api.ClusterIDPrefix)
 	assert.Equal(t, cluster.DisplayName, newCluster.DisplayName)
 	assert.Equal(t, newCluster.Facts, cluster.Facts)
+	assert.Equal(t, newCluster.DynamicFacts, cluster.DynamicFacts)
 	assert.Equal(t, newCluster.Tenant, cluster.Tenant)
 	assert.Equal(t, *newCluster.Annotations, *cluster.Annotations)
 }
@@ -407,6 +411,10 @@ func TestClusterUpdate(t *testing.T) {
 		Facts: &api.ClusterFacts{
 			"some": "fact",
 		},
+		DynamicFacts: &api.DynamicClusterFacts{
+			"dynamic": "fact",
+			"complex": struct{ name string }{name: "fact"},
+		},
 		Annotations: &api.Annotations{
 			"existing":   "",
 			"additional": "value",
@@ -420,10 +428,10 @@ func TestClusterUpdate(t *testing.T) {
 		WithContentType(api.ContentJSONPatch).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
-	assert.Equal(t, http.StatusOK, result.Code())
+	require.Equal(t, http.StatusOK, result.Code())
 	cluster := &api.Cluster{}
 	err := result.UnmarshalJsonToObject(cluster)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.NotNil(t, cluster)
 	assert.Equal(t, clusterB.Name, string(cluster.Id))
 	assert.Equal(t, newDisplayName, *cluster.DisplayName)
@@ -433,6 +441,10 @@ func TestClusterUpdate(t *testing.T) {
 	assert.Len(t, *cluster.Annotations, 2)
 	assert.Equal(t, "my-global-revision", pointer.GetString(cluster.GlobalGitRepoRevision))
 	assert.Equal(t, "my-tenant-revision", pointer.GetString(cluster.TenantGitRepoRevision))
+
+	require.NotNil(t, cluster.DynamicFacts)
+	assert.Contains(t, *cluster.DynamicFacts, "dynamic")
+	assert.Contains(t, *cluster.DynamicFacts, "complex")
 }
 
 func TestClusterUpdateDisplayName(t *testing.T) {
@@ -449,10 +461,10 @@ func TestClusterUpdateDisplayName(t *testing.T) {
 		WithContentType(api.ContentJSONPatch).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
-	assert.Equal(t, http.StatusOK, result.Code())
+	require.Equal(t, http.StatusOK, result.Code())
 	cluster := &api.Cluster{}
 	err := result.UnmarshalJsonToObject(cluster)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, newDisplayName, *cluster.DisplayName)
 	clusterObj := &synv1alpha1.Cluster{}
 	err = client.Get(context.TODO(), types.NamespacedName{

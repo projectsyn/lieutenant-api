@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"strings"
@@ -9,6 +10,7 @@ import (
 	"github.com/projectsyn/lieutenant-operator/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"k8s.io/apimachinery/pkg/version"
 
 	"github.com/AlekSi/pointer"
 )
@@ -168,26 +170,30 @@ func TestNewAPITenantFromCRD(t *testing.T) {
 
 var clusterTests = map[string]struct {
 	properties ClusterProperties
-	spec       v1alpha1.ClusterSpec
+	cluster    v1alpha1.Cluster
 }{
 	"empty": {
 		ClusterProperties{},
-		v1alpha1.ClusterSpec{},
+		v1alpha1.Cluster{},
 	},
 	"global git revision": {
 		ClusterProperties{
 			GlobalGitRepoRevision: pointer.ToString("v1.2.3"),
 		},
-		v1alpha1.ClusterSpec{
-			GlobalGitRepoRevision: "v1.2.3",
+		v1alpha1.Cluster{
+			Spec: v1alpha1.ClusterSpec{
+				GlobalGitRepoRevision: "v1.2.3",
+			},
 		},
 	},
 	"tenant git revision": {
 		ClusterProperties{
 			TenantGitRepoRevision: pointer.ToString("v1.2.3"),
 		},
-		v1alpha1.ClusterSpec{
-			TenantGitRepoRevision: "v1.2.3",
+		v1alpha1.Cluster{
+			Spec: v1alpha1.ClusterSpec{
+				TenantGitRepoRevision: "v1.2.3",
+			},
 		},
 	},
 }
@@ -202,11 +208,13 @@ func TestNewCRDFromAPICluster(t *testing.T) {
 				ClusterTenant{fmt.Sprintf("t-%s", t.Name())},
 				test.properties,
 			}
-			cluster := NewCRDFromAPICluster(apiCluster)
-			if len(test.spec.TenantRef.Name) == 0 {
-				test.spec.TenantRef.Name = fmt.Sprintf("t-%s", t.Name())
+			cluster, err := NewCRDFromAPICluster(apiCluster)
+			assert.NoError(t, err)
+			if len(test.cluster.Spec.TenantRef.Name) == 0 {
+				test.cluster.Spec.TenantRef.Name = fmt.Sprintf("t-%s", t.Name())
 			}
-			assert.Equal(t, test.spec, cluster.Spec)
+			assert.Equal(t, test.cluster.Spec, cluster.Spec)
+			assert.Equal(t, test.cluster.Status.Facts, cluster.Status.Facts)
 		})
 	}
 }
@@ -214,9 +222,7 @@ func TestNewCRDFromAPICluster(t *testing.T) {
 func TestNewAPIClusterFromCRD(t *testing.T) {
 	for name, test := range clusterTests {
 		t.Run(name, func(t *testing.T) {
-			cluster := v1alpha1.Cluster{
-				Spec: test.spec,
-			}
+			cluster := test.cluster
 			apiCluster := NewAPIClusterFromCRD(cluster)
 			if test.properties.GitRepo == nil {
 				test.properties.GitRepo = &GitRepo{}
@@ -224,4 +230,45 @@ func TestNewAPIClusterFromCRD(t *testing.T) {
 			assert.Equal(t, test.properties, apiCluster.ClusterProperties)
 		})
 	}
+}
+
+func TestFactEncoding(t *testing.T) {
+	facts := &DynamicClusterFacts{
+		"kubernetesVersion": version.Info{
+			Major:      "1",
+			Minor:      "22",
+			GitVersion: "1.22.14rc1",
+		},
+		"foo":  "bar",
+		"buzz": `"bar"`,
+	}
+
+	apiCluster := Cluster{
+		ClusterProperties: ClusterProperties{
+			DynamicFacts: facts,
+		},
+	}
+	cluster, err := NewCRDFromAPICluster(apiCluster)
+	assert.NoError(t, err)
+	apiCluster = *NewAPIClusterFromCRD(*cluster)
+
+	act, err := json.Marshal(apiCluster.DynamicFacts)
+	assert.NoError(t, err)
+	exp, err := json.Marshal(facts)
+	assert.NoError(t, err)
+	assert.JSONEq(t, string(exp), string(act))
+}
+
+func TestDecodeFact(t *testing.T) {
+	facts := []string{`"foo"`, "foo", `{"name": "bar"}`, "[1,2,3]"}
+	decoded := []interface{}{}
+
+	for _, f := range facts {
+		require.NotPanics(t, func() {
+			d := unmarshalFact(f)
+			decoded = append(decoded, d)
+		})
+	}
+	_, err := json.Marshal(decoded)
+	assert.NoError(t, err)
 }

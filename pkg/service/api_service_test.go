@@ -84,6 +84,9 @@ var (
 				TokenValid: true,
 				ValidUntil: metav1.NewTime(time.Now().Add(30 * time.Minute)),
 			},
+			Facts: synv1alpha1.Facts{
+				"escaped": `"fact"`,
+			},
 		},
 	}
 	clusterB = &synv1alpha1.Cluster{
@@ -114,6 +117,9 @@ var (
 				Token:      "shuaCh1k",
 				TokenValid: false,
 				ValidUntil: metav1.NewTime(time.Now().Add(-1 * time.Hour)),
+			},
+			Facts: synv1alpha1.Facts{
+				"unescaped": "fact",
 			},
 		},
 	}
