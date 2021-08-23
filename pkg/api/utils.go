@@ -254,11 +254,8 @@ func NewCRDFromAPICluster(apiCluster Cluster) (*synv1alpha1.Cluster, error) {
 		cluster.Spec.GitHostKeys = *apiCluster.GitRepo.HostKeys
 	}
 
-	if err := SyncCRDFromAPICluster(apiCluster.ClusterProperties, cluster); err != nil {
-		return cluster, err
-	}
-
-	return cluster, nil
+	err := SyncCRDFromAPICluster(apiCluster.ClusterProperties, cluster)
+	return cluster, err
 }
 
 func SyncCRDFromAPICluster(source ClusterProperties, target *synv1alpha1.Cluster) error {
