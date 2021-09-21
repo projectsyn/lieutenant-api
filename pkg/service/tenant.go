@@ -46,6 +46,10 @@ func (s *APIImpl) CreateTenant(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
+	return s.createTenant(ctx, tenant)
+}
+
+func (s *APIImpl) createTenant(ctx *APIContext, tenant *synv1alpha1.Tenant) error {
 	tenant.Namespace = s.namespace
 	if name, ok := os.LookupEnv(DefaultAPISecretRefNameEnvVar); ok &&
 		tenant.Spec.GitRepoTemplate != nil &&
@@ -55,7 +59,7 @@ func (s *APIImpl) CreateTenant(c echo.Context) error {
 	if err := ctx.client.Create(ctx.Request().Context(), tenant); err != nil {
 		return err
 	}
-	apiTenant = *api.NewAPITenantFromCRD(*tenant)
+	apiTenant := *api.NewAPITenantFromCRD(*tenant)
 	return ctx.JSON(http.StatusCreated, apiTenant)
 }
 
@@ -104,10 +108,15 @@ func (s *APIImpl) UpdateTenant(c echo.Context, tenantID api.TenantIdParameter) e
 
 	api.SyncCRDFromAPITenant(patchTenant, existingTenant)
 
-	if err := ctx.client.Update(ctx.Request().Context(), existingTenant); err != nil {
+	return s.updateTenant(ctx, existingTenant)
+}
+
+func (s *APIImpl) updateTenant(ctx *APIContext, tenant *synv1alpha1.Tenant) error {
+
+	if err := ctx.client.Update(ctx.Request().Context(), tenant); err != nil {
 		return err
 	}
-	apiTenant := api.NewAPITenantFromCRD(*existingTenant)
+	apiTenant := api.NewAPITenantFromCRD(*tenant)
 	return ctx.JSON(http.StatusOK, apiTenant)
 }
 
@@ -132,23 +141,10 @@ func (s *APIImpl) PutTenant(c echo.Context, tenantID api.TenantIdParameter) erro
 		return err
 	}
 	if errors.IsNotFound(err) {
-		tenant.Namespace = s.namespace
-		if name, ok := os.LookupEnv(DefaultAPISecretRefNameEnvVar); ok &&
-			tenant.Spec.GitRepoTemplate != nil &&
-			tenant.Spec.GitRepoTemplate.RepoType == synv1alpha1.AutoRepoType {
-			tenant.Spec.GitRepoTemplate.APISecretRef.Name = name
-		}
-		if err := ctx.client.Create(ctx.Request().Context(), tenant); err != nil {
-			return err
-		}
-		return ctx.JSON(http.StatusCreated, api.NewAPITenantFromCRD(*tenant))
+		return s.createTenant(ctx, tenant)
 	}
 
 	found.Spec = tenant.Spec
 	found.Annotations = tenant.Annotations
-
-	if err := ctx.client.Update(ctx.Request().Context(), found); err != nil {
-		return err
-	}
-	return ctx.JSON(http.StatusOK, api.NewAPITenantFromCRD(*found))
+	return s.updateTenant(ctx, found)
 }

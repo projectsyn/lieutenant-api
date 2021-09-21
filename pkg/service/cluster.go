@@ -52,11 +52,16 @@ func (s *APIImpl) CreateCluster(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 	apiCluster := api.Cluster(*newCluster)
+
 	cluster, err := api.NewCRDFromAPICluster(apiCluster)
 	if err != nil {
 		return err
 	}
 
+	return s.createCluster(ctx, cluster)
+}
+
+func (s *APIImpl) createCluster(ctx *APIContext, cluster *synv1alpha1.Cluster) error {
 	cluster.Namespace = s.namespace
 	if cluster.Spec.Facts == nil {
 		cluster.Spec.Facts = synv1alpha1.Facts{}
@@ -126,6 +131,10 @@ func (s *APIImpl) UpdateCluster(c echo.Context, clusterID api.ClusterIdParameter
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
+	return s.updateCluster(ctx, existingCluster)
+}
+
+func (s *APIImpl) updateCluster(ctx *APIContext, existingCluster *synv1alpha1.Cluster) error {
 	// Need to copy status as the update will modify it
 	status := existingCluster.Status.DeepCopy()
 	if err := ctx.client.Update(ctx.Request().Context(), existingCluster); err != nil {
@@ -161,34 +170,12 @@ func (s *APIImpl) PutCluster(c echo.Context, clusterID api.ClusterIdParameter) e
 	}
 
 	if errors.IsNotFound(err) {
-		cluster.Namespace = s.namespace
-		if cluster.Spec.Facts == nil {
-			cluster.Spec.Facts = synv1alpha1.Facts{}
-		}
-		cluster.Spec.Facts[LieutenantInstanceFact] = os.Getenv(LieutenantInstanceFactEnvVar)
-
-		// Need to copy status as Create will modify it
-		status := cluster.Status.DeepCopy()
-		if err := ctx.client.Create(ctx.Request().Context(), cluster); err != nil {
-			return err
-		}
-		cluster.Status = *status
-		if err := ctx.client.Status().Update(ctx.Request().Context(), cluster); err != nil {
-			return err
-		}
-		return ctx.JSON(http.StatusCreated, apiClusterWithInstallURL(ctx, cluster))
+		return s.createCluster(ctx, cluster)
 	}
 
 	found.Spec = cluster.Spec
 	found.Annotations = cluster.Annotations
-	if err := ctx.client.Update(ctx.Request().Context(), found); err != nil {
-		return err
-	}
-	found.Status = cluster.Status
-	if err := ctx.client.Status().Update(ctx.Request().Context(), found); err != nil {
-		return err
-	}
-	return ctx.JSON(http.StatusOK, apiClusterWithInstallURL(ctx, found))
+	return s.updateCluster(ctx, found)
 }
 
 func apiClusterWithInstallURL(ctx *APIContext, cluster *synv1alpha1.Cluster) *api.Cluster {
