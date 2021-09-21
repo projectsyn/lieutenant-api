@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/labstack/echo/v4"
 	synv1alpha1 "github.com/projectsyn/lieutenant-operator/api/v1alpha1"
@@ -39,24 +38,13 @@ func (s *APIImpl) CreateTenant(c echo.Context) error {
 	if err := ctx.Bind(&newTenant); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
-	if newTenant.GitRepo == nil ||
-		newTenant.GitRepo.Url == nil ||
-		*newTenant.GitRepo.Url == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "GitRepo URL is required")
-	}
 	apiTenant := api.Tenant(*newTenant)
-	if !strings.HasPrefix(apiTenant.Id.String(), api.TenantIDPrefix) {
-		if apiTenant.Id == "" {
-			id, err := api.GenerateTenantID()
-			if err != nil {
-				return err
-			}
-			apiTenant.TenantId = id
-		} else {
-			apiTenant.Id = api.TenantIDPrefix + apiTenant.Id
-		}
+
+	tenant, err := api.NewCRDFromAPITenant(apiTenant)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	tenant := api.NewCRDFromAPITenant(apiTenant)
+
 	tenant.Namespace = s.namespace
 	if name, ok := os.LookupEnv(DefaultAPISecretRefNameEnvVar); ok &&
 		tenant.Spec.GitRepoTemplate != nil &&

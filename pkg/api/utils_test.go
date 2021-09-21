@@ -109,31 +109,57 @@ var tenantTests = map[string]struct {
 	spec       v1alpha1.TenantSpec
 }{
 	"empty": {
-		TenantProperties{},
-		v1alpha1.TenantSpec{},
+		TenantProperties{
+			GitRepo: &RevisionedGitRepo{
+				GitRepo: GitRepo{
+					Url: pointer.ToString("ssh://git@example.com/foo/t-buzz.git"),
+				},
+			},
+		},
+		v1alpha1.TenantSpec{
+			GitRepoURL: "ssh://git@example.com/foo/t-buzz.git",
+		},
 	},
 	"global git URL": {
 		TenantProperties{
 			GlobalGitRepoURL: pointer.ToString("ssh://git@example.com/foo/bar.git"),
+			GitRepo: &RevisionedGitRepo{
+				GitRepo: GitRepo{
+					Url: pointer.ToString("ssh://git@example.com/foo/t-buzz.git"),
+				},
+			},
 		},
 		v1alpha1.TenantSpec{
 			GlobalGitRepoURL: "ssh://git@example.com/foo/bar.git",
+			GitRepoURL:       "ssh://git@example.com/foo/t-buzz.git",
 		},
 	},
 	"global git revision": {
 		TenantProperties{
 			GlobalGitRepoRevision: pointer.ToString("v1.2.3"),
+			GitRepo: &RevisionedGitRepo{
+				GitRepo: GitRepo{
+					Url: pointer.ToString("ssh://git@example.com/foo/t-buzz.git"),
+				},
+			},
 		},
 		v1alpha1.TenantSpec{
 			GlobalGitRepoRevision: "v1.2.3",
+			GitRepoURL:            "ssh://git@example.com/foo/t-buzz.git",
 		},
 	},
 	"git revision": {
 		TenantProperties{
-			GitRepo: &RevisionedGitRepo{Revision: Revision{pointer.ToString("v1.2.3")}},
+			GitRepo: &RevisionedGitRepo{
+				Revision: Revision{pointer.ToString("v1.2.3")},
+				GitRepo: GitRepo{
+					Url: pointer.ToString("ssh://git@example.com/foo/t-buzz.git"),
+				},
+			},
 		},
 		v1alpha1.TenantSpec{
 			GitRepoRevision: "v1.2.3",
+			GitRepoURL:      "ssh://git@example.com/foo/t-buzz.git",
 		},
 	},
 }
@@ -147,8 +173,12 @@ func TestNewCRDFromAPITenant(t *testing.T) {
 				},
 				test.properties,
 			}
-			tenant := NewCRDFromAPITenant(apiTenant)
-			assert.Equal(t, test.spec, tenant.Spec)
+			tenant, err := NewCRDFromAPITenant(apiTenant)
+			require.NoError(t, err)
+			assert.Equal(t, test.spec.GitRepoURL, tenant.Spec.GitRepoURL)
+			assert.Equal(t, test.spec.GitRepoRevision, tenant.Spec.GitRepoRevision)
+			assert.Equal(t, test.spec.GlobalGitRepoURL, tenant.Spec.GlobalGitRepoURL)
+			assert.Equal(t, test.spec.GlobalGitRepoRevision, tenant.Spec.GlobalGitRepoRevision)
 		})
 	}
 }

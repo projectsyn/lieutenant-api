@@ -105,7 +105,24 @@ func NewAPITenantFromCRD(tenant synv1alpha1.Tenant) *Tenant {
 }
 
 // NewCRDFromAPITenant transforms an API tenant into the CRD representation
-func NewCRDFromAPITenant(apiTenant Tenant) *synv1alpha1.Tenant {
+func NewCRDFromAPITenant(apiTenant Tenant) (*synv1alpha1.Tenant, error) {
+	if !strings.HasPrefix(apiTenant.Id.String(), TenantIDPrefix) {
+		if apiTenant.Id == "" {
+			id, err := GenerateTenantID()
+			if err != nil {
+				return nil, err
+			}
+			apiTenant.TenantId = id
+		} else {
+			apiTenant.Id = TenantIDPrefix + apiTenant.Id
+		}
+	}
+	if apiTenant.GitRepo == nil ||
+		apiTenant.GitRepo.Url == nil ||
+		*apiTenant.GitRepo.Url == "" {
+		return nil, fmt.Errorf("GitRepo URL is required")
+	}
+
 	tenant := &synv1alpha1.Tenant{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        apiTenant.Id.String(),
@@ -119,7 +136,7 @@ func NewCRDFromAPITenant(apiTenant Tenant) *synv1alpha1.Tenant {
 
 	SyncCRDFromAPITenant(apiTenant.TenantProperties, tenant)
 
-	return tenant
+	return tenant, nil
 }
 
 func SyncCRDFromAPITenant(source TenantProperties, target *synv1alpha1.Tenant) {
