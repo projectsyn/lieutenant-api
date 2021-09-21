@@ -236,6 +236,17 @@ func unmarshalFact(fact string) interface{} {
 
 // NewCRDFromAPICluster transforms an API cluster into the CRD representation
 func NewCRDFromAPICluster(apiCluster Cluster) (*synv1alpha1.Cluster, error) {
+	if !strings.HasPrefix(string(apiCluster.Id), ClusterIDPrefix) {
+		if apiCluster.Id == "" {
+			id, err := GenerateClusterID()
+			if err != nil {
+				return nil, err
+			}
+			apiCluster.ClusterId = id
+		} else {
+			apiCluster.Id = ClusterIDPrefix + apiCluster.Id
+		}
+	}
 	cluster := &synv1alpha1.Cluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        string(apiCluster.ClusterId.Id),
@@ -283,11 +294,17 @@ func SyncCRDFromAPICluster(source ClusterProperties, target *synv1alpha1.Cluster
 		}
 
 		if source.GitRepo.DeployKey != nil {
+			if target.Spec.GitRepoTemplate == nil {
+				return fmt.Errorf("Cannot set deploy key for unmanaged git repo")
+			}
 			if target.Spec.GitRepoTemplate.DeployKeys == nil {
 				target.Spec.GitRepoTemplate.DeployKeys = make(map[string]synv1alpha1.DeployKey)
 			}
 
 			k := strings.Split(*source.GitRepo.DeployKey, " ")
+			if len(k) != 2 {
+				return fmt.Errorf("Illegal deploy key format. Expected '<type> <public key>'")
+			}
 			target.Spec.GitRepoTemplate.DeployKeys["steward"] = synv1alpha1.DeployKey{
 				Type:        k[0],
 				Key:         k[1],

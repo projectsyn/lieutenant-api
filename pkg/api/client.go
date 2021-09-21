@@ -107,6 +107,11 @@ type ClientInterface interface {
 	// UpdateCluster request  with any body
 	UpdateClusterWithBody(ctx context.Context, clusterId ClusterIdParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// PutCluster request  with any body
+	PutClusterWithBody(ctx context.Context, clusterId ClusterIdParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutCluster(ctx context.Context, clusterId ClusterIdParameter, body PutClusterJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// Docs request
 	Docs(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -207,6 +212,30 @@ func (c *Client) GetCluster(ctx context.Context, clusterId ClusterIdParameter, r
 
 func (c *Client) UpdateClusterWithBody(ctx context.Context, clusterId ClusterIdParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateClusterRequestWithBody(c.Server, clusterId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutClusterWithBody(ctx context.Context, clusterId ClusterIdParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutClusterRequestWithBody(c.Server, clusterId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutCluster(ctx context.Context, clusterId ClusterIdParameter, body PutClusterJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutClusterRequest(c.Server, clusterId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -555,6 +584,53 @@ func NewUpdateClusterRequestWithBody(server string, clusterId ClusterIdParameter
 	queryURL := serverURL.ResolveReference(&operationURL)
 
 	req, err := http.NewRequest("PATCH", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewPutClusterRequest calls the generic PutCluster builder with application/json body
+func NewPutClusterRequest(server string, clusterId ClusterIdParameter, body PutClusterJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutClusterRequestWithBody(server, clusterId, "application/json", bodyReader)
+}
+
+// NewPutClusterRequestWithBody generates requests for PutCluster with any type of body
+func NewPutClusterRequestWithBody(server string, clusterId ClusterIdParameter, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "clusterId", runtime.ParamLocationPath, clusterId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/clusters/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = operationPath[1:]
+	}
+	operationURL := url.URL{
+		Path: operationPath,
+	}
+
+	queryURL := serverURL.ResolveReference(&operationURL)
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
@@ -1010,6 +1086,11 @@ type ClientWithResponsesInterface interface {
 	// UpdateCluster request  with any body
 	UpdateClusterWithBodyWithResponse(ctx context.Context, clusterId ClusterIdParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateClusterResponse, error)
 
+	// PutCluster request  with any body
+	PutClusterWithBodyWithResponse(ctx context.Context, clusterId ClusterIdParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutClusterResponse, error)
+
+	PutClusterWithResponse(ctx context.Context, clusterId ClusterIdParameter, body PutClusterJSONRequestBody, reqEditors ...RequestEditorFn) (*PutClusterResponse, error)
+
 	// Docs request
 	DocsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*DocsResponse, error)
 
@@ -1159,6 +1240,31 @@ func (r UpdateClusterResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UpdateClusterResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutClusterResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Cluster
+	JSON201      *Cluster
+	JSON403      *Reason
+	JSONDefault  *Reason
+}
+
+// Status returns HTTPResponse.Status
+func (r PutClusterResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutClusterResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -1468,6 +1574,23 @@ func (c *ClientWithResponses) UpdateClusterWithBodyWithResponse(ctx context.Cont
 	return ParseUpdateClusterResponse(rsp)
 }
 
+// PutClusterWithBodyWithResponse request with arbitrary body returning *PutClusterResponse
+func (c *ClientWithResponses) PutClusterWithBodyWithResponse(ctx context.Context, clusterId ClusterIdParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutClusterResponse, error) {
+	rsp, err := c.PutClusterWithBody(ctx, clusterId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutClusterResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutClusterWithResponse(ctx context.Context, clusterId ClusterIdParameter, body PutClusterJSONRequestBody, reqEditors ...RequestEditorFn) (*PutClusterResponse, error) {
+	rsp, err := c.PutCluster(ctx, clusterId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutClusterResponse(rsp)
+}
+
 // DocsWithResponse request returning *DocsResponse
 func (c *ClientWithResponses) DocsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*DocsResponse, error) {
 	rsp, err := c.Docs(ctx, reqEditors...)
@@ -1742,6 +1865,53 @@ func ParseUpdateClusterResponse(rsp *http.Response) (*UpdateClusterResponse, err
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Reason
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Reason
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutClusterResponse parses an HTTP response from a PutClusterWithResponse call
+func ParsePutClusterResponse(rsp *http.Response) (*PutClusterResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutClusterResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Cluster
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest Cluster
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
 		var dest Reason

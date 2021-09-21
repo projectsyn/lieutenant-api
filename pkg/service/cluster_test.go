@@ -395,7 +395,7 @@ func TestClusterUpdateNotManagedDeployKey(t *testing.T) {
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
-	assert.Contains(t, reason.Reason, "Cannot update deploy key for unmanaged git repo")
+	assert.Contains(t, reason.Reason, "Cannot set deploy key for unmanaged git repo")
 }
 
 func TestClusterUpdate(t *testing.T) {
@@ -473,4 +473,123 @@ func TestClusterUpdateDisplayName(t *testing.T) {
 	}, clusterObj)
 	assert.NoError(t, err)
 	assert.Equal(t, newDisplayName, clusterObj.Spec.DisplayName)
+}
+
+var putTestCases = map[string]struct {
+	cluster *api.Cluster
+	code    int
+	valid   func(t *testing.T, act *api.Cluster) bool
+}{
+	"put unchanged object": {
+		cluster: api.NewAPIClusterFromCRD(*clusterB),
+		code:    http.StatusOK,
+		valid: func(t *testing.T, act *api.Cluster) bool {
+			return true
+		},
+	},
+	"put updated object": {
+		cluster: func() *api.Cluster {
+			cluster := api.NewAPIClusterFromCRD(*clusterB)
+			(*cluster.Facts)["foo"] = "bar"
+			return cluster
+		}(),
+		code: http.StatusOK,
+		valid: func(t *testing.T, act *api.Cluster) bool {
+			require.Contains(t, *act.Facts, "cloud")
+			assert.Equal(t, clusterB.Spec.Facts["cloud"], (*act.Facts)["cloud"])
+			require.Contains(t, *act.Facts, "foo")
+			assert.Equal(t, (*act.Facts)["foo"], "bar")
+			return true
+		},
+	},
+	"put new object": {
+		cluster: &api.Cluster{
+			ClusterId: api.ClusterId{
+				Id: "c-new-2379",
+			},
+			ClusterProperties: api.ClusterProperties{
+				DisplayName: pointer.ToString("My new cluster"),
+				Facts: &api.ClusterFacts{
+					"cloud":                "cloudscale",
+					"region":               "test",
+					LieutenantInstanceFact: "",
+				},
+				DynamicFacts: &api.DynamicClusterFacts{
+					"kubernetesVersion": "1.16",
+				},
+				Annotations: &api.Annotations{
+					"new": "annotation",
+				},
+			},
+			ClusterTenant: api.ClusterTenant{Tenant: tenantA.Name},
+		},
+		code: http.StatusCreated,
+		valid: func(t *testing.T, act *api.Cluster) bool {
+			assert.Contains(t, act.Id, api.ClusterIDPrefix)
+			assert.Equal(t, pointer.ToString("My new cluster"), act.DisplayName)
+			return true
+		},
+	},
+}
+
+func TestClusterPut(t *testing.T) {
+	e, client := setupTest(t)
+
+	for k, tc := range putTestCases {
+		t.Run(k, func(t *testing.T) {
+			result := testutil.NewRequest().
+				Put("/clusters/"+tc.cluster.Id.String()).
+				WithJsonBody(tc.cluster).
+				WithHeader(echo.HeaderAuthorization, bearerToken).
+				Go(t, e)
+			require.Equal(t, tc.code, result.Code())
+
+			res := &api.Cluster{}
+			err := result.UnmarshalJsonToObject(res)
+			require.NoError(t, err)
+			assert.True(t, tc.valid(t, res))
+
+			clusterObj := &synv1alpha1.Cluster{}
+			err = client.Get(context.TODO(), types.NamespacedName{
+				Namespace: "default",
+				Name:      res.Id.String(),
+			}, clusterObj)
+			require.NotNil(t, clusterObj)
+			require.NotEmpty(t, clusterObj.Name)
+			assert.True(t, tc.valid(t, api.NewAPIClusterFromCRD(*clusterObj)))
+		})
+	}
+
+}
+
+func TestClusterPutCreateNameMissmatch(t *testing.T) {
+	e, client := setupTest(t)
+	cluster := &api.Cluster{
+		ClusterId: api.ClusterId{
+			Id: "c-bar",
+		},
+		ClusterProperties: api.ClusterProperties{
+			DisplayName: pointer.ToString("My new cluster"),
+		},
+		ClusterTenant: api.ClusterTenant{Tenant: tenantA.Name},
+	}
+	result := testutil.NewRequest().
+		Put("/clusters/c-foo").
+		WithJsonBody(cluster).
+		WithHeader(echo.HeaderAuthorization, bearerToken).
+		Go(t, e)
+	require.Equal(t, http.StatusCreated, result.Code())
+
+	res := &api.Cluster{}
+	err := result.UnmarshalJsonToObject(res)
+	require.NoError(t, err)
+	require.Equal(t, "c-foo", res.Id.String())
+	require.NotEmpty(t, res.Facts)
+
+	clusterObj := &synv1alpha1.Cluster{}
+	err = client.Get(context.TODO(), types.NamespacedName{
+		Namespace: "default",
+		Name:      res.Id.String(),
+	}, clusterObj)
+	require.NotNil(t, clusterObj)
 }

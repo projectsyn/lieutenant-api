@@ -487,6 +487,43 @@ paths:
                 $ref: '#/components/schemas/Reason'
         default:
           $ref: '#/components/responses/Default'
+    put:
+      operationId: putCluster
+      summary: Updates or creates a cluster
+      description: Updates or creates a cluster
+      tags:
+        - cluster
+      parameters:
+        - $ref: '#/components/parameters/ClusterIdParameter'
+      requestBody:
+        description: Update or create a Cluster
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Cluster'
+      responses:
+        '200':
+          description: Cluster updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cluster'
+
+        '201':
+          description: Cluster created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cluster'
+        '403':
+          description: Cluster update forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reason'
+        default:
+          $ref: '#/components/responses/Default'
     delete:
       operationId: deleteCluster
       summary: Deletes a cluster

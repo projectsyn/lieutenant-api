@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/labstack/echo/v4"
 	synv1alpha1 "github.com/projectsyn/lieutenant-operator/api/v1alpha1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -52,22 +52,11 @@ func (s *APIImpl) CreateCluster(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 	apiCluster := api.Cluster(*newCluster)
-	if !strings.HasPrefix(string(apiCluster.Id), api.ClusterIDPrefix) {
-		if apiCluster.Id == "" {
-			id, err := api.GenerateClusterID()
-			if err != nil {
-				return err
-			}
-			apiCluster.ClusterId = id
-		} else {
-			apiCluster.Id = api.ClusterIDPrefix + apiCluster.Id
-		}
-	}
-
 	cluster, err := api.NewCRDFromAPICluster(apiCluster)
 	if err != nil {
 		return err
 	}
+
 	cluster.Namespace = s.namespace
 	if cluster.Spec.Facts == nil {
 		cluster.Spec.Facts = synv1alpha1.Facts{}
@@ -126,22 +115,16 @@ func (s *APIImpl) UpdateCluster(c echo.Context, clusterID api.ClusterIdParameter
 	if err := dec.Decode(&patchCluster); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
+
 	existingCluster := &synv1alpha1.Cluster{}
 	if err := ctx.client.Get(ctx.Request().Context(), client.ObjectKey{Name: string(clusterID), Namespace: s.namespace}, existingCluster); err != nil {
 		return err
 	}
 
-	if patchCluster.GitRepo != nil && patchCluster.GitRepo.DeployKey != nil {
-		k := strings.Split(*patchCluster.GitRepo.DeployKey, " ")
-		if len(k) != 2 {
-			return echo.NewHTTPError(http.StatusBadRequest, "Illegal deploy key format. Expected '<type> <public key>'")
-		}
-		if existingCluster.Spec.GitRepoTemplate == nil {
-			return echo.NewHTTPError(http.StatusBadRequest, "Cannot update deploy key for unmanaged git repo")
-		}
+	err := api.SyncCRDFromAPICluster(patchCluster, existingCluster)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-
-	api.SyncCRDFromAPICluster(patchCluster, existingCluster)
 
 	// Need to copy status as the update will modify it
 	status := existingCluster.Status.DeepCopy()
@@ -153,6 +136,58 @@ func (s *APIImpl) UpdateCluster(c echo.Context, clusterID api.ClusterIdParameter
 		return err
 	}
 	return ctx.JSON(http.StatusOK, apiClusterWithInstallURL(ctx, existingCluster))
+}
+
+// PutCluster updates the cluster or cleates it if it does not exist
+func (s *APIImpl) PutCluster(c echo.Context, clusterID api.ClusterIdParameter) error {
+	ctx := c.(*APIContext)
+
+	body := &api.PutClusterJSONRequestBody{}
+	if err := ctx.Bind(body); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err)
+	}
+
+	cluster, err := api.NewCRDFromAPICluster(api.Cluster(*body))
+	if err != nil {
+		return err
+	}
+
+	found := &synv1alpha1.Cluster{}
+	err = ctx.client.Get(ctx.Request().Context(), client.ObjectKey{Name: string(clusterID), Namespace: s.namespace}, found)
+	if err != nil && !errors.IsNotFound(err) {
+		return err
+	}
+
+	if errors.IsNotFound(err) {
+		cluster.Name = string(clusterID)
+		cluster.Namespace = s.namespace
+		if cluster.Spec.Facts == nil {
+			cluster.Spec.Facts = synv1alpha1.Facts{}
+		}
+		cluster.Spec.Facts[LieutenantInstanceFact] = os.Getenv(LieutenantInstanceFactEnvVar)
+
+		// Need to copy status as Create will modify it
+		status := cluster.Status.DeepCopy()
+		if err := ctx.client.Create(ctx.Request().Context(), cluster); err != nil {
+			return err
+		}
+		cluster.Status = *status
+		if err := ctx.client.Status().Update(ctx.Request().Context(), cluster); err != nil {
+			return err
+		}
+		return ctx.JSON(http.StatusCreated, apiClusterWithInstallURL(ctx, cluster))
+	}
+
+	found.Spec = cluster.Spec
+	found.Annotations = cluster.Annotations
+	if err := ctx.client.Update(ctx.Request().Context(), found); err != nil {
+		return err
+	}
+	found.Status = cluster.Status
+	if err := ctx.client.Status().Update(ctx.Request().Context(), found); err != nil {
+		return err
+	}
+	return ctx.JSON(http.StatusOK, apiClusterWithInstallURL(ctx, found))
 }
 
 func apiClusterWithInstallURL(ctx *APIContext, cluster *synv1alpha1.Cluster) *api.Cluster {
