@@ -475,7 +475,7 @@ func TestClusterUpdateDisplayName(t *testing.T) {
 	assert.Equal(t, newDisplayName, clusterObj.Spec.DisplayName)
 }
 
-var putTestCases = map[string]struct {
+var putClusterTestCases = map[string]struct {
 	cluster *api.Cluster
 	code    int
 	valid   func(t *testing.T, act *api.Cluster) bool
@@ -535,7 +535,7 @@ var putTestCases = map[string]struct {
 func TestClusterPut(t *testing.T) {
 	e, client := setupTest(t)
 
-	for k, tc := range putTestCases {
+	for k, tc := range putClusterTestCases {
 		t.Run(k, func(t *testing.T) {
 			result := testutil.NewRequest().
 				Put("/clusters/"+tc.cluster.Id.String()).

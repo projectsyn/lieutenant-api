@@ -7,6 +7,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	synv1alpha1 "github.com/projectsyn/lieutenant-operator/api/v1alpha1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -108,4 +109,46 @@ func (s *APIImpl) UpdateTenant(c echo.Context, tenantID api.TenantIdParameter) e
 	}
 	apiTenant := api.NewAPITenantFromCRD(*existingTenant)
 	return ctx.JSON(http.StatusOK, apiTenant)
+}
+
+// PutTenant udpates or creates a tenant
+func (s *APIImpl) PutTenant(c echo.Context, tenantID api.TenantIdParameter) error {
+	ctx := c.(*APIContext)
+	var newTenant *api.CreateTenantJSONRequestBody
+	if err := ctx.Bind(&newTenant); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err)
+	}
+	apiTenant := api.Tenant(*newTenant)
+	apiTenant.Id = api.Id(tenantID)
+
+	tenant, err := api.NewCRDFromAPITenant(apiTenant)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	found := &synv1alpha1.Tenant{}
+	err = ctx.client.Get(ctx.Request().Context(), client.ObjectKey{Name: string(tenantID), Namespace: s.namespace}, found)
+	if err != nil && !errors.IsNotFound(err) {
+		return err
+	}
+	if errors.IsNotFound(err) {
+		tenant.Namespace = s.namespace
+		if name, ok := os.LookupEnv(DefaultAPISecretRefNameEnvVar); ok &&
+			tenant.Spec.GitRepoTemplate != nil &&
+			tenant.Spec.GitRepoTemplate.RepoType == synv1alpha1.AutoRepoType {
+			tenant.Spec.GitRepoTemplate.APISecretRef.Name = name
+		}
+		if err := ctx.client.Create(ctx.Request().Context(), tenant); err != nil {
+			return err
+		}
+		return ctx.JSON(http.StatusCreated, api.NewAPITenantFromCRD(*tenant))
+	}
+
+	found.Spec = tenant.Spec
+	found.Annotations = tenant.Annotations
+
+	if err := ctx.client.Update(ctx.Request().Context(), found); err != nil {
+		return err
+	}
+	return ctx.JSON(http.StatusOK, api.NewAPITenantFromCRD(*found))
 }

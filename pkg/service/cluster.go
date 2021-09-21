@@ -146,8 +146,10 @@ func (s *APIImpl) PutCluster(c echo.Context, clusterID api.ClusterIdParameter) e
 	if err := ctx.Bind(body); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
+	apiCluster := api.Cluster(*body)
+	apiCluster.Id = api.Id(clusterID)
 
-	cluster, err := api.NewCRDFromAPICluster(api.Cluster(*body))
+	cluster, err := api.NewCRDFromAPICluster(apiCluster)
 	if err != nil {
 		return err
 	}
@@ -159,7 +161,6 @@ func (s *APIImpl) PutCluster(c echo.Context, clusterID api.ClusterIdParameter) e
 	}
 
 	if errors.IsNotFound(err) {
-		cluster.Name = string(clusterID)
 		cluster.Namespace = s.namespace
 		if cluster.Spec.Facts == nil {
 			cluster.Spec.Facts = synv1alpha1.Facts{}

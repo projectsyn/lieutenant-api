@@ -358,6 +358,47 @@ paths:
                 $ref: '#/components/schemas/Reason'
         default:
           $ref: '#/components/responses/Default'
+    put:
+      operationId: putTenant
+      summary: Updates or creates a tenant
+      description: Updates or creates a tenant
+      tags:
+        - tenant
+      parameters:
+        - $ref: '#/components/parameters/TenantIdParameter'
+      requestBody:
+        required: true
+        description: Update or create a tenant
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Tenant'
+      responses:
+        '200':
+          description: Tenant updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tenant'
+        '201':
+          description: Tenant created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tenant'
+              example:
+                id: aezoo6
+                displayName: Acme Corp.
+                gitRepo: https://github.com/acmecorp/commodore-config.git
+        '403':
+          description: Tenant update forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reason'
+        default:
+          $ref: '#/components/responses/Default'
+
     delete:
       operationId: deleteTenant
       summary: Deletes a tenant
