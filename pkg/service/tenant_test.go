@@ -11,6 +11,7 @@ import (
 	"github.com/labstack/echo/v4"
 	synv1alpha1 "github.com/projectsyn/lieutenant-operator/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/types"
 
 	"github.com/projectsyn/lieutenant-api/pkg/api"
@@ -296,4 +297,83 @@ func TestTenantUpdateDisplayName(t *testing.T) {
 	}, tenantObj)
 	assert.NoError(t, err)
 	assert.Equal(t, newDisplayName, tenantObj.Spec.DisplayName)
+}
+
+var putTenantTestCases = map[string]struct {
+	tenant *api.Tenant
+	code   int
+	valid  func(t *testing.T, act *api.Tenant) bool
+}{
+	"put unchanged object": {
+		tenant: api.NewAPITenantFromCRD(*tenantA),
+		code:   http.StatusOK,
+		valid: func(t *testing.T, act *api.Tenant) bool {
+			return true
+		},
+	},
+	"put updated object": {
+		tenant: func() *api.Tenant {
+			t := api.NewAPITenantFromCRD(*tenantA)
+			t.Annotations = &api.Annotations{"foo": "bar"}
+			return t
+		}(),
+		code: http.StatusOK,
+		valid: func(t *testing.T, act *api.Tenant) bool {
+			require.Contains(t, *act.Annotations, "foo")
+			assert.Equal(t, "bar", (*act.Annotations)["foo"])
+			assert.Len(t, *act.Annotations, 1)
+			return true
+		},
+	},
+	"put new object": {
+		tenant: &api.Tenant{
+			TenantId: api.TenantId{
+				Id: "t-buzz-24",
+			},
+			TenantProperties: api.TenantProperties{
+				DisplayName: pointer.ToString("My test Tenant"),
+				GitRepo: &api.RevisionedGitRepo{
+					GitRepo: api.GitRepo{Url: pointer.ToString("ssh://git@git.example.com/group/test.git")},
+				},
+				Annotations: &api.Annotations{
+					"new": "annotation",
+				},
+			},
+		},
+		code: http.StatusCreated,
+		valid: func(t *testing.T, act *api.Tenant) bool {
+			assert.Equal(t, pointer.ToString("My test Tenant"), act.TenantProperties.DisplayName)
+			return true
+		},
+	},
+}
+
+func TestTenantPut(t *testing.T) {
+	e, client := setupTest(t)
+
+	for k, tc := range putTenantTestCases {
+		t.Run(k, func(t *testing.T) {
+			result := testutil.NewRequest().
+				Put("/tenants/"+tc.tenant.Id.String()).
+				WithJsonBody(tc.tenant).
+				WithHeader(echo.HeaderAuthorization, bearerToken).
+				Go(t, e)
+			require.Equal(t, tc.code, result.Code())
+
+			res := &api.Tenant{}
+			err := result.UnmarshalJsonToObject(res)
+			require.NoError(t, err)
+			assert.True(t, tc.valid(t, res))
+
+			tenantObj := &synv1alpha1.Tenant{}
+			err = client.Get(context.TODO(), types.NamespacedName{
+				Namespace: "default",
+				Name:      res.Id.String(),
+			}, tenantObj)
+			require.NotNil(t, tenantObj)
+			require.NotEmpty(t, tenantObj.Name)
+			assert.True(t, tc.valid(t, api.NewAPITenantFromCRD(*tenantObj)))
+		})
+	}
+
 }
