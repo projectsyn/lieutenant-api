@@ -627,6 +627,8 @@ github.com/posener/complete v1.1.1/go.mod h1:em0nMJCgc9GFtwrmVmEMR/ZL6WyhyjMBndr
 github.com/pquerna/cachecontrol v0.0.0-20171018203845-0dec1b30a021/go.mod h1:prYjPmNq4d1NPVmpShWobRqXY3q7Vp+80DqgxxUrUIA=
 github.com/projectsyn/lieutenant-operator v1.1.0 h1:9DyHpP9vjN0+8ZsaMTiZIYAec3oZLx8+piDRhMuJ64U=
 github.com/projectsyn/lieutenant-operator v1.1.0/go.mod h1:JY1hQUr8JNlU8PqjOoD0bkvpHmQOaMT72Ffy+Ri4A54=
+github.com/projectsyn/lieutenant-operator v1.1.2 h1:S2G9i2LV1gurM3RXup+SbOp23xOKfEmBlZPgOKzewVI=
+github.com/projectsyn/lieutenant-operator v1.1.2/go.mod h1:JY1hQUr8JNlU8PqjOoD0bkvpHmQOaMT72Ffy+Ri4A54=
 github.com/prometheus/client_golang v0.9.1/go.mod h1:7SWBe2y4D6OKWSNQJUaRYU/AaXPKyh/dDVn+NZz0KFw=
 github.com/prometheus/client_golang v0.9.2/go.mod h1:OsXs2jCmiKlQ1lTBmv21f2mNfw4xf/QclQDMrYNZzcM=
 github.com/prometheus/client_golang v0.9.3/go.mod h1:/TN21ttK/J9q6uSwhBd54HahCDft0ttaMvbicHlPoso=
