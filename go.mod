@@ -3,7 +3,7 @@ module github.com/projectsyn/lieutenant-api
 go 1.16
 
 require (
-	github.com/AlekSi/pointer v1.1.0
+	github.com/AlekSi/pointer v1.2.0
 	github.com/cosmtrek/air v1.27.3
 	github.com/deepmap/oapi-codegen v1.7.0
 	github.com/getkin/kin-openapi v0.61.0
