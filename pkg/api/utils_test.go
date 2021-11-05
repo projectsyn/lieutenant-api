@@ -183,6 +183,25 @@ func TestNewCRDFromAPITenant(t *testing.T) {
 	}
 }
 
+func TestNewCRDFromAPITenant_ClusterTemplate(t *testing.T) {
+	organization := "foorganization"
+	apiTenant := Tenant{
+		TenantId{
+			Id: Id(fmt.Sprintf("t-%s", t.Name())),
+		},
+		TenantProperties{
+			GitRepo: &RevisionedGitRepo{
+				GitRepo: GitRepo{
+					Url: pointer.ToString(fmt.Sprintf("ssh://git@example.com/%s/t-buzz.git", organization)),
+				},
+			},
+		},
+	}
+	tenant, err := NewCRDFromAPITenant(apiTenant)
+	require.NoError(t, err)
+	assert.Equal(t, organization+"/cluster-catalogs", tenant.Spec.ClusterTemplate.GitRepoTemplate.Path)
+}
+
 func TestNewAPITenantFromCRD(t *testing.T) {
 	for name, test := range tenantTests {
 		t.Run(name, func(t *testing.T) {

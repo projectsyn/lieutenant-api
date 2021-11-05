@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"path"
 	"strings"
 
 	"github.com/taion809/haikunator"
@@ -130,8 +131,14 @@ func NewCRDFromAPITenant(apiTenant Tenant) (*synv1alpha1.Tenant, error) {
 		},
 	}
 
-	if apiTenant.GitRepo != nil {
-		tenant.Spec.GitRepoTemplate = newGitRepoTemplate(&apiTenant.GitRepo.GitRepo, string(apiTenant.Id))
+	repoTmpl := newGitRepoTemplate(&apiTenant.GitRepo.GitRepo, string(apiTenant.Id))
+	tenant.Spec.GitRepoTemplate = repoTmpl
+	tenant.Spec.ClusterTemplate = &synv1alpha1.ClusterSpec{
+		GitRepoTemplate: &synv1alpha1.GitRepoTemplate{
+			APISecretRef: repoTmpl.APISecretRef,
+			RepoName:     "{{ .Name }}",
+			Path:         path.Join(repoTmpl.Path, "cluster-catalogs"),
+		},
 	}
 
 	SyncCRDFromAPITenant(apiTenant.TenantProperties, tenant)
