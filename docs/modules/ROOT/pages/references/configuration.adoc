@@ -24,7 +24,7 @@ This value will be set as fact on new clusters.
 
 |OIDC_DISCOVERY_URL
 |The OpenID Connect discovery endpoint of the identity provider when using OIDC.
-It'ss returned on the discovery URI and will be picked up by Commodore
+It's returned on the discovery URI and will be picked up by Commodore
 |Empty
 
 |OIDC_CLIENT_ID
