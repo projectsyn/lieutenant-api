@@ -18,7 +18,14 @@ var (
 )
 
 func main() {
-	e, err := service.NewAPIServer()
+	conf := service.APIConfig{
+		APIVersion:       Version,
+		Namespace:        os.Getenv("NAMESPACE"),
+		OidcDiscoveryURL: os.Getenv("OIDC_DISCOVERY_URL"),
+		OidcCLientID:     os.Getenv("OIDC_CLIENT_ID"),
+	}
+
+	e, err := service.NewAPIServer(conf)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, err.Error()+"\n")
 		os.Exit(1)

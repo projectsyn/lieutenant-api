@@ -22,6 +22,16 @@ This value will be set as fact on new clusters.
 |Namespace where the Kubernetes objects are stored.
 |`default`
 
+|OIDC_DISCOVERY_URL
+|The OpenID Connect discovery endpoint of the identity provider when using OIDC.
+It'ss returned on the discovery URI and will be picked up by Commodore
+|Empty
+
+|OIDC_CLIENT_ID
+|The client id used to authenticate when using OIDC.
+It's returned on the discovery URI and will be picked up by Commodore
+|Empty
+
 |K8S_AUTH_CLIENT_CACHE_SIZE
 |For each new API client (identified by the auth token), a Kubernetes client will be instantiated to pass through the request with the same token, which usually takes 2 seconds.
 The K8s client instance will be cached for subsequent API calls and this setting controls how many instances to keep in memory.

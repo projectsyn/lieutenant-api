@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"strings"
 
 	oapimiddleware "github.com/deepmap/oapi-codegen/pkg/middleware"
@@ -18,12 +17,25 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/projectsyn/lieutenant-api/pkg/api"
-	"github.com/projectsyn/lieutenant-api/swagger-ui"
+	swaggerui "github.com/projectsyn/lieutenant-api/swagger-ui"
 )
 
 // APIImpl implements the API interface
 type APIImpl struct {
 	namespace string
+
+	// Metadata on the API itself
+	metadata api.Metadata
+}
+
+// APIConfig holds the config options for the API
+type APIConfig struct {
+	APIVersion string
+
+	Namespace string
+
+	OidcDiscoveryURL string
+	OidcCLientID     string
 }
 
 // APIContext is a custom echo context
@@ -37,7 +49,7 @@ var (
 )
 
 // NewAPIServer instantiates a new Echo API server
-func NewAPIServer(k8sMiddleware ...KubernetesAuth) (*echo.Echo, error) {
+func NewAPIServer(conf APIConfig, k8sMiddleware ...KubernetesAuth) (*echo.Echo, error) {
 	swagger, err := api.GetSwagger()
 	if err != nil {
 		return nil, fmt.Errorf("error loading swagger spec: %w", err)
@@ -47,13 +59,22 @@ func NewAPIServer(k8sMiddleware ...KubernetesAuth) (*echo.Echo, error) {
 		return nil, fmt.Errorf("error marshalling swagger spec: %w", err)
 	}
 
-	namespace := os.Getenv("NAMESPACE")
+	namespace := conf.Namespace
 	if len(namespace) == 0 {
 		namespace = "default"
 	}
 
 	apiImpl := &APIImpl{
 		namespace: namespace,
+		metadata: api.Metadata{
+			ApiVersion: conf.APIVersion,
+		},
+	}
+	if conf.OidcCLientID != "" || conf.OidcDiscoveryURL != "" {
+		apiImpl.metadata.Oidc = &api.OIDCConfig{
+			ClientId:     conf.OidcCLientID,
+			DiscoveryUrl: conf.OidcDiscoveryURL,
+		}
 	}
 
 	e := echo.New()
@@ -109,6 +130,11 @@ func customHTTPErrorHandler(err error, c echo.Context) {
 	}
 	c.JSON(code, reason)
 	c.Logger().Error(err)
+}
+
+// Discovery implements the API dicovery endpoint
+func (s *APIImpl) Discovery(ctx echo.Context) error {
+	return ctx.JSON(http.StatusOK, &s.metadata)
 }
 
 // Healthz implements the API health check

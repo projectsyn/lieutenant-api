@@ -22,6 +22,7 @@ const (
 var (
 	// The following endpoints don't need auth
 	noAuth = map[string]bool{
+		"/":             true,
 		"/healthz":      true,
 		"/openapi.json": true,
 		"/docs":         true,
