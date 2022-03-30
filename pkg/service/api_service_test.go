@@ -3,7 +3,6 @@ package service
 import (
 	"encoding/json"
 	"net/http"
-	"os"
 	"strings"
 	"testing"
 	"time"
@@ -168,8 +167,6 @@ func TestNewServer(t *testing.T) {
 }
 
 func setupTest(t *testing.T, _ ...[]runtime.Object) (*echo.Echo, client.Client) {
-	err := os.Setenv("NAMESPACE", "default")
-	require.NoError(t, err)
 
 	f := fake.NewClientBuilder().WithScheme(scheme).WithObjects(testObjects...).Build()
 	testMiddleWare := KubernetesAuth{
@@ -179,7 +176,13 @@ func setupTest(t *testing.T, _ ...[]runtime.Object) (*echo.Echo, client.Client) 
 		cache: createCache(),
 	}
 
-	e, err := NewAPIServer(testMiddleWare)
+	conf := APIConfig{
+		APIVersion:       "v1",
+		Namespace:        "default",
+		OidcDiscoveryURL: "https://idp.example.com/.well-known/openid-configuration",
+		OidcCLientID:     "lieutenant",
+	}
+	e, err := NewAPIServer(conf, testMiddleWare)
 	assert.NoError(t, err)
 	return e, f
 }
@@ -210,4 +213,19 @@ func TestSwaggerUI(t *testing.T) {
 	result := testutil.NewRequest().Get("/docs").Go(t, e)
 	assert.Equal(t, http.StatusOK, result.Code())
 	assert.NotEmpty(t, result.Recorder.Body.Bytes)
+}
+
+func TestDiscovery(t *testing.T) {
+	e, _ := setupTest(t)
+
+	result := testutil.NewRequest().Get("/").Go(t, e)
+	assert.Equal(t, http.StatusOK, result.Code())
+	assert.NotEmpty(t, result.Recorder.Body.Bytes)
+	metadata := api.Metadata{}
+	err := json.Unmarshal(result.Recorder.Body.Bytes(), &metadata)
+	require.NoError(t, err)
+	assert.Equal(t, "v1", metadata.ApiVersion)
+	require.NotNil(t, metadata.Oidc)
+	assert.Equal(t, "lieutenant", metadata.Oidc.ClientId)
+	assert.Equal(t, "https://idp.example.com/.well-known/openid-configuration", metadata.Oidc.DiscoveryUrl)
 }

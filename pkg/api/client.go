@@ -90,6 +90,9 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
+	// Discovery request
+	Discovery(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListClusters request
 	ListClusters(ctx context.Context, params *ListClustersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -153,6 +156,18 @@ type ClientInterface interface {
 	PutTenantWithBody(ctx context.Context, tenantId TenantIdParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	PutTenant(ctx context.Context, tenantId TenantIdParameter, body PutTenantJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+}
+
+func (c *Client) Discovery(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDiscoveryRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
 }
 
 func (c *Client) ListClusters(ctx context.Context, params *ListClustersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -429,6 +444,33 @@ func (c *Client) PutTenant(ctx context.Context, tenantId TenantIdParameter, body
 		return nil, err
 	}
 	return c.Client.Do(req)
+}
+
+// NewDiscoveryRequest generates requests for Discovery
+func NewDiscoveryRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/")
+	if operationPath[0] == '/' {
+		operationPath = operationPath[1:]
+	}
+	operationURL := url.URL{
+		Path: operationPath,
+	}
+
+	queryURL := serverURL.ResolveReference(&operationURL)
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
 }
 
 // NewListClustersRequest generates requests for ListClusters
@@ -1145,6 +1187,9 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
+	// Discovery request
+	DiscoveryWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*DiscoveryResponse, error)
+
 	// ListClusters request
 	ListClustersWithResponse(ctx context.Context, params *ListClustersParams, reqEditors ...RequestEditorFn) (*ListClustersResponse, error)
 
@@ -1208,6 +1253,29 @@ type ClientWithResponsesInterface interface {
 	PutTenantWithBodyWithResponse(ctx context.Context, tenantId TenantIdParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutTenantResponse, error)
 
 	PutTenantWithResponse(ctx context.Context, tenantId TenantIdParameter, body PutTenantJSONRequestBody, reqEditors ...RequestEditorFn) (*PutTenantResponse, error)
+}
+
+type DiscoveryResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Metadata
+	JSONDefault  *Reason
+}
+
+// Status returns HTTPResponse.Status
+func (r DiscoveryResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DiscoveryResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
 }
 
 type ListClustersResponse struct {
@@ -1627,6 +1695,15 @@ func (r PutTenantResponse) StatusCode() int {
 	return 0
 }
 
+// DiscoveryWithResponse request returning *DiscoveryResponse
+func (c *ClientWithResponses) DiscoveryWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*DiscoveryResponse, error) {
+	rsp, err := c.Discovery(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDiscoveryResponse(rsp)
+}
+
 // ListClustersWithResponse request returning *ListClustersResponse
 func (c *ClientWithResponses) ListClustersWithResponse(ctx context.Context, params *ListClustersParams, reqEditors ...RequestEditorFn) (*ListClustersResponse, error) {
 	rsp, err := c.ListClusters(ctx, params, reqEditors...)
@@ -1827,6 +1904,39 @@ func (c *ClientWithResponses) PutTenantWithResponse(ctx context.Context, tenantI
 		return nil, err
 	}
 	return ParsePutTenantResponse(rsp)
+}
+
+// ParseDiscoveryResponse parses an HTTP response from a DiscoveryWithResponse call
+func ParseDiscoveryResponse(rsp *http.Response) (*DiscoveryResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DiscoveryResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Metadata
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Reason
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
 }
 
 // ParseListClustersResponse parses an HTTP response from a ListClustersWithResponse call
