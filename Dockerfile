@@ -2,7 +2,6 @@
 
 FROM docker.io/golang:1.18 as build
 ARG VERSION
-ENV GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn
 
 WORKDIR /app
 
