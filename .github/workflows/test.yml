@@ -13,14 +13,14 @@ jobs:
           - lint_yaml
           - docs-vale
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Run ${{ matrix.command }}
         run: make ${{ matrix.command }}
 
   tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Generate
         run: make generate
       - name: Validate
@@ -33,6 +33,6 @@ jobs:
   docs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Validate Docs
         run: make docs-vale
