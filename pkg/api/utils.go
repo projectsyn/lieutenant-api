@@ -390,7 +390,7 @@ func newGitRepoTemplate(repo *GitRepo, name string) (*synv1alpha1.GitRepoTemplat
 			pathParts := strings.Split(url.Path, "/")
 			pathParts = pathParts[1:]
 			if len(pathParts) < 2 {
-				return nil, fmt.Errorf("failed to parse git repo URL, expected 2+ elements in '%s'", url.Path)
+				return nil, fmt.Errorf("failed to parse git repo URL, expected 2+ path elements in '%s'", url.Path)
 			}
 			// remove .git extension
 			repoName := strings.ReplaceAll(pathParts[len(pathParts)-1], ".git", "")
