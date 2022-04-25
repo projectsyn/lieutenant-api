@@ -131,7 +131,11 @@ func NewCRDFromAPITenant(apiTenant Tenant) (*synv1alpha1.Tenant, error) {
 	}
 
 	if apiTenant.GitRepo != nil {
-		tenant.Spec.GitRepoTemplate = newGitRepoTemplate(&apiTenant.GitRepo.GitRepo, string(apiTenant.Id))
+		tmpl, err := newGitRepoTemplate(&apiTenant.GitRepo.GitRepo, string(apiTenant.Id))
+		if err != nil {
+			return nil, fmt.Errorf("failed to create git repo template: %w", err)
+		}
+		tenant.Spec.GitRepoTemplate = tmpl
 	}
 
 	SyncCRDFromAPITenant(apiTenant.TenantProperties, tenant)
@@ -276,13 +280,17 @@ func NewCRDFromAPICluster(apiCluster Cluster) (*synv1alpha1.Cluster, error) {
 		},
 	}
 
-	cluster.Spec.GitRepoTemplate = newGitRepoTemplate(apiCluster.GitRepo, string(apiCluster.Id))
+	tmpl, err := newGitRepoTemplate(apiCluster.GitRepo, string(apiCluster.Id))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create git repo template: %w", err)
+	}
+	cluster.Spec.GitRepoTemplate = tmpl
 
 	if apiCluster.GitRepo != nil && apiCluster.GitRepo.HostKeys != nil {
 		cluster.Spec.GitHostKeys = *apiCluster.GitRepo.HostKeys
 	}
 
-	err := SyncCRDFromAPICluster(apiCluster.ClusterProperties, cluster)
+	err = SyncCRDFromAPICluster(apiCluster.ClusterProperties, cluster)
 	return cluster, err
 }
 
@@ -366,10 +374,10 @@ func SyncCRDFromAPICluster(source ClusterProperties, target *synv1alpha1.Cluster
 	return nil
 }
 
-func newGitRepoTemplate(repo *GitRepo, name string) *synv1alpha1.GitRepoTemplate {
+func newGitRepoTemplate(repo *GitRepo, name string) (*synv1alpha1.GitRepoTemplate, error) {
 	if repo == nil {
 		// No git info was specified
-		return nil
+		return nil, nil
 	}
 
 	if repo.Type == nil || *repo.Type != string(synv1alpha1.UnmanagedRepoType) {
@@ -377,12 +385,12 @@ func newGitRepoTemplate(repo *GitRepo, name string) *synv1alpha1.GitRepoTemplate
 			// It's not unmanaged and the URL was specified, take it apart
 			url, err := url.Parse(*repo.Url)
 			if err != nil {
-				return nil
+				return nil, fmt.Errorf("failed to parse git repo URL: %w", err)
 			}
 			pathParts := strings.Split(url.Path, "/")
 			pathParts = pathParts[1:]
 			if len(pathParts) < 2 {
-				return nil
+				return nil, fmt.Errorf("failed to parse git repo URL, expected 2+ path elements in '%s'", url.Path)
 			}
 			// remove .git extension
 			repoName := strings.ReplaceAll(pathParts[len(pathParts)-1], ".git", "")
@@ -391,13 +399,13 @@ func newGitRepoTemplate(repo *GitRepo, name string) *synv1alpha1.GitRepoTemplate
 				RepoType: synv1alpha1.AutoRepoType,
 				Path:     repoPath,
 				RepoName: repoName,
-			}
+			}, nil
 		}
 	} else if repo.Type != nil {
 		// Repo is unmanaged, remove name and path
 		return &synv1alpha1.GitRepoTemplate{
 			RepoType: synv1alpha1.UnmanagedRepoType,
-		}
+		}, nil
 	}
-	return nil
+	return nil, nil
 }
