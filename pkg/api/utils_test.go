@@ -21,9 +21,10 @@ func TestRepoConversionDefaultAuto(t *testing.T) {
 		Url:  nil,
 	}
 	repoName := "c-dshfjuhrtu"
-	repoTemplate := newGitRepoTemplate(apiRepo, repoName)
+	repoTemplate, _ := newGitRepoTemplate(apiRepo, repoName)
 	assert.Nil(t, repoTemplate)
-	assert.Nil(t, newGitRepoTemplate(nil, repoName))
+	repoTemplate, _ = newGitRepoTemplate(apiRepo, repoName)
+	assert.Nil(t, repoTemplate)
 }
 
 func TestRepoConversionUnmanagedo(t *testing.T) {
@@ -31,7 +32,7 @@ func TestRepoConversionUnmanagedo(t *testing.T) {
 		Type: pointer.ToString("unmanaged"),
 		Url:  pointer.ToString("ssh://git@some.host/path/to/repo.git"),
 	}
-	repoTemplate := newGitRepoTemplate(apiRepo, "some-name")
+	repoTemplate, _ := newGitRepoTemplate(apiRepo, "some-name")
 	assert.Empty(t, repoTemplate.RepoName)
 	assert.Empty(t, repoTemplate.Path)
 }
@@ -43,7 +44,7 @@ func TestRepoConversionSpecSubGroupPath(t *testing.T) {
 		Type: pointer.ToString("auto"),
 		Url:  pointer.ToString("ssh://git@some.host/" + repoPath + "/" + repoName + ".git"),
 	}
-	repoTemplate := newGitRepoTemplate(apiRepo, "some-name")
+	repoTemplate, _ := newGitRepoTemplate(apiRepo, "some-name")
 	assert.Equal(t, repoName, repoTemplate.RepoName)
 	assert.Equal(t, repoPath, repoTemplate.Path)
 	assert.Empty(t, repoTemplate.APISecretRef.Name)
@@ -56,7 +57,7 @@ func TestRepoConversionSpecPath(t *testing.T) {
 		Type: pointer.ToString("auto"),
 		Url:  pointer.ToString("ssh://git@some.host/" + repoPath + "/" + repoName + ".git"),
 	}
-	repoTemplate := newGitRepoTemplate(apiRepo, "some-name")
+	repoTemplate, _ := newGitRepoTemplate(apiRepo, "some-name")
 	assert.Equal(t, repoName, repoTemplate.RepoName)
 	assert.Equal(t, repoPath, repoTemplate.Path)
 	assert.Empty(t, repoTemplate.APISecretRef.Name)
@@ -66,13 +67,13 @@ func TestRepoConversionFail(t *testing.T) {
 	apiRepo := &GitRepo{
 		Url: pointer.ToString("://git@some.host/group/example.git"),
 	}
-	repoTemplate := newGitRepoTemplate(apiRepo, "some-name")
-	assert.Nil(t, repoTemplate)
+	_, err := newGitRepoTemplate(apiRepo, "some-name")
+	assert.Error(t, err)
 
-	repoTemplate = newGitRepoTemplate(&GitRepo{
+	_, err = newGitRepoTemplate(&GitRepo{
 		Url: pointer.ToString("ssh://git@some.host/example.git"),
 	}, "test")
-	assert.Nil(t, repoTemplate)
+	assert.Error(t, err)
 }
 
 func TestGenerateClusterID(t *testing.T) {
