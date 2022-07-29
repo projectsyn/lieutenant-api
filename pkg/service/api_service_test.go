@@ -122,10 +122,24 @@ var (
 			},
 		},
 	}
+	clusterBSecret = &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "anotherName", // We do not have guarantees that the secret name matches any fixed naming scheme
+			Namespace: clusterB.Namespace,
+			Annotations: map[string]string{
+				"kubernetes.io/service-account.name": clusterB.Name,
+			},
+		},
+		Data: map[string][]byte{"token": []byte("someothertoken")},
+	}
+
 	clusterASecret = &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      clusterA.Name,
 			Namespace: clusterA.Namespace,
+			Annotations: map[string]string{
+				"kubernetes.io/service-account.name": clusterA.Name,
+			},
 		},
 		Data: map[string][]byte{"token": []byte("sometoken")},
 	}
@@ -133,6 +147,7 @@ var (
 		tenantA,
 		tenantB,
 		clusterA,
+		clusterBSecret,
 		clusterASecret,
 		clusterB,
 		&corev1.ServiceAccount{
@@ -140,10 +155,12 @@ var (
 				Name:      clusterA.Name,
 				Namespace: clusterA.Namespace,
 			},
-			Secrets: []corev1.ObjectReference{{
-				Name:      clusterASecret.Name,
-				Namespace: clusterASecret.Namespace,
-			}},
+		},
+		&corev1.ServiceAccount{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      clusterB.Name,
+				Namespace: clusterB.Namespace,
+			},
 		},
 	}
 )
