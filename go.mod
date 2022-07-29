@@ -10,7 +10,7 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/labstack/echo/v4 v4.7.2
 	github.com/projectsyn/lieutenant-operator v1.3.0
-	github.com/stretchr/testify v1.7.5
+	github.com/stretchr/testify v1.8.0
 	github.com/taion809/haikunator v0.0.0-20150324135039-4e414e676fd1
 	k8s.io/api v0.24.0-rc.0
 	k8s.io/apimachinery v0.24.0-rc.0
