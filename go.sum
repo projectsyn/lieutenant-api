@@ -72,7 +72,11 @@ github.com/cncf/udpa/go v0.0.0-20201120205902-5459f2c99403/go.mod h1:WmhPx2Nbnht
 github.com/cncf/xds/go v0.0.0-20210312221358-fbca930ec8ed/go.mod h1:eXthEFrGJvWHgFFCl3hGmgk+/aYT6PnTQLykKQRLhEs=
 github.com/cosmtrek/air v1.29.0 h1:6fptSDBDrNdXKz+Q1xHYbLJRoMiChaBu7YkfRHZpAPc=
 github.com/cosmtrek/air v1.29.0/go.mod h1:I/kZTPQfF8qS+4h7zmQDxEB9lGAeQ3R2tWeCYvPPAY0=
+github.com/cosmtrek/air v1.40.4 h1:AjSlvS7IofbSf4m0BkJLm6TnBlfREwkJ9eCmLR3FLHc=
+github.com/cosmtrek/air v1.40.4/go.mod h1:Urz3nl9UBvc/rntZkXRBttYWt4sBeh2NZaGcdBbkNak=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
+github.com/creack/pty v1.1.11 h1:07n33Z8lZxZ2qwegKbObQohDhXDQxiMMz1NOUGYlesw=
+github.com/creack/pty v1.1.11/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/cyberdelia/templates v0.0.0-20141128023046-ca7fffd4298c/go.mod h1:GyV+0YP4qX0UQ7r2MoYZ+AvYDp12OF5yg4q8rGnyNh4=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=

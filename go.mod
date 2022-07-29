@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/AlekSi/pointer v1.2.0
-	github.com/cosmtrek/air v1.29.0
+	github.com/cosmtrek/air v1.40.4
 	github.com/deepmap/oapi-codegen v1.9.0
 	github.com/getkin/kin-openapi v0.94.0
 	github.com/hashicorp/golang-lru v0.5.4
@@ -20,6 +20,7 @@ require (
 require (
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
+	github.com/creack/pty v1.1.11 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/emicklei/go-restful v2.9.5+incompatible // indirect
 	github.com/evanphx/json-patch v5.6.0+incompatible // indirect
