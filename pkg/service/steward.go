@@ -117,14 +117,14 @@ func findOldestSAToken(secrets []corev1.Secret, saName string) string {
 	token := ""
 	var created *metav1.Time
 
-	for _, secret := range secrets {
+	for i, secret := range secrets {
 		if secret.Type == corev1.SecretTypeServiceAccountToken && // Not strictly necessary but our testing framework can't handle field selectors
 			secret.Annotations[corev1.ServiceAccountNameKey] == saName &&
 			len(secret.Data[corev1.ServiceAccountTokenKey]) > 0 &&
 			!created.Before(&secret.CreationTimestamp) {
 
 			token = string(secret.Data[corev1.ServiceAccountTokenKey])
-			created = &secret.CreationTimestamp
+			created = &secrets[i].CreationTimestamp
 		}
 	}
 	return token

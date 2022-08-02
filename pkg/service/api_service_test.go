@@ -136,8 +136,9 @@ var (
 	}
 	clusterBSecret = &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "anotherName", // We do not have guarantees that the secret name matches any fixed naming scheme
-			Namespace: clusterB.Namespace,
+			Name:              "anotherName", // We do not have guarantees that the secret name matches any fixed naming scheme
+			Namespace:         clusterB.Namespace,
+			CreationTimestamp: metav1.NewTime(time.Now().Add(-1 * time.Hour)),
 			Annotations: map[string]string{
 				"kubernetes.io/service-account.name": clusterB.Name,
 			},
@@ -170,6 +171,12 @@ var (
 		Type: corev1.SecretTypeServiceAccountToken,
 		Data: map[string][]byte{"token": []byte("newtoken")},
 	}
+	clusterASA = &corev1.ServiceAccount{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      clusterA.Name,
+			Namespace: clusterA.Namespace,
+		},
+	}
 	testObjects = []client.Object{
 		tenantA,
 		tenantB,
@@ -179,12 +186,7 @@ var (
 		newClusterASecret,
 		clusterASecret,
 		clusterB,
-		&corev1.ServiceAccount{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      clusterA.Name,
-				Namespace: clusterA.Namespace,
-			},
-		},
+		clusterASA,
 		&corev1.ServiceAccount{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      clusterB.Name,
@@ -213,8 +215,12 @@ func TestNewServer(t *testing.T) {
 }
 
 func setupTest(t *testing.T, _ ...[]runtime.Object) (*echo.Echo, client.Client) {
+	return rawSetupTest(t, testObjects...)
+}
 
-	f := fake.NewClientBuilder().WithScheme(scheme).WithObjects(testObjects...).Build()
+func rawSetupTest(t *testing.T, obj ...client.Object) (*echo.Echo, client.Client) {
+
+	f := fake.NewClientBuilder().WithScheme(scheme).WithObjects(obj...).Build()
 	testMiddleWare := KubernetesAuth{
 		CreateClientFunc: func(token string) (client.Client, error) {
 			return f, nil
