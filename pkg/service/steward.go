@@ -14,7 +14,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/projectsyn/lieutenant-api/pkg/api"
@@ -96,25 +95,18 @@ func (s *APIImpl) InstallSteward(c echo.Context, params api.InstallStewardParams
 }
 
 func (s *APIImpl) getServiceAccountToken(ctx *APIContext, saName string) (string, error) {
-	serviceAccount := &corev1.ServiceAccount{}
-	if err := ctx.client.Get(ctx.Request().Context(), types.NamespacedName{Name: saName, Namespace: s.namespace}, serviceAccount); err != nil {
+
+	secrets := &corev1.SecretList{}
+	if err := ctx.client.List(ctx.Request().Context(), secrets, client.InNamespace(s.namespace)); err != nil {
 		return "", err
 	}
 
-	if len(serviceAccount.Secrets) < 1 {
-		return "", echo.NewHTTPError(http.StatusInternalServerError, "No secret found for ServiceAccount: '%s'", saName)
+	for _, secret := range secrets.Items {
+		if secret.Annotations[corev1.ServiceAccountNameKey] == saName && len(secret.Data[corev1.ServiceAccountTokenKey]) > 0 {
+			return string(secret.Data[corev1.ServiceAccountTokenKey]), nil
+		}
 	}
-	secretName := serviceAccount.Secrets[0]
-	secret := &corev1.Secret{}
-	if err := ctx.client.Get(ctx.Request().Context(), types.NamespacedName{Name: secretName.Name, Namespace: serviceAccount.Namespace}, secret); err != nil {
-		return "", err
-	}
-
-	if len(secret.Data["token"]) < 1 {
-		return "", echo.NewHTTPError(http.StatusInternalServerError, "Secret doesn't contain a token: '%s'", secretName.Name)
-	}
-
-	return string(secret.Data["token"]), nil
+	return "", echo.NewHTTPError(http.StatusServiceUnavailable, "Unable to find token for Cluster. This error might be transient, please try again.")
 }
 
 func createRBAC() []runtime.RawExtension {
