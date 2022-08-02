@@ -106,15 +106,28 @@ func (s *APIImpl) getServiceAccountToken(ctx *APIContext, saName string) (string
 		return "", err
 	}
 
-	for _, secret := range secrets.Items {
+	token := findOldestSAToken(secrets.Items, saName)
+	if token == "" {
+		return "", echo.NewHTTPError(http.StatusServiceUnavailable, "Unable to find token for Cluster. This error might be transient, please try again.")
+	}
+	return token, nil
+}
+
+func findOldestSAToken(secrets []corev1.Secret, saName string) string {
+	token := ""
+	var created *metav1.Time
+
+	for _, secret := range secrets {
 		if secret.Type == corev1.SecretTypeServiceAccountToken && // Not strictly necessary but our testing framework can't handle field selectors
 			secret.Annotations[corev1.ServiceAccountNameKey] == saName &&
-			len(secret.Data[corev1.ServiceAccountTokenKey]) > 0 {
+			len(secret.Data[corev1.ServiceAccountTokenKey]) > 0 &&
+			!created.Before(&secret.CreationTimestamp) {
 
-			return string(secret.Data[corev1.ServiceAccountTokenKey]), nil
+			token = string(secret.Data[corev1.ServiceAccountTokenKey])
+			created = &secret.CreationTimestamp
 		}
 	}
-	return "", echo.NewHTTPError(http.StatusServiceUnavailable, "Unable to find token for Cluster. This error might be transient, please try again.")
+	return token
 }
 
 func createRBAC() []runtime.RawExtension {

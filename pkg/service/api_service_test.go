@@ -148,8 +148,9 @@ var (
 
 	clusterASecret = &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      clusterA.Name,
-			Namespace: clusterA.Namespace,
+			Name:              clusterA.Name,
+			Namespace:         clusterA.Namespace,
+			CreationTimestamp: metav1.NewTime(time.Now().Add(-1 * time.Hour)),
 			Annotations: map[string]string{
 				"kubernetes.io/service-account.name": clusterA.Name,
 			},
@@ -157,12 +158,25 @@ var (
 		Type: corev1.SecretTypeServiceAccountToken,
 		Data: map[string][]byte{"token": []byte("sometoken")},
 	}
+	newClusterASecret = &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              "new-secret",
+			Namespace:         clusterA.Namespace,
+			CreationTimestamp: metav1.NewTime(time.Now()),
+			Annotations: map[string]string{
+				"kubernetes.io/service-account.name": clusterA.Name,
+			},
+		},
+		Type: corev1.SecretTypeServiceAccountToken,
+		Data: map[string][]byte{"token": []byte("newtoken")},
+	}
 	testObjects = []client.Object{
 		tenantA,
 		tenantB,
 		clusterA,
 		wrongSecret,
 		clusterBSecret,
+		newClusterASecret,
 		clusterASecret,
 		clusterB,
 		&corev1.ServiceAccount{
