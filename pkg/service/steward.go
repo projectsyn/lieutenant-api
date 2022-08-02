@@ -97,12 +97,20 @@ func (s *APIImpl) InstallSteward(c echo.Context, params api.InstallStewardParams
 func (s *APIImpl) getServiceAccountToken(ctx *APIContext, saName string) (string, error) {
 
 	secrets := &corev1.SecretList{}
-	if err := ctx.client.List(ctx.Request().Context(), secrets, client.InNamespace(s.namespace)); err != nil {
+	if err := ctx.client.List(
+		ctx.Request().Context(),
+		secrets,
+		client.InNamespace(s.namespace),
+		client.MatchingFields{"type": string(corev1.SecretTypeServiceAccountToken)},
+	); err != nil {
 		return "", err
 	}
 
 	for _, secret := range secrets.Items {
-		if secret.Annotations[corev1.ServiceAccountNameKey] == saName && len(secret.Data[corev1.ServiceAccountTokenKey]) > 0 {
+		if secret.Type == corev1.SecretTypeServiceAccountToken && // Not strictly necessary but our testing framework can't handle field selectors
+			secret.Annotations[corev1.ServiceAccountNameKey] == saName &&
+			len(secret.Data[corev1.ServiceAccountTokenKey]) > 0 {
+
 			return string(secret.Data[corev1.ServiceAccountTokenKey]), nil
 		}
 	}

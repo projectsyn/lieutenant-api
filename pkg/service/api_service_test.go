@@ -122,6 +122,18 @@ var (
 			},
 		},
 	}
+	// A secret that seems to have the correct annotation and data, but is not of type service account token
+	wrongSecret = &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "bootstrap-token",
+			Namespace: clusterA.Namespace,
+			Annotations: map[string]string{
+				"kubernetes.io/service-account.name": clusterA.Name,
+			},
+		},
+		Type: corev1.SecretTypeBootstrapToken,
+		Data: map[string][]byte{"token": []byte("notAtoken")},
+	}
 	clusterBSecret = &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "anotherName", // We do not have guarantees that the secret name matches any fixed naming scheme
@@ -130,6 +142,7 @@ var (
 				"kubernetes.io/service-account.name": clusterB.Name,
 			},
 		},
+		Type: corev1.SecretTypeServiceAccountToken,
 		Data: map[string][]byte{"token": []byte("someothertoken")},
 	}
 
@@ -141,12 +154,14 @@ var (
 				"kubernetes.io/service-account.name": clusterA.Name,
 			},
 		},
+		Type: corev1.SecretTypeServiceAccountToken,
 		Data: map[string][]byte{"token": []byte("sometoken")},
 	}
 	testObjects = []client.Object{
 		tenantA,
 		tenantB,
 		clusterA,
+		wrongSecret,
 		clusterBSecret,
 		clusterASecret,
 		clusterB,
