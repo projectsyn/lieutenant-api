@@ -66,6 +66,8 @@ func TestCreateTenant(t *testing.T) {
 	assert.Contains(t, tenant.Id, api.TenantIDPrefix)
 	assert.Equal(t, newTenant.DisplayName, tenant.DisplayName)
 	assert.Equal(t, newTenant.GitRepo.Url, tenant.GitRepo.Url)
+	assert.NotNil(t, tenant.GitRepo.Type)
+	assert.Equal(t, "auto", *tenant.GitRepo.Type)
 	assert.Contains(t, *tenant.Annotations, "new")
 	assert.Len(t, *tenant.Annotations, 1)
 
