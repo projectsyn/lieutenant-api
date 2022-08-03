@@ -1,6 +1,6 @@
 module github.com/projectsyn/lieutenant-api
 
-go 1.18
+go 1.19
 
 require (
 	github.com/AlekSi/pointer v1.2.0
