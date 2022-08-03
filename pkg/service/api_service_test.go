@@ -122,28 +122,76 @@ var (
 			},
 		},
 	}
+	// A secret that seems to have the correct annotation and data, but is not of type service account token
+	wrongSecret = &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "bootstrap-token",
+			Namespace: clusterA.Namespace,
+			Annotations: map[string]string{
+				corev1.ServiceAccountNameKey: clusterA.Name,
+			},
+		},
+		Type: corev1.SecretTypeBootstrapToken,
+		Data: map[string][]byte{"token": []byte("notAtoken")},
+	}
+	clusterBSecret = &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              "anotherName", // We do not have guarantees that the secret name matches any fixed naming scheme
+			Namespace:         clusterB.Namespace,
+			CreationTimestamp: metav1.NewTime(time.Now().Add(-1 * time.Hour)),
+			Annotations: map[string]string{
+				corev1.ServiceAccountNameKey: clusterB.Name,
+			},
+		},
+		Type: corev1.SecretTypeServiceAccountToken,
+		Data: map[string][]byte{"token": []byte("someothertoken")},
+	}
+
 	clusterASecret = &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              clusterA.Name,
+			Namespace:         clusterA.Namespace,
+			CreationTimestamp: metav1.NewTime(time.Now().Add(-1 * time.Hour)),
+			Annotations: map[string]string{
+				corev1.ServiceAccountNameKey: clusterA.Name,
+			},
+		},
+		Type: corev1.SecretTypeServiceAccountToken,
+		Data: map[string][]byte{"token": []byte("sometoken")},
+	}
+	newClusterASecret = &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              "new-secret",
+			Namespace:         clusterA.Namespace,
+			CreationTimestamp: metav1.NewTime(time.Now()),
+			Annotations: map[string]string{
+				corev1.ServiceAccountNameKey: clusterA.Name,
+			},
+		},
+		Type: corev1.SecretTypeServiceAccountToken,
+		Data: map[string][]byte{"token": []byte("newtoken")},
+	}
+	clusterASA = &corev1.ServiceAccount{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      clusterA.Name,
 			Namespace: clusterA.Namespace,
 		},
-		Data: map[string][]byte{"token": []byte("sometoken")},
 	}
 	testObjects = []client.Object{
 		tenantA,
 		tenantB,
 		clusterA,
+		wrongSecret,
+		clusterBSecret,
+		newClusterASecret,
 		clusterASecret,
 		clusterB,
+		clusterASA,
 		&corev1.ServiceAccount{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      clusterA.Name,
-				Namespace: clusterA.Namespace,
+				Name:      clusterB.Name,
+				Namespace: clusterB.Namespace,
 			},
-			Secrets: []corev1.ObjectReference{{
-				Name:      clusterASecret.Name,
-				Namespace: clusterASecret.Namespace,
-			}},
 		},
 	}
 )
@@ -167,8 +215,12 @@ func TestNewServer(t *testing.T) {
 }
 
 func setupTest(t *testing.T, _ ...[]runtime.Object) (*echo.Echo, client.Client) {
+	return rawSetupTest(t, testObjects...)
+}
 
-	f := fake.NewClientBuilder().WithScheme(scheme).WithObjects(testObjects...).Build()
+func rawSetupTest(t *testing.T, obj ...client.Object) (*echo.Echo, client.Client) {
+
+	f := fake.NewClientBuilder().WithScheme(scheme).WithObjects(obj...).Build()
 	testMiddleWare := KubernetesAuth{
 		CreateClientFunc: func(token string) (client.Client, error) {
 			return f, nil
