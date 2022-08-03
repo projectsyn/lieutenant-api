@@ -10,6 +10,7 @@ rules:
       - secrets
     verbs:
       - get
+      - list
   - apiGroups:
       - syn.tools
     resources:
