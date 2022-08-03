@@ -56,7 +56,7 @@ func TestInstallSteward(t *testing.T) {
 						Namespace:         clusterA.Namespace,
 						CreationTimestamp: metav1.NewTime(time.Now().Add(-24 * time.Hour)),
 						Annotations: map[string]string{
-							"kubernetes.io/service-account.name": clusterA.Name,
+							corev1.ServiceAccountNameKey: clusterA.Name,
 						},
 					},
 					Type: corev1.SecretTypeServiceAccountToken,
@@ -79,7 +79,7 @@ func TestInstallSteward(t *testing.T) {
 						Namespace:         clusterA.Namespace,
 						CreationTimestamp: metav1.NewTime(time.Now().Add(-24 * time.Hour)),
 						Annotations: map[string]string{
-							"kubernetes.io/service-account.name": clusterA.Name,
+							corev1.ServiceAccountNameKey: clusterA.Name,
 						},
 					},
 					Type: corev1.SecretTypeServiceAccountToken,
@@ -94,7 +94,7 @@ func TestInstallSteward(t *testing.T) {
 						Namespace:         clusterA.Namespace,
 						CreationTimestamp: metav1.NewTime(time.Unix(0, 0)),
 						Annotations: map[string]string{
-							"kubernetes.io/service-account.name": clusterA.Name,
+							corev1.ServiceAccountNameKey: clusterA.Name,
 						},
 					},
 					Type: corev1.SecretTypeServiceAccountToken,

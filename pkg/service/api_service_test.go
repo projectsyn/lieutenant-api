@@ -128,7 +128,7 @@ var (
 			Name:      "bootstrap-token",
 			Namespace: clusterA.Namespace,
 			Annotations: map[string]string{
-				"kubernetes.io/service-account.name": clusterA.Name,
+				corev1.ServiceAccountNameKey: clusterA.Name,
 			},
 		},
 		Type: corev1.SecretTypeBootstrapToken,
@@ -140,7 +140,7 @@ var (
 			Namespace:         clusterB.Namespace,
 			CreationTimestamp: metav1.NewTime(time.Now().Add(-1 * time.Hour)),
 			Annotations: map[string]string{
-				"kubernetes.io/service-account.name": clusterB.Name,
+				corev1.ServiceAccountNameKey: clusterB.Name,
 			},
 		},
 		Type: corev1.SecretTypeServiceAccountToken,
@@ -153,7 +153,7 @@ var (
 			Namespace:         clusterA.Namespace,
 			CreationTimestamp: metav1.NewTime(time.Now().Add(-1 * time.Hour)),
 			Annotations: map[string]string{
-				"kubernetes.io/service-account.name": clusterA.Name,
+				corev1.ServiceAccountNameKey: clusterA.Name,
 			},
 		},
 		Type: corev1.SecretTypeServiceAccountToken,
@@ -165,7 +165,7 @@ var (
 			Namespace:         clusterA.Namespace,
 			CreationTimestamp: metav1.NewTime(time.Now()),
 			Annotations: map[string]string{
-				"kubernetes.io/service-account.name": clusterA.Name,
+				corev1.ServiceAccountNameKey: clusterA.Name,
 			},
 		},
 		Type: corev1.SecretTypeServiceAccountToken,
