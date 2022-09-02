@@ -65,6 +65,9 @@ var (
 				"some":                     "value",
 				"monitoring.syn.tools/sla": "247",
 			},
+			Labels: map[string]string{
+				synv1alpha1.LabelNameTenant: tenantA.Name,
+			},
 		},
 		Spec: synv1alpha1.ClusterSpec{
 			DisplayName: "Sample Cluster A",
@@ -94,6 +97,9 @@ var (
 			Namespace: "default",
 			Annotations: map[string]string{
 				"existing": "annotation",
+			},
+			Labels: map[string]string{
+				synv1alpha1.LabelNameTenant: tenantB.Name,
 			},
 		},
 		Spec: synv1alpha1.ClusterSpec{

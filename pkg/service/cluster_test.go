@@ -39,6 +39,21 @@ func TestListCluster(t *testing.T) {
 	assert.Contains(t, *clusters[0].Annotations, "some")
 }
 
+func TestListCluster_FilteredByTenant(t *testing.T) {
+	e, _ := setupTest(t)
+
+	result := testutil.NewRequest().
+		Get("/clusters?tenant="+tenantA.Name).
+		WithHeader(echo.HeaderAuthorization, bearerToken).
+		Go(t, e)
+	require.Equal(t, http.StatusOK, result.Code())
+	clusters := make([]api.Cluster, 0)
+	err := result.UnmarshalJsonToObject(&clusters)
+	assert.NoError(t, err)
+	assert.Len(t, clusters, 1)
+	assert.Equal(t, clusterA.Spec.DisplayName, *clusters[0].DisplayName)
+}
+
 func TestListClusterMissingBearer(t *testing.T) {
 	e, _ := setupTest(t)
 
