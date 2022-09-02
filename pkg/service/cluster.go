@@ -25,11 +25,16 @@ const (
 )
 
 // ListClusters lists all clusters
-func (s *APIImpl) ListClusters(c echo.Context, _ api.ListClustersParams) error {
+func (s *APIImpl) ListClusters(c echo.Context, p api.ListClustersParams) error {
 	ctx := c.(*APIContext)
 
+	filterOptions := []client.ListOption{client.InNamespace(s.namespace)}
+	if p.Tenant != nil && *p.Tenant != "" {
+		filterOptions = append(filterOptions, client.MatchingLabels{synv1alpha1.LabelNameTenant: *p.Tenant})
+	}
+
 	clusterList := &synv1alpha1.ClusterList{}
-	err := ctx.client.List(ctx.Request().Context(), clusterList, client.InNamespace(s.namespace))
+	err := ctx.client.List(ctx.Request().Context(), clusterList, filterOptions...)
 	if err != nil {
 		return err
 	}
