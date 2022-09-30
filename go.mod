@@ -9,7 +9,7 @@ require (
 	github.com/getkin/kin-openapi v0.98.0
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/labstack/echo/v4 v4.8.0
-	github.com/projectsyn/lieutenant-operator v1.4.0
+	github.com/projectsyn/lieutenant-operator v1.5.0
 	github.com/stretchr/testify v1.8.0
 	github.com/taion809/haikunator v0.0.0-20150324135039-4e414e676fd1
 	k8s.io/api v0.24.0-rc.0
@@ -26,7 +26,6 @@ require (
 	github.com/evanphx/json-patch v5.6.0+incompatible // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.3 // indirect
-	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/jsonreference v0.19.5 // indirect
