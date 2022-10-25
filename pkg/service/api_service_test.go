@@ -15,7 +15,6 @@ import (
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
@@ -103,7 +102,7 @@ var (
 			},
 		},
 		Spec: synv1alpha1.ClusterSpec{
-			DisplayName: "Sample Cluster B",
+			DisplayName: "B Sample Cluster",
 			TenantRef: corev1.LocalObjectReference{
 				Name: tenantB.Name,
 			},
@@ -220,8 +219,8 @@ func TestNewServer(t *testing.T) {
 	}
 }
 
-func setupTest(t *testing.T, _ ...[]runtime.Object) (*echo.Echo, client.Client) {
-	return rawSetupTest(t, testObjects...)
+func setupTest(t *testing.T, obj ...client.Object) (*echo.Echo, client.Client) {
+	return rawSetupTest(t, append(testObjects, obj...)...)
 }
 
 func rawSetupTest(t *testing.T, obj ...client.Object) (*echo.Echo, client.Client) {

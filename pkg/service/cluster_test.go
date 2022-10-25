@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"strings"
@@ -52,6 +53,61 @@ func TestListCluster_FilteredByTenant(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, clusters, 1)
 	assert.Equal(t, clusterA.Spec.DisplayName, *clusters[0].DisplayName)
+}
+func TestListCluster_Sort(t *testing.T) {
+
+	clusterC := clusterA.DeepCopy()
+	clusterC.Name = "sample-cluster-c"
+	clusterC.Spec.DisplayName = "Z Cluster c"
+	clusterC.Spec.TenantRef.Name = "c-tenant"
+
+	tcs := map[string]struct {
+		sortBy string
+		order  []string
+	}{
+		"sort_by id": {
+			sortBy: "id",
+			order: []string{
+				clusterA.Name,
+				clusterB.Name,
+				clusterC.Name,
+			},
+		},
+		"sort_by tenant": {
+			sortBy: "tenant",
+			order: []string{
+				clusterC.Name,
+				clusterA.Name,
+				clusterB.Name,
+			},
+		},
+		"sort_by displayName": {
+			sortBy: "displayName",
+			order: []string{
+				clusterB.Name,
+				clusterA.Name,
+				clusterC.Name,
+			},
+		},
+	}
+
+	e, _ := setupTest(t, clusterC)
+	for name, tc := range tcs {
+		t.Run(name, func(t *testing.T) {
+			result := testutil.NewRequest().
+				Get(fmt.Sprintf("/clusters?sort_by=%s", tc.sortBy)).
+				WithHeader(echo.HeaderAuthorization, bearerToken).
+				Go(t, e)
+			require.Equal(t, http.StatusOK, result.Code())
+			clusters := make([]api.Cluster, 0)
+			err := result.UnmarshalJsonToObject(&clusters)
+			assert.NoError(t, err)
+			assert.Len(t, clusters, 3)
+			for i := range tc.order {
+				assert.Equal(t, tc.order[i], string(clusters[i].Id))
+			}
+		})
+	}
 }
 
 func TestListClusterMissingBearer(t *testing.T) {
