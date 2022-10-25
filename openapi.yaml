@@ -468,6 +468,14 @@ paths:
             type: string
           description: Filter clusters by tenant id
           example: aezoo6
+        - in: query
+          name: sort_by
+          schema:
+            type: string
+            enum: [id, tenant, displayName]
+            default: id
+          description: Sort list by field
+          example: id
       responses:
         '200':
           description: Cluster listing. Empty array if no tenants available.
