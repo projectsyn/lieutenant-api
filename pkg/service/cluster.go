@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"sort"
 
 	"github.com/labstack/echo/v4"
 	synv1alpha1 "github.com/projectsyn/lieutenant-operator/api/v1alpha1"
@@ -44,8 +45,34 @@ func (s *APIImpl) ListClusters(c echo.Context, p api.ListClustersParams) error {
 		apiCluster := apiClusterWithInstallURL(ctx, &cluster)
 		clusters = append(clusters, *apiCluster)
 	}
-
+	sortClustersBy(clusters, p.SortBy)
 	return ctx.JSON(http.StatusOK, clusters)
+}
+
+func sortClustersBy(clusters []api.Cluster, by *api.ListClustersParamsSortBy) {
+	sortBy := "id"
+	if by != nil {
+		sortBy = string(*by)
+	}
+	sort.Slice(clusters, func(i, j int) bool {
+		switch sortBy {
+		case "tenant":
+			return clusters[i].Tenant < clusters[j].Tenant
+		case "displayName":
+			di := ""
+			if clusters[i].DisplayName != nil {
+				di = *clusters[i].DisplayName
+			}
+			dj := ""
+			if clusters[j].DisplayName != nil {
+				dj = *clusters[j].DisplayName
+			}
+
+			return di < dj
+		default:
+			return clusters[i].Id < clusters[j].Id
+		}
+	})
 }
 
 // CreateCluster creates a new cluster
