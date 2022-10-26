@@ -8,7 +8,7 @@ require (
 	github.com/deepmap/oapi-codegen v1.9.0
 	github.com/getkin/kin-openapi v0.98.0
 	github.com/hashicorp/golang-lru v0.5.4
-	github.com/labstack/echo/v4 v4.8.0
+	github.com/labstack/echo/v4 v4.9.1
 	github.com/projectsyn/lieutenant-operator v1.5.0
 	github.com/stretchr/testify v1.8.1
 	github.com/taion809/haikunator v0.0.0-20150324135039-4e414e676fd1
@@ -41,7 +41,7 @@ require (
 	github.com/invopop/yaml v0.1.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/labstack/gommon v0.3.1 // indirect
+	github.com/labstack/gommon v0.4.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
