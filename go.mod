@@ -8,6 +8,7 @@ require (
 	github.com/deepmap/oapi-codegen v1.9.0
 	github.com/getkin/kin-openapi v0.98.0
 	github.com/hashicorp/golang-lru v0.5.4
+	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/labstack/echo/v4 v4.9.1
 	github.com/projectsyn/lieutenant-operator v1.5.0
 	github.com/stretchr/testify v1.8.1
