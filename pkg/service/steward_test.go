@@ -7,6 +7,7 @@ import (
 
 	"github.com/deepmap/oapi-codegen/pkg/testutil"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -116,7 +117,7 @@ func TestInstallSteward(t *testing.T) {
 				WithHeader("X-Forwarded-Proto", "https").
 				Get("/install/steward.json?token="+tc.bootstrapToken).
 				Go(t, e)
-			assert.Equal(t, http.StatusOK, result.Code())
+			require.Equalf(t, http.StatusOK, result.Code(), "Unexpected response code: %d, body: %s", result.Code(), string(result.Recorder.Body.String()))
 			manifests := &corev1.List{}
 			err := result.UnmarshalJsonToObject(&manifests)
 			assert.NoError(t, err)

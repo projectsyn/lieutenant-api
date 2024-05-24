@@ -225,7 +225,16 @@ func setupTest(t *testing.T, obj ...client.Object) (*echo.Echo, client.Client) {
 
 func rawSetupTest(t *testing.T, obj ...client.Object) (*echo.Echo, client.Client) {
 
-	f := fake.NewClientBuilder().WithScheme(scheme).WithObjects(obj...).Build()
+	f := fake.NewClientBuilder().
+		WithScheme(scheme).
+		WithIndex(&corev1.Secret{}, "type", func(o client.Object) []string {
+			return []string{string(o.(*corev1.Secret).Type)}
+		}).
+		WithObjects(obj...).
+		WithStatusSubresource(
+			&synv1alpha1.Tenant{},
+			&synv1alpha1.Cluster{},
+		).Build()
 	testMiddleWare := KubernetesAuth{
 		CreateClientFunc: func(token string) (client.Client, error) {
 			return f, nil
