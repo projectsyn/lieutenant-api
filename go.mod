@@ -9,7 +9,7 @@ require (
 	github.com/cosmtrek/air v1.40.4
 	github.com/deepmap/oapi-codegen v1.9.0
 	github.com/getkin/kin-openapi v0.98.0
-	github.com/hashicorp/golang-lru v0.5.4
+	github.com/hashicorp/golang-lru v0.6.0
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/projectsyn/lieutenant-operator v1.5.0
 	github.com/stretchr/testify v1.9.0
