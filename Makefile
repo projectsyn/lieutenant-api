@@ -17,7 +17,7 @@ IMAGE_NAME ?= docker.io/projectsyn/$(BINARY_NAME):$(VERSION)
 
 ANTORA_PREVIEW_CMD ?= $(DOCKER_CMD) run --rm --publish 35729:35729 --publish 2020:2020 --volume "${PWD}":/preview/antora vshn/antora-preview:3.0.1.1 --style=syn --antora=docs
 
-VALE_CMD  ?= $(DOCKER_CMD) run $(DOCKER_ARGS) --volume "$${PWD}"/docs/modules:/pages vshn/vale:2.6.1
+VALE_CMD  ?= $(DOCKER_CMD) run $(DOCKER_ARGS) --volume "$${PWD}"/docs/modules:/pages ghcr.io/vshn/vale:2.15.5
 VALE_ARGS ?= --minAlertLevel=error --config=/pages/ROOT/pages/.vale.ini /pages
 
 SWAGGER_CMD  ?= $(DOCKER_CMD) run --rm --user "$$(id -u)" --volume "$${PWD}:/src" -p 8080:8080 -e SWAGGER_JSON=/src/openapi.yaml swaggerapi/swagger-ui
