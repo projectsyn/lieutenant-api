@@ -7,6 +7,7 @@ import (
 	"os"
 	"sort"
 
+	"github.com/AlekSi/pointer"
 	"github.com/labstack/echo/v4"
 	synv1alpha1 "github.com/projectsyn/lieutenant-operator/api/v1alpha1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -70,7 +71,7 @@ func sortClustersBy(clusters []api.Cluster, by *api.ListClustersParamsSortBy) {
 
 			return di < dj
 		default:
-			return clusters[i].Id < clusters[j].Id
+			return clusters[i].Id.String() < clusters[j].Id.String()
 		}
 	})
 }
@@ -188,7 +189,7 @@ func (s *APIImpl) PutCluster(c echo.Context, clusterID api.ClusterIdParameter) e
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 	apiCluster := api.Cluster(*body)
-	apiCluster.Id = api.Id(clusterID)
+	apiCluster.Id = pointer.To(api.Id(clusterID))
 
 	cluster, err := api.NewCRDFromAPICluster(apiCluster)
 	if err != nil {

@@ -54,6 +54,11 @@ func NewAPIServer(conf APIConfig, k8sMiddleware ...KubernetesAuth) (*echo.Echo, 
 	if err != nil {
 		return nil, fmt.Errorf("error loading swagger spec: %w", err)
 	}
+
+	// Clear out the servers array in the swagger spec, that skips validating
+	// that server names match. We don't know how/where this thing will be run.
+	swagger.Servers = nil
+
 	swaggerJSON, err = swagger.MarshalJSON()
 	if err != nil {
 		return nil, fmt.Errorf("error marshalling swagger spec: %w", err)
