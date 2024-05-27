@@ -257,7 +257,7 @@ func TestHealthz(t *testing.T) {
 	e, _ := setupTest(t)
 
 	result := testutil.NewRequest().Get("/healthz").Go(t, e)
-	assert.Equal(t, http.StatusOK, result.Code())
+	requireHTTPCode(t, http.StatusOK, result)
 	assert.Equal(t, "ok", string(result.Recorder.Body.String()))
 }
 
@@ -265,7 +265,7 @@ func TestOpenAPI(t *testing.T) {
 	e, _ := setupTest(t)
 
 	result := testutil.NewRequest().Get("/openapi.json").Go(t, e)
-	assert.Equal(t, http.StatusOK, result.Code())
+	requireHTTPCode(t, http.StatusOK, result)
 	swaggerSpec := &openapi3.T{}
 	err := json.Unmarshal(result.Recorder.Body.Bytes(), swaggerSpec)
 	assert.NoError(t, err)
@@ -277,7 +277,7 @@ func TestSwaggerUI(t *testing.T) {
 	e, _ := setupTest(t)
 
 	result := testutil.NewRequest().Get("/docs").Go(t, e)
-	assert.Equal(t, http.StatusOK, result.Code())
+	requireHTTPCode(t, http.StatusOK, result)
 	assert.NotEmpty(t, result.Recorder.Body.Bytes)
 }
 
@@ -285,7 +285,7 @@ func TestDiscovery(t *testing.T) {
 	e, _ := setupTest(t)
 
 	result := testutil.NewRequest().Get("/").Go(t, e)
-	assert.Equal(t, http.StatusOK, result.Code())
+	requireHTTPCode(t, http.StatusOK, result)
 	assert.NotEmpty(t, result.Recorder.Body.Bytes)
 	metadata := api.Metadata{}
 	err := json.Unmarshal(result.Recorder.Body.Bytes(), &metadata)

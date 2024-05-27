@@ -26,7 +26,7 @@ func TestListCluster(t *testing.T) {
 		Get("/clusters").
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
-	require.Equal(t, http.StatusOK, result.Code())
+	requireHTTPCode(t, http.StatusOK, result)
 	clusters := make([]api.Cluster, 0)
 	err := result.UnmarshalJsonToObject(&clusters)
 	assert.NoError(t, err)
@@ -47,7 +47,7 @@ func TestListCluster_FilteredByTenant(t *testing.T) {
 		Get("/clusters?tenant="+tenantA.Name).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
-	require.Equal(t, http.StatusOK, result.Code())
+	requireHTTPCode(t, http.StatusOK, result)
 	clusters := make([]api.Cluster, 0)
 	err := result.UnmarshalJsonToObject(&clusters)
 	assert.NoError(t, err)
@@ -98,7 +98,7 @@ func TestListCluster_Sort(t *testing.T) {
 				Get(fmt.Sprintf("/clusters?sort_by=%s", tc.sortBy)).
 				WithHeader(echo.HeaderAuthorization, bearerToken).
 				Go(t, e)
-			require.Equal(t, http.StatusOK, result.Code())
+			requireHTTPCode(t, http.StatusOK, result)
 			clusters := make([]api.Cluster, 0)
 			err := result.UnmarshalJsonToObject(&clusters)
 			assert.NoError(t, err)
@@ -116,7 +116,7 @@ func TestListClusterMissingBearer(t *testing.T) {
 	result := testutil.NewRequest().
 		Get("/clusters").
 		Go(t, e)
-	assert.Equal(t, http.StatusBadRequest, result.Code())
+	requireHTTPCode(t, http.StatusBadRequest, result)
 }
 
 func TestListClusterWrongToken(t *testing.T) {
@@ -126,7 +126,7 @@ func TestListClusterWrongToken(t *testing.T) {
 		Get("/clusters").
 		WithHeader(echo.HeaderAuthorization, "asdf").
 		Go(t, e)
-	assert.Equal(t, http.StatusBadRequest, result.Code())
+	requireHTTPCode(t, http.StatusBadRequest, result)
 }
 
 func TestCreateCluster(t *testing.T) {
@@ -158,7 +158,7 @@ func TestCreateCluster(t *testing.T) {
 		WithJsonBody(newCluster).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
-	assert.Equal(t, http.StatusCreated, result.Code())
+	requireHTTPCode(t, http.StatusCreated, result)
 
 	cluster := &api.Cluster{}
 	err = result.UnmarshalJsonToObject(cluster)
@@ -206,7 +206,7 @@ func TestCreateClusterWithId(t *testing.T) {
 				WithJsonBody(request).
 				WithHeader(echo.HeaderAuthorization, bearerToken).
 				Go(t, e)
-			assert.Equal(t, http.StatusCreated, result.Code())
+			requireHTTPCode(t, http.StatusCreated, result)
 			cluster := &api.Cluster{}
 			err := result.UnmarshalJsonToObject(cluster)
 			assert.NoError(t, err)
@@ -238,7 +238,7 @@ func TestCreateClusterInstanceFact(t *testing.T) {
 		WithJsonBody(newCluster).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
-	assert.Equal(t, http.StatusCreated, result.Code())
+	requireHTTPCode(t, http.StatusCreated, result)
 
 	cluster := &api.Cluster{}
 	err = result.UnmarshalJsonToObject(cluster)
@@ -252,7 +252,7 @@ func TestCreateClusterInstanceFact(t *testing.T) {
 		WithJsonBody(newCluster).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
-	assert.Equal(t, http.StatusCreated, result.Code())
+	requireHTTPCode(t, http.StatusCreated, result)
 	cluster = &api.Cluster{}
 	err = result.UnmarshalJsonToObject(cluster)
 	assert.NoError(t, err)
@@ -269,7 +269,7 @@ func TestCreateClusterNoJSON(t *testing.T) {
 		WithBody([]byte("invalid-body")).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
-	assert.Equal(t, http.StatusBadRequest, result.Code())
+	requireHTTPCode(t, http.StatusBadRequest, result)
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
@@ -287,7 +287,7 @@ func TestCreateClusterNoTenant(t *testing.T) {
 		WithJsonBody(createCluster).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
-	assert.Equal(t, http.StatusBadRequest, result.Code())
+	requireHTTPCode(t, http.StatusBadRequest, result)
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
@@ -302,7 +302,7 @@ func TestCreateClusterEmpty(t *testing.T) {
 		WithJsonContentType().
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
-	assert.Equal(t, http.StatusBadRequest, result.Code())
+	requireHTTPCode(t, http.StatusBadRequest, result)
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
@@ -316,7 +316,7 @@ func TestClusterDelete(t *testing.T) {
 		Delete("/clusters/"+clusterA.Name).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
-	assert.Equal(t, http.StatusNoContent, result.Code())
+	requireHTTPCode(t, http.StatusNoContent, result)
 }
 
 func TestClusterGet(t *testing.T) {
@@ -326,7 +326,7 @@ func TestClusterGet(t *testing.T) {
 		Get("/clusters/"+clusterA.Name).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
-	assert.Equal(t, http.StatusOK, result.Code())
+	requireHTTPCode(t, http.StatusOK, result)
 	cluster := &api.Cluster{}
 	err := result.UnmarshalJsonToObject(cluster)
 	assert.NoError(t, err)
@@ -345,7 +345,7 @@ func TestClusterGetNoToken(t *testing.T) {
 		Get("/clusters/"+clusterB.Name).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
-	assert.Equal(t, http.StatusOK, result.Code())
+	requireHTTPCode(t, http.StatusOK, result)
 	cluster := &api.Cluster{}
 	err := result.UnmarshalJsonToObject(cluster)
 	assert.NoError(t, err)
@@ -362,7 +362,7 @@ func TestClusterGetNotFound(t *testing.T) {
 		Get("/clusters/not-existing").
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
-	assert.Equal(t, http.StatusNotFound, result.Code())
+	requireHTTPCode(t, http.StatusNotFound, result)
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
@@ -376,7 +376,7 @@ func TestClusterUpdateEmpty(t *testing.T) {
 		Patch("/clusters/1").
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
-	assert.Equal(t, http.StatusBadRequest, result.Code())
+	requireHTTPCode(t, http.StatusBadRequest, result)
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
@@ -396,7 +396,7 @@ func TestClusterUpdateTenant(t *testing.T) {
 		WithContentType(api.ContentJSONPatch).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
-	assert.Equal(t, http.StatusBadRequest, result.Code())
+	requireHTTPCode(t, http.StatusBadRequest, result)
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
@@ -418,7 +418,7 @@ func TestClusterUpdateUnknown(t *testing.T) {
 		WithContentType(api.ContentJSONPatch).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
-	assert.Equal(t, http.StatusBadRequest, result.Code())
+	requireHTTPCode(t, http.StatusBadRequest, result)
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
@@ -440,7 +440,7 @@ func TestClusterUpdateIllegalDeployKey(t *testing.T) {
 		WithContentType(api.ContentJSONPatch).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
-	assert.Equal(t, http.StatusBadRequest, result.Code())
+	requireHTTPCode(t, http.StatusBadRequest, result)
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
@@ -462,7 +462,7 @@ func TestClusterUpdateNotManagedDeployKey(t *testing.T) {
 		WithContentType(api.ContentJSONPatch).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
-	assert.Equal(t, http.StatusBadRequest, result.Code())
+	requireHTTPCode(t, http.StatusBadRequest, result)
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
@@ -499,7 +499,7 @@ func TestClusterUpdate(t *testing.T) {
 		WithContentType(api.ContentJSONPatch).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
-	require.Equal(t, http.StatusOK, result.Code())
+	requireHTTPCode(t, http.StatusOK, result)
 	cluster := &api.Cluster{}
 	err := result.UnmarshalJsonToObject(cluster)
 	require.NoError(t, err)
@@ -532,7 +532,7 @@ func TestClusterUpdateDisplayName(t *testing.T) {
 		WithContentType(api.ContentJSONPatch).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
-	require.Equal(t, http.StatusOK, result.Code())
+	requireHTTPCode(t, http.StatusOK, result)
 	cluster := &api.Cluster{}
 	err := result.UnmarshalJsonToObject(cluster)
 	require.NoError(t, err)
@@ -613,7 +613,7 @@ func TestClusterPut(t *testing.T) {
 				WithJsonBody(tc.cluster).
 				WithHeader(echo.HeaderAuthorization, bearerToken).
 				Go(t, e)
-			require.Equal(t, tc.code, result.Code())
+			requireHTTPCode(t, tc.code, result)
 
 			res := &api.Cluster{}
 			err := result.UnmarshalJsonToObject(res)
@@ -649,7 +649,7 @@ func TestClusterPutCreateNameMissmatch(t *testing.T) {
 		WithJsonBody(cluster).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
-	require.Equal(t, http.StatusCreated, result.Code())
+	requireHTTPCode(t, http.StatusCreated, result)
 
 	res := &api.Cluster{}
 	err := result.UnmarshalJsonToObject(res)
@@ -663,4 +663,10 @@ func TestClusterPutCreateNameMissmatch(t *testing.T) {
 		Name:      res.Id.String(),
 	}, clusterObj)
 	require.NotNil(t, clusterObj)
+}
+
+// requireHTTPCode is a helper function to check the HTTP status code of a response and log the response body if the code is not as expected.
+func requireHTTPCode(t *testing.T, expected int, result *testutil.CompletedRequest) {
+	t.Helper()
+	require.Equalf(t, expected, result.Code(), "Unexpected response code: %d, body: %s", result.Code(), string(result.Recorder.Body.String()))
 }

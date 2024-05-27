@@ -24,7 +24,7 @@ func TestListTenants(t *testing.T) {
 		Get("/tenants/").
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
-	assert.Equal(t, http.StatusOK, result.Code())
+	requireHTTPCode(t, http.StatusOK, result)
 	tenants := []api.Tenant{}
 	err := result.UnmarshalJsonToObject(&tenants)
 	assert.NoError(t, err)
@@ -57,7 +57,7 @@ func TestCreateTenant(t *testing.T) {
 		WithJsonBody(newTenant).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
-	assert.Equal(t, http.StatusCreated, result.Code())
+	requireHTTPCode(t, http.StatusCreated, result)
 	tenant := &api.Tenant{}
 	err := result.UnmarshalJsonToObject(tenant)
 	assert.NoError(t, err)
@@ -133,7 +133,7 @@ func TestCreateTenantFail(t *testing.T) {
 		WithBody([]byte("invalid-body")).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
-	assert.Equal(t, http.StatusBadRequest, result.Code())
+	requireHTTPCode(t, http.StatusBadRequest, result)
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
@@ -147,7 +147,7 @@ func TestCreateTenantEmpty(t *testing.T) {
 		Post("/tenants/").
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
-	assert.Equal(t, http.StatusBadRequest, result.Code())
+	requireHTTPCode(t, http.StatusBadRequest, result)
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
@@ -166,7 +166,8 @@ func TestCreateTenantNoGitURL(t *testing.T) {
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		WithJsonBody(newTenant).
 		Go(t, e)
-	assert.Equal(t, http.StatusBadRequest, result.Code())
+	requireHTTPCode(t, http.StatusBadRequest, result)
+
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
@@ -180,7 +181,7 @@ func TestTenantDelete(t *testing.T) {
 		Delete("/tenants/"+tenantA.Name).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
-	assert.Equal(t, http.StatusNoContent, result.Code())
+	requireHTTPCode(t, http.StatusNoContent, result)
 }
 
 func TestTenantGet(t *testing.T) {
@@ -190,7 +191,7 @@ func TestTenantGet(t *testing.T) {
 		Get("/tenants/"+tenantA.Name).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
-	assert.Equal(t, http.StatusOK, result.Code())
+	requireHTTPCode(t, http.StatusOK, result)
 	tenant := &api.Tenant{}
 	err := result.UnmarshalJsonToObject(tenant)
 	assert.NoError(t, err)
@@ -208,7 +209,7 @@ func TestTenantUpdateEmpty(t *testing.T) {
 		Patch("/tenants/1").
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
-	assert.Equal(t, http.StatusBadRequest, result.Code())
+	requireHTTPCode(t, http.StatusBadRequest, result)
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
@@ -230,7 +231,7 @@ func TestTenantUpdateUnknown(t *testing.T) {
 		WithContentType(api.ContentJSONPatch).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
-	assert.Equal(t, http.StatusBadRequest, result.Code())
+	requireHTTPCode(t, http.StatusBadRequest, result)
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
 	assert.NoError(t, err)
@@ -259,7 +260,7 @@ func TestTenantUpdate(t *testing.T) {
 		WithContentType(api.ContentJSONPatch).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
-	assert.Equal(t, http.StatusOK, result.Code())
+	requireHTTPCode(t, http.StatusOK, result)
 	tenant := &api.Tenant{}
 	err := result.UnmarshalJsonToObject(tenant)
 	assert.NoError(t, err)
@@ -287,7 +288,7 @@ func TestTenantUpdateDisplayName(t *testing.T) {
 		WithContentType(api.ContentJSONPatch).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
-	assert.Equal(t, http.StatusOK, result.Code())
+	requireHTTPCode(t, http.StatusOK, result)
 	tenant := &api.Tenant{}
 	err := result.UnmarshalJsonToObject(tenant)
 	assert.NoError(t, err)
@@ -360,7 +361,7 @@ func TestTenantPut(t *testing.T) {
 				WithJsonBody(tc.tenant).
 				WithHeader(echo.HeaderAuthorization, bearerToken).
 				Go(t, e)
-			require.Equal(t, tc.code, result.Code())
+			requireHTTPCode(t, tc.code, result)
 
 			res := &api.Tenant{}
 			err := result.UnmarshalJsonToObject(res)

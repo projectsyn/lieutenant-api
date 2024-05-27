@@ -7,7 +7,6 @@ import (
 
 	"github.com/deepmap/oapi-codegen/pkg/testutil"
 	"github.com/labstack/echo/v4"
-	"github.com/stretchr/testify/assert"
 
 	"github.com/projectsyn/lieutenant-api/pkg/api"
 )
@@ -20,7 +19,7 @@ func TestQueryInventory(t *testing.T) {
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Get("/inventory?q="+url.QueryEscape(query)).
 		Go(t, e)
-	assert.Equal(t, http.StatusInternalServerError, result.Code())
+	requireHTTPCode(t, http.StatusInternalServerError, result)
 }
 
 func TestUpdateInventory(t *testing.T) {
@@ -38,5 +37,5 @@ func TestUpdateInventory(t *testing.T) {
 		WithJsonBody(updateInventory).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		Go(t, e)
-	assert.Equal(t, http.StatusInternalServerError, result.Code())
+	requireHTTPCode(t, http.StatusInternalServerError, result)
 }
