@@ -13,7 +13,7 @@ require (
 	github.com/hashicorp/golang-lru v1.0.2
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/oapi-codegen/runtime v1.1.1
-	github.com/projectsyn/lieutenant-operator v1.5.3
+	github.com/projectsyn/lieutenant-operator v1.6.0
 	github.com/stretchr/testify v1.9.0
 	github.com/taion809/haikunator v0.0.0-20150324135039-4e414e676fd1
 	k8s.io/api v0.30.1
