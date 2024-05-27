@@ -80,7 +80,7 @@ func TestGenerateClusterID(t *testing.T) {
 	assertGeneratedID(t, ClusterIDPrefix, func() (s string) {
 		id, err := GenerateClusterID()
 		require.NoError(t, err)
-		return string(id.Id)
+		return id.Id.String()
 	})
 }
 
@@ -168,9 +168,10 @@ var tenantTests = map[string]struct {
 func TestNewCRDFromAPITenant(t *testing.T) {
 	for name, test := range tenantTests {
 		t.Run(name, func(t *testing.T) {
+			id := Id(fmt.Sprintf("t-%s", t.Name()))
 			apiTenant := Tenant{
 				TenantId{
-					Id: Id(fmt.Sprintf("t-%s", t.Name())),
+					Id: &id,
 				},
 				test.properties,
 			}
@@ -234,7 +235,7 @@ func TestNewCRDFromAPICluster(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			apiCluster := Cluster{
 				ClusterId{
-					Id: Id(fmt.Sprintf("c-%s", t.Name())),
+					Id: pointer.To(Id(fmt.Sprintf("c-%s", t.Name()))),
 				},
 				ClusterTenant{fmt.Sprintf("t-%s", t.Name())},
 				test.properties,

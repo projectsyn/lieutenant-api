@@ -104,7 +104,7 @@ func TestListCluster_Sort(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Len(t, clusters, 3)
 			for i := range tc.order {
-				assert.Equal(t, tc.order[i], string(clusters[i].Id))
+				assert.Equal(t, tc.order[i], clusters[i].Id.String())
 			}
 		})
 	}
@@ -165,7 +165,7 @@ func TestCreateCluster(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, cluster)
-	assert.Contains(t, cluster.Id, api.ClusterIDPrefix)
+	assert.Contains(t, cluster.Id.String(), api.ClusterIDPrefix)
 	assert.Equal(t, cluster.DisplayName, newCluster.DisplayName)
 	assert.Equal(t, newCluster.Facts, cluster.Facts)
 	assert.Equal(t, newCluster.DynamicFacts, cluster.DynamicFacts)
@@ -194,7 +194,7 @@ func TestCreateClusterWithId(t *testing.T) {
 
 			request := api.Cluster{
 				ClusterId: api.ClusterId{
-					Id: tt.request,
+					Id: pointer.To(tt.request),
 				},
 				ClusterProperties: api.ClusterProperties{
 					DisplayName: pointer.ToString("My test cluster"),
@@ -210,7 +210,7 @@ func TestCreateClusterWithId(t *testing.T) {
 			cluster := &api.Cluster{}
 			err := result.UnmarshalJsonToObject(cluster)
 			assert.NoError(t, err)
-			assert.Equal(t, tt.response, cluster.Id)
+			assert.Equal(t, tt.response.String(), cluster.Id.String())
 		})
 	}
 }
@@ -280,6 +280,7 @@ func TestCreateClusterNoTenant(t *testing.T) {
 	e, _ := setupTest(t)
 
 	createCluster := map[string]string{
+		"id":          "c-1234",
 		"displayName": "cluster-name",
 	}
 	result := testutil.NewRequest().
@@ -331,7 +332,7 @@ func TestClusterGet(t *testing.T) {
 	err := result.UnmarshalJsonToObject(cluster)
 	assert.NoError(t, err)
 	assert.NotNil(t, cluster)
-	assert.Equal(t, clusterA.Name, string(cluster.ClusterId.Id))
+	assert.Equal(t, clusterA.Name, cluster.Id.String())
 	assert.Equal(t, tenantA.Name, cluster.Tenant)
 	assert.Equal(t, clusterA.Spec.GitHostKeys, *cluster.GitRepo.HostKeys)
 	assert.True(t, strings.HasSuffix(*cluster.InstallURL, clusterA.Status.BootstrapToken.Token))
@@ -350,7 +351,7 @@ func TestClusterGetNoToken(t *testing.T) {
 	err := result.UnmarshalJsonToObject(cluster)
 	assert.NoError(t, err)
 	assert.NotNil(t, cluster)
-	assert.Equal(t, clusterB.Name, string(cluster.ClusterId.Id))
+	assert.Equal(t, clusterB.Name, cluster.Id.String())
 	assert.Equal(t, tenantB.Name, cluster.Tenant)
 	assert.Nil(t, cluster.InstallURL)
 }
@@ -504,7 +505,7 @@ func TestClusterUpdate(t *testing.T) {
 	err := result.UnmarshalJsonToObject(cluster)
 	require.NoError(t, err)
 	assert.NotNil(t, cluster)
-	assert.Equal(t, clusterB.Name, string(cluster.Id))
+	assert.Equal(t, clusterB.Name, cluster.Id.String())
 	assert.Equal(t, newDisplayName, *cluster.DisplayName)
 	assert.Equal(t, *updateCluster.GitRepo.DeployKey, *cluster.GitRepo.DeployKey)
 	assert.Empty(t, (*cluster.Annotations)["existing"])
@@ -576,7 +577,7 @@ var putClusterTestCases = map[string]struct {
 	"put new object": {
 		cluster: &api.Cluster{
 			ClusterId: api.ClusterId{
-				Id: "c-new-2379",
+				Id: pointer.To(api.Id("c-new-2379")),
 			},
 			ClusterProperties: api.ClusterProperties{
 				DisplayName: pointer.ToString("My new cluster"),
@@ -596,7 +597,7 @@ var putClusterTestCases = map[string]struct {
 		},
 		code: http.StatusCreated,
 		valid: func(t *testing.T, act *api.Cluster) bool {
-			assert.Contains(t, act.Id, api.ClusterIDPrefix)
+			assert.Contains(t, act.Id.String(), api.ClusterIDPrefix)
 			assert.Equal(t, pointer.ToString("My new cluster"), act.DisplayName)
 			return true
 		},
@@ -637,7 +638,7 @@ func TestClusterPutCreateNameMissmatch(t *testing.T) {
 	e, client := setupTest(t)
 	cluster := &api.Cluster{
 		ClusterId: api.ClusterId{
-			Id: "c-bar",
+			Id: pointer.To(api.Id("c-new-2379")),
 		},
 		ClusterProperties: api.ClusterProperties{
 			DisplayName: pointer.ToString("My new cluster"),

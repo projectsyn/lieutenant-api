@@ -63,7 +63,7 @@ func TestCreateTenant(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, tenant)
 	assert.NotNil(t, tenant.GitRepo)
-	assert.Contains(t, tenant.Id, api.TenantIDPrefix)
+	assert.Contains(t, tenant.Id.String(), api.TenantIDPrefix)
 	assert.Equal(t, newTenant.DisplayName, tenant.DisplayName)
 	assert.Equal(t, newTenant.GitRepo.Url, tenant.GitRepo.Url)
 	assert.NotNil(t, tenant.GitRepo.Type)
@@ -73,7 +73,7 @@ func TestCreateTenant(t *testing.T) {
 
 	tenantCRD := &synv1alpha1.Tenant{}
 	err = client.Get(context.TODO(), types.NamespacedName{
-		Name:      string(tenant.Id),
+		Name:      tenant.Id.String(),
 		Namespace: "default",
 	}, tenantCRD)
 	assert.NoError(t, err)
@@ -101,7 +101,7 @@ func TestCreateTenantWithID(t *testing.T) {
 
 			requestBody := api.Tenant{
 				TenantId: api.TenantId{
-					Id: tt.request,
+					Id: &tt.request,
 				},
 				TenantProperties: api.TenantProperties{
 					DisplayName: pointer.ToString("Tenant with ID"),
@@ -119,7 +119,8 @@ func TestCreateTenantWithID(t *testing.T) {
 			assert.Equal(t, http.StatusCreated, response.Code())
 			tenant := &api.Tenant{}
 			assert.NoError(t, response.UnmarshalJsonToObject(tenant))
-			assert.Equal(t, tt.response, tenant.Id)
+			require.NotNil(t, tenant.Id)
+			assert.Equal(t, tt.response, *tenant.Id)
 		})
 	}
 }
@@ -195,7 +196,7 @@ func TestTenantGet(t *testing.T) {
 	tenant := &api.Tenant{}
 	err := result.UnmarshalJsonToObject(tenant)
 	assert.NoError(t, err)
-	assert.Equal(t, tenantA.Name, string(tenant.Id))
+	assert.Equal(t, tenantA.Name, tenant.Id.String())
 	assert.Equal(t, tenantA.Spec.DisplayName, *tenant.DisplayName)
 	assert.Equal(t, tenantA.Spec.GitRepoURL, *tenant.GitRepo.Url)
 	assert.Contains(t, *tenant.Annotations, "monitoring.syn.tools/sla")
@@ -265,7 +266,7 @@ func TestTenantUpdate(t *testing.T) {
 	err := result.UnmarshalJsonToObject(tenant)
 	assert.NoError(t, err)
 	assert.NotNil(t, tenant)
-	assert.Contains(t, string(tenant.Id), tenantB.Name)
+	assert.Contains(t, tenant.Id.String(), tenantB.Name)
 	assert.Equal(t, newDisplayName, *tenant.DisplayName)
 	assert.Contains(t, *tenant.Annotations, "some")
 	assert.Len(t, *tenant.Annotations, 1)
@@ -331,7 +332,7 @@ var putTenantTestCases = map[string]struct {
 	"put new object": {
 		tenant: &api.Tenant{
 			TenantId: api.TenantId{
-				Id: "t-buzz-24",
+				Id: pointer.To(api.Id("t-buzz-24")),
 			},
 			TenantProperties: api.TenantProperties{
 				DisplayName: pointer.ToString("My test Tenant"),

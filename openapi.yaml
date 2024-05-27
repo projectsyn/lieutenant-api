@@ -78,8 +78,6 @@ components:
           example: v1.2.3
     TenantId:
       type: object
-      required:
-        - id
       properties:
         id:
           $ref: '#/components/schemas/Id'
@@ -138,8 +136,6 @@ components:
         - $ref: '#/components/schemas/ClusterProperties'
     ClusterId:
       type: object
-      required:
-        - id
       properties:
         id:
           $ref: '#/components/schemas/Id'

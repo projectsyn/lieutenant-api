@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/AlekSi/pointer"
 	"github.com/labstack/echo/v4"
 	synv1alpha1 "github.com/projectsyn/lieutenant-operator/api/v1alpha1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -128,7 +129,7 @@ func (s *APIImpl) PutTenant(c echo.Context, tenantID api.TenantIdParameter) erro
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
 	apiTenant := api.Tenant(*newTenant)
-	apiTenant.Id = api.Id(tenantID)
+	apiTenant.Id = pointer.To(api.Id(tenantID))
 
 	tenant, err := api.NewCRDFromAPITenant(apiTenant)
 	if err != nil {

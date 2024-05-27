@@ -31,7 +31,7 @@ var (
 func GenerateClusterID() (ClusterId, error) {
 	id, err := generateID(ClusterIDPrefix)
 	return ClusterId{
-		Id: id,
+		Id: &id,
 	}, err
 }
 
@@ -39,7 +39,7 @@ func GenerateClusterID() (ClusterId, error) {
 func GenerateTenantID() (TenantId, error) {
 	id, err := generateID(TenantIDPrefix)
 	return TenantId{
-		Id: id,
+		Id: &id,
 	}, err
 }
 
@@ -60,8 +60,9 @@ func generateID(prefix string) (Id, error) {
 
 // NewAPITenantFromCRD transforms a CRD tenant into the API representation
 func NewAPITenantFromCRD(tenant synv1alpha1.Tenant) *Tenant {
+	id := Id(tenant.Name)
 	apiTenant := &Tenant{
-		TenantId: TenantId{Id: Id(tenant.Name)},
+		TenantId: TenantId{Id: &id},
 		TenantProperties: TenantProperties{
 			GitRepo: &RevisionedGitRepo{},
 		},
@@ -107,14 +108,15 @@ func NewAPITenantFromCRD(tenant synv1alpha1.Tenant) *Tenant {
 // NewCRDFromAPITenant transforms an API tenant into the CRD representation
 func NewCRDFromAPITenant(apiTenant Tenant) (*synv1alpha1.Tenant, error) {
 	if !strings.HasPrefix(apiTenant.Id.String(), TenantIDPrefix) {
-		if apiTenant.Id == "" {
+		if apiTenant.Id.String() == "" {
 			id, err := GenerateTenantID()
 			if err != nil {
 				return nil, err
 			}
 			apiTenant.TenantId = id
 		} else {
-			apiTenant.Id = TenantIDPrefix + apiTenant.Id
+			id := TenantIDPrefix + *apiTenant.Id
+			apiTenant.Id = &id
 		}
 	}
 	if apiTenant.GitRepo == nil ||
@@ -131,7 +133,7 @@ func NewCRDFromAPITenant(apiTenant Tenant) (*synv1alpha1.Tenant, error) {
 	}
 
 	if apiTenant.GitRepo != nil {
-		tmpl, err := newGitRepoTemplate(&apiTenant.GitRepo.GitRepo, string(apiTenant.Id))
+		tmpl, err := newGitRepoTemplate(&apiTenant.GitRepo.GitRepo, apiTenant.Id.String())
 		if err != nil {
 			return nil, fmt.Errorf("failed to create git repo template: %w", err)
 		}
@@ -179,8 +181,9 @@ func SyncCRDFromAPITenant(source TenantProperties, target *synv1alpha1.Tenant) {
 
 // NewAPIClusterFromCRD transforms a CRD cluster into the API representation
 func NewAPIClusterFromCRD(cluster synv1alpha1.Cluster) *Cluster {
+	id := Id(cluster.Name)
 	apiCluster := &Cluster{
-		ClusterId: ClusterId{Id: Id(cluster.Name)},
+		ClusterId: ClusterId{Id: &id},
 		ClusterProperties: ClusterProperties{
 			GitRepo: &GitRepo{},
 		},
@@ -257,20 +260,21 @@ func unmarshalFact(fact string) interface{} {
 
 // NewCRDFromAPICluster transforms an API cluster into the CRD representation
 func NewCRDFromAPICluster(apiCluster Cluster) (*synv1alpha1.Cluster, error) {
-	if !strings.HasPrefix(string(apiCluster.Id), ClusterIDPrefix) {
-		if apiCluster.Id == "" {
+	if !strings.HasPrefix(apiCluster.Id.String(), ClusterIDPrefix) {
+		if apiCluster.Id.String() == "" {
 			id, err := GenerateClusterID()
 			if err != nil {
 				return nil, err
 			}
 			apiCluster.ClusterId = id
 		} else {
-			apiCluster.Id = ClusterIDPrefix + apiCluster.Id
+			id := Id(ClusterIDPrefix + apiCluster.Id.String())
+			apiCluster.Id = &id
 		}
 	}
 	cluster := &synv1alpha1.Cluster{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        string(apiCluster.ClusterId.Id),
+			Name:        apiCluster.Id.String(),
 			Annotations: map[string]string{},
 		},
 		Spec: synv1alpha1.ClusterSpec{
@@ -280,7 +284,7 @@ func NewCRDFromAPICluster(apiCluster Cluster) (*synv1alpha1.Cluster, error) {
 		},
 	}
 
-	tmpl, err := newGitRepoTemplate(apiCluster.GitRepo, string(apiCluster.Id))
+	tmpl, err := newGitRepoTemplate(apiCluster.GitRepo, apiCluster.Id.String())
 	if err != nil {
 		return nil, fmt.Errorf("failed to create git repo template: %w", err)
 	}
