@@ -15,6 +15,7 @@ import (
 	"net/url"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v4"
@@ -45,6 +46,83 @@ type Cluster struct {
 	ClusterProperties `yaml:",inline"`
 }
 
+// ClusterCompileMeta CompileMeta contains information about the last compilation with Commodore.
+type ClusterCompileMeta struct {
+	// CommodoreBuildInfo CommodoreBuildInfo is the freeform build information reported by the Commodore binary used for the last compilation.
+	CommodoreBuildInfo *map[string]string `json:"commodoreBuildInfo,omitempty"`
+
+	// Global Global contains the information of the global configuration used for the last compilation.
+	Global *struct {
+		// GitSha GitSHA is the git commit SHA of the used commit.
+		GitSha *string `json:"gitSha,omitempty"`
+
+		// Path Path is the path inside the git repository where the configuration is stored.
+		Path *string `json:"path,omitempty"`
+
+		// Url URL is the URL of the git repository.
+		Url *string `json:"url,omitempty"`
+
+		// Version Version is the version of the configuration.
+		// Can point to a tag, branch or any other git reference.
+		Version *string `json:"version,omitempty"`
+	} `json:"global,omitempty"`
+
+	// Instances Instances contains the information of the component instances used for the last compilation.
+	// The key is the name of the component instance.
+	Instances *map[string]struct {
+		// Component Component is the name of a component instance.
+		Component *string `json:"component,omitempty"`
+
+		// GitSha GitSHA is the git commit SHA of the used commit.
+		GitSha *string `json:"gitSha,omitempty"`
+
+		// Path Path is the path inside the git repository where the configuration is stored.
+		Path *string `json:"path,omitempty"`
+
+		// Url URL is the URL of the git repository.
+		Url *string `json:"url,omitempty"`
+
+		// Version Version is the version of the configuration.
+		// Can point to a tag, branch or any other git reference.
+		Version *string `json:"version,omitempty"`
+	} `json:"instances,omitempty"`
+
+	// LastCompile LastCompile is the time of the last successful compilation.
+	LastCompile *time.Time `json:"lastCompile,omitempty"`
+
+	// Packages Packages contains the information of the packages used for the last compilation.
+	Packages *map[string]struct {
+		// GitSha GitSHA is the git commit SHA of the used commit.
+		GitSha *string `json:"gitSha,omitempty"`
+
+		// Path Path is the path inside the git repository where the configuration is stored.
+		Path *string `json:"path,omitempty"`
+
+		// Url URL is the URL of the git repository.
+		Url *string `json:"url,omitempty"`
+
+		// Version Version is the version of the configuration.
+		// Can point to a tag, branch or any other git reference.
+		Version *string `json:"version,omitempty"`
+	} `json:"packages,omitempty"`
+
+	// Tenant Tenant contains the information of the tenant configuration used for the last compilation.
+	Tenant *struct {
+		// GitSha GitSHA is the git commit SHA of the used commit.
+		GitSha *string `json:"gitSha,omitempty"`
+
+		// Path Path is the path inside the git repository where the configuration is stored.
+		Path *string `json:"path,omitempty"`
+
+		// Url URL is the URL of the git repository.
+		Url *string `json:"url,omitempty"`
+
+		// Version Version is the version of the configuration.
+		// Can point to a tag, branch or any other git reference.
+		Version *string `json:"version,omitempty"`
+	} `json:"tenant,omitempty"`
+}
+
 // ClusterFacts Facts about a cluster object. Statically configured key/value pairs.
 type ClusterFacts map[string]interface{}
 
@@ -60,6 +138,9 @@ type ClusterId struct {
 type ClusterProperties struct {
 	// Annotations Unstructured key value map containing arbitrary metadata
 	Annotations *Annotations `json:"annotations,omitempty"`
+
+	// CompileMeta CompileMeta contains information about the last compilation with Commodore.
+	CompileMeta *ClusterCompileMeta `json:"compileMeta,omitempty"`
 
 	// DisplayName Display Name of the cluster
 	DisplayName *string `json:"displayName,omitempty"`
@@ -224,6 +305,9 @@ type UpdateClusterApplicationMergePatchPlusJSONRequestBody ClusterProperties
 // PutClusterJSONRequestBody defines body for PutCluster for application/json ContentType.
 type PutClusterJSONRequestBody Cluster
 
+// PostClusterCompileMetaJSONRequestBody defines body for PostClusterCompileMeta for application/json ContentType.
+type PostClusterCompileMetaJSONRequestBody ClusterCompileMeta
+
 // UpdateInventoryJSONRequestBody defines body for UpdateInventory for application/json ContentType.
 type UpdateInventoryJSONRequestBody Inventory
 
@@ -335,6 +419,11 @@ type ClientInterface interface {
 	PutClusterWithBody(ctx context.Context, clusterId ClusterIdParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	PutCluster(ctx context.Context, clusterId ClusterIdParameter, body PutClusterJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostClusterCompileMetaWithBody request with any body
+	PostClusterCompileMetaWithBody(ctx context.Context, clusterId ClusterIdParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostClusterCompileMeta(ctx context.Context, clusterId ClusterIdParameter, body PostClusterCompileMetaJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// Docs request
 	Docs(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -491,6 +580,30 @@ func (c *Client) PutClusterWithBody(ctx context.Context, clusterId ClusterIdPara
 
 func (c *Client) PutCluster(ctx context.Context, clusterId ClusterIdParameter, body PutClusterJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewPutClusterRequest(c.Server, clusterId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostClusterCompileMetaWithBody(ctx context.Context, clusterId ClusterIdParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostClusterCompileMetaRequestWithBody(c.Server, clusterId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostClusterCompileMeta(ctx context.Context, clusterId ClusterIdParameter, body PostClusterCompileMetaJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostClusterCompileMetaRequest(c.Server, clusterId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -978,6 +1091,53 @@ func NewPutClusterRequestWithBody(server string, clusterId ClusterIdParameter, c
 	}
 
 	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewPostClusterCompileMetaRequest calls the generic PostClusterCompileMeta builder with application/json body
+func NewPostClusterCompileMetaRequest(server string, clusterId ClusterIdParameter, body PostClusterCompileMetaJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostClusterCompileMetaRequestWithBody(server, clusterId, "application/json", bodyReader)
+}
+
+// NewPostClusterCompileMetaRequestWithBody generates requests for PostClusterCompileMeta with any type of body
+func NewPostClusterCompileMetaRequestWithBody(server string, clusterId ClusterIdParameter, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "clusterId", runtime.ParamLocationPath, clusterId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/clusters/%s/compileMeta", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
@@ -1505,6 +1665,11 @@ type ClientWithResponsesInterface interface {
 
 	PutClusterWithResponse(ctx context.Context, clusterId ClusterIdParameter, body PutClusterJSONRequestBody, reqEditors ...RequestEditorFn) (*PutClusterResponse, error)
 
+	// PostClusterCompileMetaWithBodyWithResponse request with any body
+	PostClusterCompileMetaWithBodyWithResponse(ctx context.Context, clusterId ClusterIdParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostClusterCompileMetaResponse, error)
+
+	PostClusterCompileMetaWithResponse(ctx context.Context, clusterId ClusterIdParameter, body PostClusterCompileMetaJSONRequestBody, reqEditors ...RequestEditorFn) (*PostClusterCompileMetaResponse, error)
+
 	// DocsWithResponse request
 	DocsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*DocsResponse, error)
 
@@ -1709,6 +1874,29 @@ func (r PutClusterResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r PutClusterResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostClusterCompileMetaResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON403      *Reason
+	JSONDefault  *Default
+}
+
+// Status returns HTTPResponse.Status
+func (r PostClusterCompileMetaResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostClusterCompileMetaResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -2075,6 +2263,23 @@ func (c *ClientWithResponses) PutClusterWithResponse(ctx context.Context, cluste
 		return nil, err
 	}
 	return ParsePutClusterResponse(rsp)
+}
+
+// PostClusterCompileMetaWithBodyWithResponse request with arbitrary body returning *PostClusterCompileMetaResponse
+func (c *ClientWithResponses) PostClusterCompileMetaWithBodyWithResponse(ctx context.Context, clusterId ClusterIdParameter, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostClusterCompileMetaResponse, error) {
+	rsp, err := c.PostClusterCompileMetaWithBody(ctx, clusterId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostClusterCompileMetaResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostClusterCompileMetaWithResponse(ctx context.Context, clusterId ClusterIdParameter, body PostClusterCompileMetaJSONRequestBody, reqEditors ...RequestEditorFn) (*PostClusterCompileMetaResponse, error) {
+	rsp, err := c.PostClusterCompileMeta(ctx, clusterId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostClusterCompileMetaResponse(rsp)
 }
 
 // DocsWithResponse request returning *DocsResponse
@@ -2457,6 +2662,39 @@ func ParsePutClusterResponse(rsp *http.Response) (*PutClusterResponse, error) {
 		}
 		response.JSON201 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest Reason
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Default
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostClusterCompileMetaResponse parses an HTTP response from a PostClusterCompileMetaWithResponse call
+func ParsePostClusterCompileMetaResponse(rsp *http.Response) (*PostClusterCompileMetaResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostClusterCompileMetaResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
 		var dest Reason
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -2885,6 +3123,9 @@ type ServerInterface interface {
 	// Updates or creates a cluster
 	// (PUT /clusters/{clusterId})
 	PutCluster(ctx echo.Context, clusterId ClusterIdParameter) error
+	// Stores compilation metadata for a cluster
+	// (POST /clusters/{clusterId}/compileMeta)
+	PostClusterCompileMeta(ctx echo.Context, clusterId ClusterIdParameter) error
 	// API documentation
 	// (GET /docs)
 	Docs(ctx echo.Context) error
@@ -3044,6 +3285,24 @@ func (w *ServerInterfaceWrapper) PutCluster(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.PutCluster(ctx, clusterId)
+	return err
+}
+
+// PostClusterCompileMeta converts echo context to params.
+func (w *ServerInterfaceWrapper) PostClusterCompileMeta(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "clusterId" -------------
+	var clusterId ClusterIdParameter
+
+	err = runtime.BindStyledParameterWithOptions("simple", "clusterId", ctx.Param("clusterId"), &clusterId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter clusterId: %s", err))
+	}
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PostClusterCompileMeta(ctx, clusterId)
 	return err
 }
 
@@ -3252,6 +3511,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.GET(baseURL+"/clusters/:clusterId", wrapper.GetCluster)
 	router.PATCH(baseURL+"/clusters/:clusterId", wrapper.UpdateCluster)
 	router.PUT(baseURL+"/clusters/:clusterId", wrapper.PutCluster)
+	router.POST(baseURL+"/clusters/:clusterId/compileMeta", wrapper.PostClusterCompileMeta)
 	router.GET(baseURL+"/docs", wrapper.Docs)
 	router.GET(baseURL+"/healthz", wrapper.Healthz)
 	router.GET(baseURL+"/install/steward.json", wrapper.InstallSteward)
@@ -3270,75 +3530,84 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
-	"/364fPi/AAAA//+2KOvJk0kAAA==",
+	"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",
+	"OLD/P3x6+L8AAAD//2CuXPXgWQAA",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

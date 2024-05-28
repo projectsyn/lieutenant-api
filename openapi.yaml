@@ -102,6 +102,8 @@ components:
           $ref: '#/components/schemas/ClusterFacts'
         dynamicFacts:
           $ref: '#/components/schemas/DynamicClusterFacts'
+        compileMeta:
+          $ref: '#/components/schemas/ClusterCompileMeta'
         gitRepo:
           $ref: '#/components/schemas/GitRepo'
         tenantGitRepoRevision:
@@ -160,6 +162,104 @@ components:
           major: "1"
           minor: "20"
           platform: linux/amd64
+    # ClusterCompileMeta is exported from k8s. Must match the k8s structure.
+    # kubectl get --raw /openapi/v3/apis/syn.tools/v1alpha1 | yq --prettyPrint '.components.schemas["tools.syn.v1alpha1.Cluster"].properties.status.properties.compileMeta'
+    ClusterCompileMeta:
+      description: CompileMeta contains information about the last compilation with Commodore.
+      type: object
+      properties:
+        commodoreBuildInfo:
+          description: CommodoreBuildInfo is the freeform build information reported by the Commodore binary used for the last compilation.
+          type: object
+          additionalProperties:
+            type: string
+        global:
+          description: Global contains the information of the global configuration used for the last compilation.
+          type: object
+          properties:
+            gitSha:
+              description: GitSHA is the git commit SHA of the used commit.
+              type: string
+            path:
+              description: Path is the path inside the git repository where the configuration is stored.
+              type: string
+            url:
+              description: URL is the URL of the git repository.
+              type: string
+            version:
+              description: |-
+                Version is the version of the configuration.
+                Can point to a tag, branch or any other git reference.
+              type: string
+        instances:
+          description: |-
+            Instances contains the information of the component instances used for the last compilation.
+            The key is the name of the component instance.
+          type: object
+          additionalProperties:
+            description: CompileMetaInstanceVersionInfo contains information about the version of a component instance.
+            type: object
+            properties:
+              component:
+                description: Component is the name of a component instance.
+                type: string
+              gitSha:
+                description: GitSHA is the git commit SHA of the used commit.
+                type: string
+              path:
+                description: Path is the path inside the git repository where the configuration is stored.
+                type: string
+              url:
+                description: URL is the URL of the git repository.
+                type: string
+              version:
+                description: |-
+                  Version is the version of the configuration.
+                  Can point to a tag, branch or any other git reference.
+                type: string
+        lastCompile:
+          description: LastCompile is the time of the last successful compilation.
+          type: string
+          format: date-time
+        packages:
+          description: Packages contains the information of the packages used for the last compilation.
+          type: object
+          additionalProperties:
+            description: CompileMetaVersionInfo contains information about the version of a configuration repo or a package.
+            type: object
+            properties:
+              gitSha:
+                description: GitSHA is the git commit SHA of the used commit.
+                type: string
+              path:
+                description: Path is the path inside the git repository where the configuration is stored.
+                type: string
+              url:
+                description: URL is the URL of the git repository.
+                type: string
+              version:
+                description: |-
+                  Version is the version of the configuration.
+                  Can point to a tag, branch or any other git reference.
+                type: string
+        tenant:
+          description: Tenant contains the information of the tenant configuration used for the last compilation.
+          type: object
+          properties:
+            gitSha:
+              description: GitSHA is the git commit SHA of the used commit.
+              type: string
+            path:
+              description: Path is the path inside the git repository where the configuration is stored.
+              type: string
+            url:
+              description: URL is the URL of the git repository.
+              type: string
+            version:
+              description: |-
+                Version is the version of the configuration.
+                Can point to a tag, branch or any other git reference.
+              type: string
     Cluster:
       allOf:
         - $ref: '#/components/schemas/ClusterId'
@@ -617,6 +717,39 @@ paths:
           description: Cluster deleted
         '403':
           description: Cluster deletion forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reason'
+        default:
+          $ref: '#/components/responses/Default'
+  /clusters/{clusterId}/compileMeta:
+    post:
+      operationId: postClusterCompileMeta
+      summary: Stores compilation metadata for a cluster
+      description: |
+        Stores compilation metadata for a cluster.
+
+        Intended for commodore to report the last compilation.
+        Contains version information and timestamps.
+      tags:
+        - cluster
+        - metadata
+        - version-information
+      parameters:
+        - $ref: '#/components/parameters/ClusterIdParameter'
+      requestBody:
+        description: Stores compilation metadata for a cluster
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClusterCompileMeta'
+      responses:
+        '204':
+          description: Data stored
+        '403':
+          description: Cluster update forbidden
           content:
             application/json:
               schema:

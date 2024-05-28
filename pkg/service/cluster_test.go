@@ -2,11 +2,14 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
+	"path"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/AlekSi/pointer"
 	"github.com/labstack/echo/v4"
@@ -14,7 +17,9 @@ import (
 	synv1alpha1 "github.com/projectsyn/lieutenant-operator/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/projectsyn/lieutenant-api/pkg/api"
 )
@@ -330,13 +335,17 @@ func TestClusterGet(t *testing.T) {
 	requireHTTPCode(t, http.StatusOK, result)
 	cluster := &api.Cluster{}
 	err := result.UnmarshalJsonToObject(cluster)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.NotNil(t, cluster)
 	assert.Equal(t, clusterA.Name, cluster.Id.String())
 	assert.Equal(t, tenantA.Name, cluster.Tenant)
 	assert.Equal(t, clusterA.Spec.GitHostKeys, *cluster.GitRepo.HostKeys)
 	assert.True(t, strings.HasSuffix(*cluster.InstallURL, clusterA.Status.BootstrapToken.Token))
 	assert.Equal(t, clusterA.Annotations["some"], (*cluster.Annotations)["some"])
+	require.NotNil(t, cluster.CompileMeta)
+	assert.Equal(t, clusterA.Status.CompileMeta.CommodoreBuildInfo, *cluster.CompileMeta.CommodoreBuildInfo)
+	require.Contains(t, *cluster.CompileMeta.Instances, "instance-a")
+	assert.Equal(t, clusterA.Status.CompileMeta.Instances["instance-a"].Version, *(*cluster.CompileMeta.Instances)["instance-a"].Version)
 }
 
 func TestClusterGetNoToken(t *testing.T) {
@@ -547,64 +556,71 @@ func TestClusterUpdateDisplayName(t *testing.T) {
 	assert.Equal(t, newDisplayName, clusterObj.Spec.DisplayName)
 }
 
-var putClusterTestCases = map[string]struct {
-	cluster *api.Cluster
-	code    int
-	valid   func(t *testing.T, act *api.Cluster) bool
-}{
-	"put unchanged object": {
-		cluster: api.NewAPIClusterFromCRD(*clusterB),
-		code:    http.StatusOK,
-		valid: func(t *testing.T, act *api.Cluster) bool {
-			return true
-		},
-	},
-	"put updated object": {
-		cluster: func() *api.Cluster {
-			cluster := api.NewAPIClusterFromCRD(*clusterB)
-			(*cluster.Facts)["foo"] = "bar"
-			return cluster
-		}(),
-		code: http.StatusOK,
-		valid: func(t *testing.T, act *api.Cluster) bool {
-			require.Contains(t, *act.Facts, "cloud")
-			assert.Equal(t, clusterB.Spec.Facts["cloud"], (*act.Facts)["cloud"])
-			require.Contains(t, *act.Facts, "foo")
-			assert.Equal(t, (*act.Facts)["foo"], "bar")
-			return true
-		},
-	},
-	"put new object": {
-		cluster: &api.Cluster{
-			ClusterId: api.ClusterId{
-				Id: pointer.To(api.Id("c-new-2379")),
-			},
-			ClusterProperties: api.ClusterProperties{
-				DisplayName: pointer.ToString("My new cluster"),
-				Facts: &api.ClusterFacts{
-					"cloud":                "cloudscale",
-					"region":               "test",
-					LieutenantInstanceFact: "",
-				},
-				DynamicFacts: &api.DynamicClusterFacts{
-					"kubernetesVersion": "1.16",
-				},
-				Annotations: &api.Annotations{
-					"new": "annotation",
-				},
-			},
-			ClusterTenant: api.ClusterTenant{Tenant: tenantA.Name},
-		},
-		code: http.StatusCreated,
-		valid: func(t *testing.T, act *api.Cluster) bool {
-			assert.Contains(t, act.Id.String(), api.ClusterIDPrefix)
-			assert.Equal(t, pointer.ToString("My new cluster"), act.DisplayName)
-			return true
-		},
-	},
+func mustNewAPIClusterFromCRD(t *testing.T, cluster synv1alpha1.Cluster) *api.Cluster {
+	t.Helper()
+	apiCluster, err := api.NewAPIClusterFromCRD(cluster)
+	require.NoError(t, err)
+	return apiCluster
 }
 
 func TestClusterPut(t *testing.T) {
+	var putClusterTestCases = map[string]struct {
+		cluster *api.Cluster
+		code    int
+		valid   func(t *testing.T, act *api.Cluster) bool
+	}{
+		"put unchanged object": {
+			cluster: mustNewAPIClusterFromCRD(t, *clusterB),
+			code:    http.StatusOK,
+			valid: func(t *testing.T, act *api.Cluster) bool {
+				return true
+			},
+		},
+		"put updated object": {
+			cluster: func() *api.Cluster {
+				cluster := mustNewAPIClusterFromCRD(t, *clusterB)
+				(*cluster.Facts)["foo"] = "bar"
+				return cluster
+			}(),
+			code: http.StatusOK,
+			valid: func(t *testing.T, act *api.Cluster) bool {
+				require.Contains(t, *act.Facts, "cloud")
+				assert.Equal(t, clusterB.Spec.Facts["cloud"], (*act.Facts)["cloud"])
+				require.Contains(t, *act.Facts, "foo")
+				assert.Equal(t, (*act.Facts)["foo"], "bar")
+				return true
+			},
+		},
+		"put new object": {
+			cluster: &api.Cluster{
+				ClusterId: api.ClusterId{
+					Id: pointer.To(api.Id("c-new-2379")),
+				},
+				ClusterProperties: api.ClusterProperties{
+					DisplayName: pointer.ToString("My new cluster"),
+					Facts: &api.ClusterFacts{
+						"cloud":                "cloudscale",
+						"region":               "test",
+						LieutenantInstanceFact: "",
+					},
+					DynamicFacts: &api.DynamicClusterFacts{
+						"kubernetesVersion": "1.16",
+					},
+					Annotations: &api.Annotations{
+						"new": "annotation",
+					},
+				},
+				ClusterTenant: api.ClusterTenant{Tenant: tenantA.Name},
+			},
+			code: http.StatusCreated,
+			valid: func(t *testing.T, act *api.Cluster) bool {
+				assert.Contains(t, act.Id.String(), api.ClusterIDPrefix)
+				assert.Equal(t, pointer.ToString("My new cluster"), act.DisplayName)
+				return true
+			},
+		},
+	}
+
 	e, client := setupTest(t)
 
 	for k, tc := range putClusterTestCases {
@@ -626,9 +642,10 @@ func TestClusterPut(t *testing.T) {
 				Namespace: "default",
 				Name:      res.Id.String(),
 			}, clusterObj)
+			require.NoError(t, err)
 			require.NotNil(t, clusterObj)
 			require.NotEmpty(t, clusterObj.Name)
-			assert.True(t, tc.valid(t, api.NewAPIClusterFromCRD(*clusterObj)))
+			assert.True(t, tc.valid(t, mustNewAPIClusterFromCRD(t, *clusterObj)))
 		})
 	}
 
@@ -664,6 +681,117 @@ func TestClusterPutCreateNameMissmatch(t *testing.T) {
 		Name:      res.Id.String(),
 	}, clusterObj)
 	require.NotNil(t, clusterObj)
+}
+
+func TestClusterPostCompileMeta(t *testing.T) {
+	e, c := setupTest(t)
+	cluster := &synv1alpha1.Cluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "c-compile-meta",
+			Namespace: "default",
+		},
+	}
+	require.NoError(t, c.Create(context.Background(), cluster))
+
+	compileOutput := map[string]any{
+		"commodoreBuildInfo": map[string]any{
+			"version": "1.0.0",
+		},
+		"lastCompile": time.Date(2024, time.April, 14, 21, 5, 56, 0, time.UTC).Format(time.RFC3339),
+		"global": map[string]any{
+			"gitSha":  "68e5722a883f3044e287afe810ded53023175a32",
+			"url":     "example.com/global.git",
+			"version": "master",
+		},
+		"tenant": map[string]any{
+			"gitSha":  "c12b5847133adc2a62e484bfa5da34e1c09d4baf",
+			"url":     "example.com/tenant.git",
+			"version": "master",
+		},
+		"instances": map[string]any{
+			"operations-operator-dev": map[string]any{
+				"component": "operations-operator",
+				"gitSha":    "cb0b6e77e8a213c614716155efc2de929a200ec0",
+				"url":       "example.com/operations-operator.git",
+				"version":   "v0.1.0",
+			},
+		},
+		"packages": map[string]any{
+			"app1": map[string]any{
+				"gitSha":  "3ab3bf74860045601645a37c170dfe04fe7eddd8",
+				"url":     "example.com/app1.git",
+				"version": "develop",
+				"path":    "packages/main",
+			},
+		},
+	}
+
+	result := testutil.NewRequest().
+		Post("/"+path.Join("clusters", cluster.Name, "compileMeta")).
+		WithJsonBody(compileOutput).
+		WithHeader(echo.HeaderAuthorization, bearerToken).
+		GoWithHTTPHandler(t, e)
+	requireHTTPCode(t, http.StatusNoContent, result)
+
+	require.NoError(t, c.Get(context.Background(), client.ObjectKeyFromObject(cluster), cluster))
+	requireJSONMatch(t, compileOutput, cluster.Status.CompileMeta)
+}
+
+func TestClusterPostCompileMeta_OverridesExisting_NoMerge(t *testing.T) {
+	e, c := setupTest(t)
+	cluster := &synv1alpha1.Cluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "c-compile-meta",
+			Namespace: "default",
+		},
+		Status: synv1alpha1.ClusterStatus{
+			CompileMeta: synv1alpha1.CompileMeta{
+				CommodoreBuildInfo: map[string]string{
+					"version":  "6.6.6",
+					"otherkey": "othervalue",
+				},
+				Instances: map[string]synv1alpha1.CompileMetaInstanceVersionInfo{
+					"operations-operator-dev": {
+						Component: "operations-operator",
+					},
+				},
+			},
+		},
+	}
+	require.NoError(t, c.Create(context.Background(), cluster))
+
+	compileOutput := map[string]any{
+		"commodoreBuildInfo": map[string]any{
+			"version": "7.0.0",
+		},
+		"instances": map[string]any{
+			"operations-operator-prod": map[string]any{
+				"component": "operations-operator",
+			},
+		},
+	}
+
+	result := testutil.NewRequest().
+		Post("/"+path.Join("clusters", cluster.Name, "compileMeta")).
+		WithJsonBody(compileOutput).
+		WithHeader(echo.HeaderAuthorization, bearerToken).
+		GoWithHTTPHandler(t, e)
+	requireHTTPCode(t, http.StatusNoContent, result)
+
+	require.NoError(t, c.Get(context.Background(), client.ObjectKeyFromObject(cluster), cluster))
+	require.NotContains(t, cluster.Status.CompileMeta.CommodoreBuildInfo, "otherkey")
+	require.NotContains(t, cluster.Status.CompileMeta.Instances, "operations-operator-dev")
+	require.Contains(t, cluster.Status.CompileMeta.Instances, "operations-operator-prod")
+}
+
+// requireJSONMatch checks if the JSON representation of two objects are equal.
+func requireJSONMatch(t *testing.T, expected, actual any) {
+	t.Helper()
+	expectedJSON, err := json.Marshal(expected)
+	require.NoError(t, err)
+	actualJSON, err := json.Marshal(actual)
+	require.NoError(t, err)
+	require.JSONEq(t, string(expectedJSON), string(actualJSON))
 }
 
 // requireHTTPCode is a helper function to check the HTTP status code of a response and log the response body if the code is not as expected.

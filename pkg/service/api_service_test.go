@@ -88,6 +88,19 @@ var (
 			Facts: synv1alpha1.Facts{
 				"escaped": `"fact"`,
 			},
+			CompileMeta: synv1alpha1.CompileMeta{
+				CommodoreBuildInfo: map[string]string{
+					"version": "1.2.3",
+				},
+				Instances: map[string]synv1alpha1.CompileMetaInstanceVersionInfo{
+					"instance-a": {
+						Component: "component-a",
+						CompileMetaVersionInfo: synv1alpha1.CompileMetaVersionInfo{
+							Version: "1.2.3",
+						},
+					},
+				},
+			},
 		},
 	}
 	clusterB = &synv1alpha1.Cluster{

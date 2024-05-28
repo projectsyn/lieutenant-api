@@ -10,8 +10,10 @@ import (
 	"github.com/AlekSi/pointer"
 	"github.com/labstack/echo/v4"
 	synv1alpha1 "github.com/projectsyn/lieutenant-operator/api/v1alpha1"
+	"go.uber.org/multierr"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/projectsyn/lieutenant-api/pkg/api"
@@ -41,10 +43,15 @@ func (s *APIImpl) ListClusters(c echo.Context, p api.ListClustersParams) error {
 		return err
 	}
 
-	clusters := make([]api.Cluster, 0)
+	clusters := make([]api.Cluster, 0, len(clusterList.Items))
+	errs := make([]error, 0, len(clusterList.Items))
 	for _, cluster := range clusterList.Items {
-		apiCluster := apiClusterWithInstallURL(ctx, &cluster)
+		apiCluster, err := apiClusterWithInstallURL(ctx, &cluster)
 		clusters = append(clusters, *apiCluster)
+		errs = append(errs, err)
+	}
+	if err := multierr.Combine(errs...); err != nil {
+		return fmt.Errorf("failed to translate CRD to API representation: %w", err)
 	}
 	sortClustersBy(clusters, p.SortBy)
 	return ctx.JSON(http.StatusOK, clusters)
@@ -110,7 +117,11 @@ func (s *APIImpl) createCluster(ctx *APIContext, cluster *synv1alpha1.Cluster) e
 	if err := ctx.client.Status().Update(ctx.Request().Context(), cluster); err != nil {
 		return err
 	}
-	return ctx.JSON(http.StatusCreated, apiClusterWithInstallURL(ctx, cluster))
+	ac, err := apiClusterWithInstallURL(ctx, cluster)
+	if err != nil {
+		return err
+	}
+	return ctx.JSON(http.StatusCreated, ac)
 }
 
 // DeleteCluster deletes a cluster
@@ -140,7 +151,11 @@ func (s *APIImpl) GetCluster(c echo.Context, clusterID api.ClusterIdParameter) e
 		return err
 	}
 
-	return ctx.JSON(http.StatusOK, apiClusterWithInstallURL(ctx, cluster))
+	ac, err := apiClusterWithInstallURL(ctx, cluster)
+	if err != nil {
+		return err
+	}
+	return ctx.JSON(http.StatusOK, ac)
 }
 
 // UpdateCluster updates a cluster
@@ -177,7 +192,12 @@ func (s *APIImpl) updateCluster(ctx *APIContext, existingCluster *synv1alpha1.Cl
 	if err := ctx.client.Status().Update(ctx.Request().Context(), existingCluster); err != nil {
 		return err
 	}
-	return ctx.JSON(http.StatusOK, apiClusterWithInstallURL(ctx, existingCluster))
+
+	ac, err := apiClusterWithInstallURL(ctx, existingCluster)
+	if err != nil {
+		return err
+	}
+	return ctx.JSON(http.StatusOK, ac)
 }
 
 // PutCluster updates the cluster or cleates it if it does not exist
@@ -211,8 +231,43 @@ func (s *APIImpl) PutCluster(c echo.Context, clusterID api.ClusterIdParameter) e
 	return s.updateCluster(ctx, found)
 }
 
-func apiClusterWithInstallURL(ctx *APIContext, cluster *synv1alpha1.Cluster) *api.Cluster {
-	apiCluster := api.NewAPIClusterFromCRD(*cluster)
+// PostClusterCompileMeta compiles the meta data of a cluster
+func (s *APIImpl) PostClusterCompileMeta(c echo.Context, clusterID api.ClusterIdParameter) error {
+	ctx := c.(*APIContext)
+
+	body := &api.ClusterCompileMeta{}
+	if err := ctx.Bind(body); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err)
+	}
+
+	toPatch := &synv1alpha1.Cluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      string(clusterID),
+			Namespace: s.namespace,
+		},
+	}
+	patch := []map[string]any{
+		{"op": "replace", "path": "/status/compileMeta", "value": body},
+	}
+	rawPatch, err := json.Marshal(patch)
+	if err != nil {
+		return fmt.Errorf("failed to marshal patch: %w", err)
+	}
+
+	if err := retryOnConflict(func() error {
+		return ctx.client.Status().Patch(ctx.Request().Context(), toPatch, client.RawPatch(types.JSONPatchType, rawPatch))
+	}); err != nil {
+		return err
+	}
+
+	return ctx.NoContent(http.StatusNoContent)
+}
+
+func apiClusterWithInstallURL(ctx *APIContext, cluster *synv1alpha1.Cluster) (*api.Cluster, error) {
+	apiCluster, err := api.NewAPIClusterFromCRD(*cluster)
+	if err != nil {
+		return nil, err
+	}
 
 	token, tokenValid := bootstrapToken(cluster)
 	if tokenValid {
@@ -220,7 +275,7 @@ func apiClusterWithInstallURL(ctx *APIContext, cluster *synv1alpha1.Cluster) *ap
 		apiCluster.InstallURL = &installURL
 	}
 
-	return apiCluster
+	return apiCluster, nil
 }
 
 func bootstrapToken(cluster *synv1alpha1.Cluster) (token string, valid bool) {
@@ -229,4 +284,13 @@ func bootstrapToken(cluster *synv1alpha1.Cluster) (token string, valid bool) {
 	}
 
 	return cluster.Status.BootstrapToken.Token, cluster.Status.BootstrapToken.TokenValid
+}
+
+// retryOnConflict retries the given function if the returned error is a conflict (HTTP 409) error once
+func retryOnConflict(f func() error) error {
+	err := f()
+	if errors.IsConflict(err) {
+		return f()
+	}
+	return err
 }

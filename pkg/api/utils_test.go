@@ -255,9 +255,15 @@ func TestNewAPIClusterFromCRD(t *testing.T) {
 	for name, test := range clusterTests {
 		t.Run(name, func(t *testing.T) {
 			cluster := test.cluster
-			apiCluster := NewAPIClusterFromCRD(cluster)
+			apiCluster, err := NewAPIClusterFromCRD(cluster)
+			require.NoError(t, err)
 			if test.properties.GitRepo == nil {
 				test.properties.GitRepo = &GitRepo{}
+			}
+			// comparing the autogen code is a PITA, so we just remove the CompileMeta if it's nil,
+			// other tests do test the conversion of CompileMeta.
+			if test.properties.CompileMeta == nil {
+				apiCluster.ClusterProperties.CompileMeta = nil
 			}
 			assert.Equal(t, test.properties, apiCluster.ClusterProperties)
 		})
@@ -282,7 +288,9 @@ func TestFactEncoding(t *testing.T) {
 	}
 	cluster, err := NewCRDFromAPICluster(apiCluster)
 	assert.NoError(t, err)
-	apiCluster = *NewAPIClusterFromCRD(*cluster)
+	ac, err := NewAPIClusterFromCRD(*cluster)
+	assert.NoError(t, err)
+	apiCluster = *ac
 
 	act, err := json.Marshal(apiCluster.DynamicFacts)
 	assert.NoError(t, err)
