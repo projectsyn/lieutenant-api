@@ -7,13 +7,14 @@ toolchain go1.22.3
 require (
 	github.com/AlekSi/pointer v1.2.0
 	github.com/cosmtrek/air v1.52.0
-	github.com/deepmap/oapi-codegen v1.16.2
 	github.com/deepmap/oapi-codegen/v2 v2.1.0
 	github.com/getkin/kin-openapi v0.123.0
 	github.com/go-logr/logr v1.4.2
 	github.com/hashicorp/golang-lru v1.0.2
 	github.com/labstack/echo/v4 v4.12.0
+	github.com/oapi-codegen/echo-middleware v1.0.1
 	github.com/oapi-codegen/runtime v1.1.1
+	github.com/oapi-codegen/testutil v1.1.0
 	github.com/projectsyn/lieutenant-operator v1.6.0
 	github.com/stretchr/testify v1.9.0
 	github.com/taion809/haikunator v0.0.0-20150324135039-4e414e676fd1
@@ -56,6 +57,7 @@ require (
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
+	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/mitchellh/hashstructure v1.1.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect

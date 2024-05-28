@@ -9,8 +9,8 @@ import (
 	"testing"
 
 	"github.com/AlekSi/pointer"
-	"github.com/deepmap/oapi-codegen/pkg/testutil"
 	"github.com/labstack/echo/v4"
+	"github.com/oapi-codegen/testutil"
 	synv1alpha1 "github.com/projectsyn/lieutenant-operator/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -25,7 +25,7 @@ func TestListCluster(t *testing.T) {
 	result := testutil.NewRequest().
 		Get("/clusters").
 		WithHeader(echo.HeaderAuthorization, bearerToken).
-		Go(t, e)
+		GoWithHTTPHandler(t, e)
 	requireHTTPCode(t, http.StatusOK, result)
 	clusters := make([]api.Cluster, 0)
 	err := result.UnmarshalJsonToObject(&clusters)
@@ -46,7 +46,7 @@ func TestListCluster_FilteredByTenant(t *testing.T) {
 	result := testutil.NewRequest().
 		Get("/clusters?tenant="+tenantA.Name).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
-		Go(t, e)
+		GoWithHTTPHandler(t, e)
 	requireHTTPCode(t, http.StatusOK, result)
 	clusters := make([]api.Cluster, 0)
 	err := result.UnmarshalJsonToObject(&clusters)
@@ -97,7 +97,7 @@ func TestListCluster_Sort(t *testing.T) {
 			result := testutil.NewRequest().
 				Get(fmt.Sprintf("/clusters?sort_by=%s", tc.sortBy)).
 				WithHeader(echo.HeaderAuthorization, bearerToken).
-				Go(t, e)
+				GoWithHTTPHandler(t, e)
 			requireHTTPCode(t, http.StatusOK, result)
 			clusters := make([]api.Cluster, 0)
 			err := result.UnmarshalJsonToObject(&clusters)
@@ -115,7 +115,7 @@ func TestListClusterMissingBearer(t *testing.T) {
 
 	result := testutil.NewRequest().
 		Get("/clusters").
-		Go(t, e)
+		GoWithHTTPHandler(t, e)
 	requireHTTPCode(t, http.StatusBadRequest, result)
 }
 
@@ -125,7 +125,7 @@ func TestListClusterWrongToken(t *testing.T) {
 	result := testutil.NewRequest().
 		Get("/clusters").
 		WithHeader(echo.HeaderAuthorization, "asdf").
-		Go(t, e)
+		GoWithHTTPHandler(t, e)
 	requireHTTPCode(t, http.StatusBadRequest, result)
 }
 
@@ -157,7 +157,7 @@ func TestCreateCluster(t *testing.T) {
 		Post("/clusters").
 		WithJsonBody(newCluster).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
-		Go(t, e)
+		GoWithHTTPHandler(t, e)
 	requireHTTPCode(t, http.StatusCreated, result)
 
 	cluster := &api.Cluster{}
@@ -205,7 +205,7 @@ func TestCreateClusterWithId(t *testing.T) {
 				Post("/clusters").
 				WithJsonBody(request).
 				WithHeader(echo.HeaderAuthorization, bearerToken).
-				Go(t, e)
+				GoWithHTTPHandler(t, e)
 			requireHTTPCode(t, http.StatusCreated, result)
 			cluster := &api.Cluster{}
 			err := result.UnmarshalJsonToObject(cluster)
@@ -237,7 +237,7 @@ func TestCreateClusterInstanceFact(t *testing.T) {
 		Post("/clusters").
 		WithJsonBody(newCluster).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
-		Go(t, e)
+		GoWithHTTPHandler(t, e)
 	requireHTTPCode(t, http.StatusCreated, result)
 
 	cluster := &api.Cluster{}
@@ -251,7 +251,7 @@ func TestCreateClusterInstanceFact(t *testing.T) {
 		Post("/clusters").
 		WithJsonBody(newCluster).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
-		Go(t, e)
+		GoWithHTTPHandler(t, e)
 	requireHTTPCode(t, http.StatusCreated, result)
 	cluster = &api.Cluster{}
 	err = result.UnmarshalJsonToObject(cluster)
@@ -268,7 +268,7 @@ func TestCreateClusterNoJSON(t *testing.T) {
 		WithJsonContentType().
 		WithBody([]byte("invalid-body")).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
-		Go(t, e)
+		GoWithHTTPHandler(t, e)
 	requireHTTPCode(t, http.StatusBadRequest, result)
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
@@ -287,7 +287,7 @@ func TestCreateClusterNoTenant(t *testing.T) {
 		Post("/clusters/").
 		WithJsonBody(createCluster).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
-		Go(t, e)
+		GoWithHTTPHandler(t, e)
 	requireHTTPCode(t, http.StatusBadRequest, result)
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
@@ -302,7 +302,7 @@ func TestCreateClusterEmpty(t *testing.T) {
 		Post("/clusters/").
 		WithJsonContentType().
 		WithHeader(echo.HeaderAuthorization, bearerToken).
-		Go(t, e)
+		GoWithHTTPHandler(t, e)
 	requireHTTPCode(t, http.StatusBadRequest, result)
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
@@ -316,7 +316,7 @@ func TestClusterDelete(t *testing.T) {
 	result := testutil.NewRequest().
 		Delete("/clusters/"+clusterA.Name).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
-		Go(t, e)
+		GoWithHTTPHandler(t, e)
 	requireHTTPCode(t, http.StatusNoContent, result)
 }
 
@@ -326,7 +326,7 @@ func TestClusterGet(t *testing.T) {
 	result := testutil.NewRequest().
 		Get("/clusters/"+clusterA.Name).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
-		Go(t, e)
+		GoWithHTTPHandler(t, e)
 	requireHTTPCode(t, http.StatusOK, result)
 	cluster := &api.Cluster{}
 	err := result.UnmarshalJsonToObject(cluster)
@@ -345,7 +345,7 @@ func TestClusterGetNoToken(t *testing.T) {
 	result := testutil.NewRequest().
 		Get("/clusters/"+clusterB.Name).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
-		Go(t, e)
+		GoWithHTTPHandler(t, e)
 	requireHTTPCode(t, http.StatusOK, result)
 	cluster := &api.Cluster{}
 	err := result.UnmarshalJsonToObject(cluster)
@@ -362,7 +362,7 @@ func TestClusterGetNotFound(t *testing.T) {
 	result := testutil.NewRequest().
 		Get("/clusters/not-existing").
 		WithHeader(echo.HeaderAuthorization, bearerToken).
-		Go(t, e)
+		GoWithHTTPHandler(t, e)
 	requireHTTPCode(t, http.StatusNotFound, result)
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
@@ -376,7 +376,7 @@ func TestClusterUpdateEmpty(t *testing.T) {
 	result := testutil.NewRequest().
 		Patch("/clusters/1").
 		WithHeader(echo.HeaderAuthorization, bearerToken).
-		Go(t, e)
+		GoWithHTTPHandler(t, e)
 	requireHTTPCode(t, http.StatusBadRequest, result)
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
@@ -396,7 +396,7 @@ func TestClusterUpdateTenant(t *testing.T) {
 		WithJsonBody(updateCluster).
 		WithContentType(api.ContentJSONPatch).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
-		Go(t, e)
+		GoWithHTTPHandler(t, e)
 	requireHTTPCode(t, http.StatusBadRequest, result)
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
@@ -418,7 +418,7 @@ func TestClusterUpdateUnknown(t *testing.T) {
 		WithJsonBody(updateCluster).
 		WithContentType(api.ContentJSONPatch).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
-		Go(t, e)
+		GoWithHTTPHandler(t, e)
 	requireHTTPCode(t, http.StatusBadRequest, result)
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
@@ -440,7 +440,7 @@ func TestClusterUpdateIllegalDeployKey(t *testing.T) {
 		WithJsonBody(updateCluster).
 		WithContentType(api.ContentJSONPatch).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
-		Go(t, e)
+		GoWithHTTPHandler(t, e)
 	requireHTTPCode(t, http.StatusBadRequest, result)
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
@@ -462,7 +462,7 @@ func TestClusterUpdateNotManagedDeployKey(t *testing.T) {
 		WithJsonBody(updateCluster).
 		WithContentType(api.ContentJSONPatch).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
-		Go(t, e)
+		GoWithHTTPHandler(t, e)
 	requireHTTPCode(t, http.StatusBadRequest, result)
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
@@ -499,7 +499,7 @@ func TestClusterUpdate(t *testing.T) {
 		WithJsonBody(updateCluster).
 		WithContentType(api.ContentJSONPatch).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
-		Go(t, e)
+		GoWithHTTPHandler(t, e)
 	requireHTTPCode(t, http.StatusOK, result)
 	cluster := &api.Cluster{}
 	err := result.UnmarshalJsonToObject(cluster)
@@ -532,7 +532,7 @@ func TestClusterUpdateDisplayName(t *testing.T) {
 		WithJsonBody(updateCluster).
 		WithContentType(api.ContentJSONPatch).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
-		Go(t, e)
+		GoWithHTTPHandler(t, e)
 	requireHTTPCode(t, http.StatusOK, result)
 	cluster := &api.Cluster{}
 	err := result.UnmarshalJsonToObject(cluster)
@@ -613,7 +613,7 @@ func TestClusterPut(t *testing.T) {
 				Put("/clusters/"+tc.cluster.Id.String()).
 				WithJsonBody(tc.cluster).
 				WithHeader(echo.HeaderAuthorization, bearerToken).
-				Go(t, e)
+				GoWithHTTPHandler(t, e)
 			requireHTTPCode(t, tc.code, result)
 
 			res := &api.Cluster{}
@@ -649,7 +649,7 @@ func TestClusterPutCreateNameMissmatch(t *testing.T) {
 		Put("/clusters/c-foo").
 		WithJsonBody(cluster).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
-		Go(t, e)
+		GoWithHTTPHandler(t, e)
 	requireHTTPCode(t, http.StatusCreated, result)
 
 	res := &api.Cluster{}

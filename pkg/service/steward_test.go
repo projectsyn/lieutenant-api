@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/deepmap/oapi-codegen/pkg/testutil"
+	"github.com/oapi-codegen/testutil"
 	"github.com/stretchr/testify/assert"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -115,7 +115,7 @@ func TestInstallSteward(t *testing.T) {
 			result := testutil.NewRequest().
 				WithHeader("X-Forwarded-Proto", "https").
 				Get("/install/steward.json?token="+tc.bootstrapToken).
-				Go(t, e)
+				GoWithHTTPHandler(t, e)
 			requireHTTPCode(t, http.StatusOK, result)
 			manifests := &corev1.List{}
 			err := result.UnmarshalJsonToObject(&manifests)
@@ -152,7 +152,7 @@ func TestInstallStewardNoToken(t *testing.T) {
 
 	result := testutil.NewRequest().
 		Get("/install/steward.json").
-		Go(t, e)
+		GoWithHTTPHandler(t, e)
 	requireHTTPCode(t, http.StatusBadRequest, result)
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
@@ -165,7 +165,7 @@ func TestInstallStewardInvalidToken(t *testing.T) {
 
 	result := testutil.NewRequest().
 		Get("/install/steward.json?token=NonExistentToken").
-		Go(t, e)
+		GoWithHTTPHandler(t, e)
 	requireHTTPCode(t, http.StatusUnauthorized, result)
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
@@ -178,7 +178,7 @@ func TestInstallStewardUsedToken(t *testing.T) {
 
 	result := testutil.NewRequest().
 		Get("/install/steward.json?token="+clusterB.Status.BootstrapToken.Token).
-		Go(t, e)
+		GoWithHTTPHandler(t, e)
 	requireHTTPCode(t, http.StatusUnauthorized, result)
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)

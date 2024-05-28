@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/deepmap/oapi-codegen/pkg/testutil"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v4"
+	"github.com/oapi-codegen/testutil"
 	synv1alpha1 "github.com/projectsyn/lieutenant-operator/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -256,7 +256,7 @@ func rawSetupTest(t *testing.T, obj ...client.Object) (*echo.Echo, client.Client
 func TestHealthz(t *testing.T) {
 	e, _ := setupTest(t)
 
-	result := testutil.NewRequest().Get("/healthz").Go(t, e)
+	result := testutil.NewRequest().Get("/healthz").GoWithHTTPHandler(t, e)
 	requireHTTPCode(t, http.StatusOK, result)
 	assert.Equal(t, "ok", string(result.Recorder.Body.String()))
 }
@@ -264,7 +264,7 @@ func TestHealthz(t *testing.T) {
 func TestOpenAPI(t *testing.T) {
 	e, _ := setupTest(t)
 
-	result := testutil.NewRequest().Get("/openapi.json").Go(t, e)
+	result := testutil.NewRequest().Get("/openapi.json").GoWithHTTPHandler(t, e)
 	requireHTTPCode(t, http.StatusOK, result)
 	swaggerSpec := &openapi3.T{}
 	err := json.Unmarshal(result.Recorder.Body.Bytes(), swaggerSpec)
@@ -276,7 +276,7 @@ func TestOpenAPI(t *testing.T) {
 func TestSwaggerUI(t *testing.T) {
 	e, _ := setupTest(t)
 
-	result := testutil.NewRequest().Get("/docs").Go(t, e)
+	result := testutil.NewRequest().Get("/docs").GoWithHTTPHandler(t, e)
 	requireHTTPCode(t, http.StatusOK, result)
 	assert.NotEmpty(t, result.Recorder.Body.Bytes)
 }
@@ -284,7 +284,7 @@ func TestSwaggerUI(t *testing.T) {
 func TestDiscovery(t *testing.T) {
 	e, _ := setupTest(t)
 
-	result := testutil.NewRequest().Get("/").Go(t, e)
+	result := testutil.NewRequest().Get("/").GoWithHTTPHandler(t, e)
 	requireHTTPCode(t, http.StatusOK, result)
 	assert.NotEmpty(t, result.Recorder.Body.Bytes)
 	metadata := api.Metadata{}
