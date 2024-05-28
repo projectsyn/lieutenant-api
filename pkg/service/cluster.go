@@ -12,6 +12,7 @@ import (
 	synv1alpha1 "github.com/projectsyn/lieutenant-operator/api/v1alpha1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/projectsyn/lieutenant-api/pkg/api"
@@ -211,6 +212,38 @@ func (s *APIImpl) PutCluster(c echo.Context, clusterID api.ClusterIdParameter) e
 	return s.updateCluster(ctx, found)
 }
 
+// PostClusterCompileMeta compiles the meta data of a cluster
+func (s *APIImpl) PostClusterCompileMeta(c echo.Context, clusterID api.ClusterIdParameter) error {
+	ctx := c.(*APIContext)
+
+	body := &api.ClusterCompileMeta{}
+	if err := ctx.Bind(body); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err)
+	}
+
+	toPatch := &synv1alpha1.Cluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      string(clusterID),
+			Namespace: s.namespace,
+		},
+	}
+	patch := []map[string]any{
+		{"op": "replace", "path": "/status/compileMeta", "value": body},
+	}
+	rawPatch, err := json.Marshal(patch)
+	if err != nil {
+		return fmt.Errorf("failed to marshal patch: %w", err)
+	}
+
+	if err := retryOnConflict(func() error {
+		return ctx.client.Status().Patch(ctx.Request().Context(), toPatch, client.RawPatch(types.JSONPatchType, rawPatch))
+	}); err != nil {
+		return err
+	}
+
+	return ctx.NoContent(http.StatusNoContent)
+}
+
 func apiClusterWithInstallURL(ctx *APIContext, cluster *synv1alpha1.Cluster) *api.Cluster {
 	apiCluster := api.NewAPIClusterFromCRD(*cluster)
 
@@ -229,4 +262,13 @@ func bootstrapToken(cluster *synv1alpha1.Cluster) (token string, valid bool) {
 	}
 
 	return cluster.Status.BootstrapToken.Token, cluster.Status.BootstrapToken.TokenValid
+}
+
+// retryOnConflict retries the given function if the returned error is a conflict (HTTP 409) error once
+func retryOnConflict(f func() error) error {
+	err := f()
+	if errors.IsConflict(err) {
+		return f()
+	}
+	return err
 }
