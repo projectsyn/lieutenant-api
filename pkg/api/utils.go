@@ -180,7 +180,7 @@ func SyncCRDFromAPITenant(source TenantProperties, target *synv1alpha1.Tenant) {
 }
 
 // NewAPIClusterFromCRD transforms a CRD cluster into the API representation
-func NewAPIClusterFromCRD(cluster synv1alpha1.Cluster) *Cluster {
+func NewAPIClusterFromCRD(cluster synv1alpha1.Cluster) (*Cluster, error) {
 	id := Id(cluster.Name)
 	apiCluster := &Cluster{
 		ClusterId: ClusterId{Id: &id},
@@ -233,6 +233,12 @@ func NewAPIClusterFromCRD(cluster synv1alpha1.Cluster) *Cluster {
 		apiCluster.DynamicFacts = &facts
 	}
 
+	acm, err := crdCompileMetaToAPICompileMeta(cluster.Status.CompileMeta)
+	if err != nil {
+		return nil, fmt.Errorf("failed to convert compile meta: %w", err)
+	}
+	apiCluster.ClusterProperties.CompileMeta = acm
+
 	if cluster.Spec.GitRepoTemplate != nil {
 		if stewardKey, ok := cluster.Spec.GitRepoTemplate.DeployKeys["steward"]; ok {
 			sshKey := fmt.Sprintf("%s %s", stewardKey.Type, stewardKey.Key)
@@ -244,7 +250,7 @@ func NewAPIClusterFromCRD(cluster synv1alpha1.Cluster) *Cluster {
 		}
 	}
 
-	return apiCluster
+	return apiCluster, nil
 }
 
 func unmarshalFact(fact string) interface{} {
@@ -375,6 +381,13 @@ func SyncCRDFromAPICluster(source ClusterProperties, target *synv1alpha1.Cluster
 			target.Status.Facts[key] = string(encodedFact)
 		}
 	}
+
+	clcm, err := apiCompileMetaToCRDCompileMeta(source.CompileMeta)
+	if err != nil {
+		return fmt.Errorf("failed to convert compile meta: %w", err)
+	}
+	target.Status.CompileMeta = clcm
+
 	return nil
 }
 
@@ -412,4 +425,40 @@ func newGitRepoTemplate(repo *GitRepo, name string) (*synv1alpha1.GitRepoTemplat
 		}, nil
 	}
 	return nil, nil
+}
+
+// crdCompileMetaToAPICompileMeta converts a CRD compile meta to an API compile meta.
+// Uses json marshalling to convert the structs since their codegen representations are very different.
+// Errors only if the marshalling fails.
+func crdCompileMetaToAPICompileMeta(crdCompileMeta synv1alpha1.CompileMeta) (*ClusterCompileMeta, error) {
+	j, err := json.Marshal(crdCompileMeta)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal compile meta for conversion: %w", err)
+	}
+	var apiCompileMeta ClusterCompileMeta
+	err = json.Unmarshal(j, &apiCompileMeta)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal compile meta for conversion: %w", err)
+	}
+	return &apiCompileMeta, nil
+}
+
+// apiCompileMetaToCRDCompileMeta converts an API compile meta to a CRD compile meta.
+// Uses json marshalling to convert the structs since their codegen representations are very different.
+// Errors only if the marshalling fails.
+func apiCompileMetaToCRDCompileMeta(apiCompileMeta *ClusterCompileMeta) (synv1alpha1.CompileMeta, error) {
+	if apiCompileMeta == nil {
+		return synv1alpha1.CompileMeta{}, nil
+	}
+
+	j, err := json.Marshal(apiCompileMeta)
+	if err != nil {
+		return synv1alpha1.CompileMeta{}, fmt.Errorf("failed to marshal compile meta for conversion: %w", err)
+	}
+	var crdCompileMeta synv1alpha1.CompileMeta
+	err = json.Unmarshal(j, &crdCompileMeta)
+	if err != nil {
+		return synv1alpha1.CompileMeta{}, fmt.Errorf("failed to unmarshal compile meta for conversion: %w", err)
+	}
+	return crdCompileMeta, nil
 }

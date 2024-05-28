@@ -10,6 +10,7 @@ import (
 	"github.com/AlekSi/pointer"
 	"github.com/labstack/echo/v4"
 	synv1alpha1 "github.com/projectsyn/lieutenant-operator/api/v1alpha1"
+	"go.uber.org/multierr"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -42,10 +43,15 @@ func (s *APIImpl) ListClusters(c echo.Context, p api.ListClustersParams) error {
 		return err
 	}
 
-	clusters := make([]api.Cluster, 0)
+	clusters := make([]api.Cluster, 0, len(clusterList.Items))
+	errs := make([]error, 0, len(clusterList.Items))
 	for _, cluster := range clusterList.Items {
-		apiCluster := apiClusterWithInstallURL(ctx, &cluster)
+		apiCluster, err := apiClusterWithInstallURL(ctx, &cluster)
 		clusters = append(clusters, *apiCluster)
+		errs = append(errs, err)
+	}
+	if err := multierr.Combine(errs...); err != nil {
+		return fmt.Errorf("failed to translate CRD to API representation: %w", err)
 	}
 	sortClustersBy(clusters, p.SortBy)
 	return ctx.JSON(http.StatusOK, clusters)
@@ -111,7 +117,11 @@ func (s *APIImpl) createCluster(ctx *APIContext, cluster *synv1alpha1.Cluster) e
 	if err := ctx.client.Status().Update(ctx.Request().Context(), cluster); err != nil {
 		return err
 	}
-	return ctx.JSON(http.StatusCreated, apiClusterWithInstallURL(ctx, cluster))
+	ac, err := apiClusterWithInstallURL(ctx, cluster)
+	if err != nil {
+		return err
+	}
+	return ctx.JSON(http.StatusCreated, ac)
 }
 
 // DeleteCluster deletes a cluster
@@ -141,7 +151,11 @@ func (s *APIImpl) GetCluster(c echo.Context, clusterID api.ClusterIdParameter) e
 		return err
 	}
 
-	return ctx.JSON(http.StatusOK, apiClusterWithInstallURL(ctx, cluster))
+	ac, err := apiClusterWithInstallURL(ctx, cluster)
+	if err != nil {
+		return err
+	}
+	return ctx.JSON(http.StatusOK, ac)
 }
 
 // UpdateCluster updates a cluster
@@ -178,7 +192,12 @@ func (s *APIImpl) updateCluster(ctx *APIContext, existingCluster *synv1alpha1.Cl
 	if err := ctx.client.Status().Update(ctx.Request().Context(), existingCluster); err != nil {
 		return err
 	}
-	return ctx.JSON(http.StatusOK, apiClusterWithInstallURL(ctx, existingCluster))
+
+	ac, err := apiClusterWithInstallURL(ctx, existingCluster)
+	if err != nil {
+		return err
+	}
+	return ctx.JSON(http.StatusOK, ac)
 }
 
 // PutCluster updates the cluster or cleates it if it does not exist
@@ -244,8 +263,11 @@ func (s *APIImpl) PostClusterCompileMeta(c echo.Context, clusterID api.ClusterId
 	return ctx.NoContent(http.StatusNoContent)
 }
 
-func apiClusterWithInstallURL(ctx *APIContext, cluster *synv1alpha1.Cluster) *api.Cluster {
-	apiCluster := api.NewAPIClusterFromCRD(*cluster)
+func apiClusterWithInstallURL(ctx *APIContext, cluster *synv1alpha1.Cluster) (*api.Cluster, error) {
+	apiCluster, err := api.NewAPIClusterFromCRD(*cluster)
+	if err != nil {
+		return nil, err
+	}
 
 	token, tokenValid := bootstrapToken(cluster)
 	if tokenValid {
@@ -253,7 +275,7 @@ func apiClusterWithInstallURL(ctx *APIContext, cluster *synv1alpha1.Cluster) *ap
 		apiCluster.InstallURL = &installURL
 	}
 
-	return apiCluster
+	return apiCluster, nil
 }
 
 func bootstrapToken(cluster *synv1alpha1.Cluster) (token string, valid bool) {

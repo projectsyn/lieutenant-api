@@ -335,13 +335,17 @@ func TestClusterGet(t *testing.T) {
 	requireHTTPCode(t, http.StatusOK, result)
 	cluster := &api.Cluster{}
 	err := result.UnmarshalJsonToObject(cluster)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.NotNil(t, cluster)
 	assert.Equal(t, clusterA.Name, cluster.Id.String())
 	assert.Equal(t, tenantA.Name, cluster.Tenant)
 	assert.Equal(t, clusterA.Spec.GitHostKeys, *cluster.GitRepo.HostKeys)
 	assert.True(t, strings.HasSuffix(*cluster.InstallURL, clusterA.Status.BootstrapToken.Token))
 	assert.Equal(t, clusterA.Annotations["some"], (*cluster.Annotations)["some"])
+	require.NotNil(t, cluster.CompileMeta)
+	assert.Equal(t, clusterA.Status.CompileMeta.CommodoreBuildInfo, *cluster.CompileMeta.CommodoreBuildInfo)
+	require.Contains(t, *cluster.CompileMeta.Instances, "instance-a")
+	assert.Equal(t, clusterA.Status.CompileMeta.Instances["instance-a"].Version, *(*cluster.CompileMeta.Instances)["instance-a"].Version)
 }
 
 func TestClusterGetNoToken(t *testing.T) {
@@ -552,64 +556,71 @@ func TestClusterUpdateDisplayName(t *testing.T) {
 	assert.Equal(t, newDisplayName, clusterObj.Spec.DisplayName)
 }
 
-var putClusterTestCases = map[string]struct {
-	cluster *api.Cluster
-	code    int
-	valid   func(t *testing.T, act *api.Cluster) bool
-}{
-	"put unchanged object": {
-		cluster: api.NewAPIClusterFromCRD(*clusterB),
-		code:    http.StatusOK,
-		valid: func(t *testing.T, act *api.Cluster) bool {
-			return true
-		},
-	},
-	"put updated object": {
-		cluster: func() *api.Cluster {
-			cluster := api.NewAPIClusterFromCRD(*clusterB)
-			(*cluster.Facts)["foo"] = "bar"
-			return cluster
-		}(),
-		code: http.StatusOK,
-		valid: func(t *testing.T, act *api.Cluster) bool {
-			require.Contains(t, *act.Facts, "cloud")
-			assert.Equal(t, clusterB.Spec.Facts["cloud"], (*act.Facts)["cloud"])
-			require.Contains(t, *act.Facts, "foo")
-			assert.Equal(t, (*act.Facts)["foo"], "bar")
-			return true
-		},
-	},
-	"put new object": {
-		cluster: &api.Cluster{
-			ClusterId: api.ClusterId{
-				Id: pointer.To(api.Id("c-new-2379")),
-			},
-			ClusterProperties: api.ClusterProperties{
-				DisplayName: pointer.ToString("My new cluster"),
-				Facts: &api.ClusterFacts{
-					"cloud":                "cloudscale",
-					"region":               "test",
-					LieutenantInstanceFact: "",
-				},
-				DynamicFacts: &api.DynamicClusterFacts{
-					"kubernetesVersion": "1.16",
-				},
-				Annotations: &api.Annotations{
-					"new": "annotation",
-				},
-			},
-			ClusterTenant: api.ClusterTenant{Tenant: tenantA.Name},
-		},
-		code: http.StatusCreated,
-		valid: func(t *testing.T, act *api.Cluster) bool {
-			assert.Contains(t, act.Id.String(), api.ClusterIDPrefix)
-			assert.Equal(t, pointer.ToString("My new cluster"), act.DisplayName)
-			return true
-		},
-	},
+func mustNewAPIClusterFromCRD(t *testing.T, cluster synv1alpha1.Cluster) *api.Cluster {
+	t.Helper()
+	apiCluster, err := api.NewAPIClusterFromCRD(cluster)
+	require.NoError(t, err)
+	return apiCluster
 }
 
 func TestClusterPut(t *testing.T) {
+	var putClusterTestCases = map[string]struct {
+		cluster *api.Cluster
+		code    int
+		valid   func(t *testing.T, act *api.Cluster) bool
+	}{
+		"put unchanged object": {
+			cluster: mustNewAPIClusterFromCRD(t, *clusterB),
+			code:    http.StatusOK,
+			valid: func(t *testing.T, act *api.Cluster) bool {
+				return true
+			},
+		},
+		"put updated object": {
+			cluster: func() *api.Cluster {
+				cluster := mustNewAPIClusterFromCRD(t, *clusterB)
+				(*cluster.Facts)["foo"] = "bar"
+				return cluster
+			}(),
+			code: http.StatusOK,
+			valid: func(t *testing.T, act *api.Cluster) bool {
+				require.Contains(t, *act.Facts, "cloud")
+				assert.Equal(t, clusterB.Spec.Facts["cloud"], (*act.Facts)["cloud"])
+				require.Contains(t, *act.Facts, "foo")
+				assert.Equal(t, (*act.Facts)["foo"], "bar")
+				return true
+			},
+		},
+		"put new object": {
+			cluster: &api.Cluster{
+				ClusterId: api.ClusterId{
+					Id: pointer.To(api.Id("c-new-2379")),
+				},
+				ClusterProperties: api.ClusterProperties{
+					DisplayName: pointer.ToString("My new cluster"),
+					Facts: &api.ClusterFacts{
+						"cloud":                "cloudscale",
+						"region":               "test",
+						LieutenantInstanceFact: "",
+					},
+					DynamicFacts: &api.DynamicClusterFacts{
+						"kubernetesVersion": "1.16",
+					},
+					Annotations: &api.Annotations{
+						"new": "annotation",
+					},
+				},
+				ClusterTenant: api.ClusterTenant{Tenant: tenantA.Name},
+			},
+			code: http.StatusCreated,
+			valid: func(t *testing.T, act *api.Cluster) bool {
+				assert.Contains(t, act.Id.String(), api.ClusterIDPrefix)
+				assert.Equal(t, pointer.ToString("My new cluster"), act.DisplayName)
+				return true
+			},
+		},
+	}
+
 	e, client := setupTest(t)
 
 	for k, tc := range putClusterTestCases {
@@ -631,9 +642,10 @@ func TestClusterPut(t *testing.T) {
 				Namespace: "default",
 				Name:      res.Id.String(),
 			}, clusterObj)
+			require.NoError(t, err)
 			require.NotNil(t, clusterObj)
 			require.NotEmpty(t, clusterObj.Name)
-			assert.True(t, tc.valid(t, api.NewAPIClusterFromCRD(*clusterObj)))
+			assert.True(t, tc.valid(t, mustNewAPIClusterFromCRD(t, *clusterObj)))
 		})
 	}
 
