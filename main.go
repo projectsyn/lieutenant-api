@@ -7,7 +7,10 @@ import (
 	"os"
 
 	_ "github.com/cosmtrek/air/runner" // used for hot reload
+	"github.com/go-logr/logr"
+	"github.com/go-logr/logr/funcr"
 	"github.com/projectsyn/lieutenant-api/pkg/service"
+	crlog "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 // Version is the lieutenant-api version (set during build)
@@ -17,6 +20,8 @@ var (
 )
 
 func main() {
+	crlog.SetLogger(newStdoutLogger())
+
 	conf := service.APIConfig{
 		APIVersion:       Version,
 		Namespace:        os.Getenv("NAMESPACE"),
@@ -33,4 +38,14 @@ func main() {
 	fmt.Println("Build Date: " + BuildDate)
 
 	e.Logger.Fatal(e.Start(":8080"))
+}
+
+func newStdoutLogger() logr.Logger {
+	return funcr.New(func(prefix, args string) {
+		if prefix != "" {
+			fmt.Printf("%s: %s\n", prefix, args)
+		} else {
+			fmt.Println(args)
+		}
+	}, funcr.Options{})
 }
