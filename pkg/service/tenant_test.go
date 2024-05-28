@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/AlekSi/pointer"
-	"github.com/deepmap/oapi-codegen/pkg/testutil"
 	"github.com/labstack/echo/v4"
+	"github.com/oapi-codegen/testutil"
 	synv1alpha1 "github.com/projectsyn/lieutenant-operator/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -23,7 +23,7 @@ func TestListTenants(t *testing.T) {
 	result := testutil.NewRequest().
 		Get("/tenants/").
 		WithHeader(echo.HeaderAuthorization, bearerToken).
-		Go(t, e)
+		GoWithHTTPHandler(t, e)
 	requireHTTPCode(t, http.StatusOK, result)
 	tenants := []api.Tenant{}
 	err := result.UnmarshalJsonToObject(&tenants)
@@ -56,7 +56,7 @@ func TestCreateTenant(t *testing.T) {
 		Post("/tenants").
 		WithJsonBody(newTenant).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
-		Go(t, e)
+		GoWithHTTPHandler(t, e)
 	requireHTTPCode(t, http.StatusCreated, result)
 	tenant := &api.Tenant{}
 	err := result.UnmarshalJsonToObject(tenant)
@@ -115,7 +115,7 @@ func TestCreateTenantWithID(t *testing.T) {
 				Post("/tenants/").
 				WithHeader(echo.HeaderAuthorization, bearerToken).
 				WithJsonBody(requestBody).
-				Go(t, e)
+				GoWithHTTPHandler(t, e)
 			assert.Equal(t, http.StatusCreated, response.Code())
 			tenant := &api.Tenant{}
 			assert.NoError(t, response.UnmarshalJsonToObject(tenant))
@@ -133,7 +133,7 @@ func TestCreateTenantFail(t *testing.T) {
 		WithJsonContentType().
 		WithBody([]byte("invalid-body")).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
-		Go(t, e)
+		GoWithHTTPHandler(t, e)
 	requireHTTPCode(t, http.StatusBadRequest, result)
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
@@ -147,7 +147,7 @@ func TestCreateTenantEmpty(t *testing.T) {
 	result := testutil.NewRequest().
 		Post("/tenants/").
 		WithHeader(echo.HeaderAuthorization, bearerToken).
-		Go(t, e)
+		GoWithHTTPHandler(t, e)
 	requireHTTPCode(t, http.StatusBadRequest, result)
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
@@ -166,7 +166,7 @@ func TestCreateTenantNoGitURL(t *testing.T) {
 		Post("/tenants/").
 		WithHeader(echo.HeaderAuthorization, bearerToken).
 		WithJsonBody(newTenant).
-		Go(t, e)
+		GoWithHTTPHandler(t, e)
 	requireHTTPCode(t, http.StatusBadRequest, result)
 
 	reason := &api.Reason{}
@@ -181,7 +181,7 @@ func TestTenantDelete(t *testing.T) {
 	result := testutil.NewRequest().
 		Delete("/tenants/"+tenantA.Name).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
-		Go(t, e)
+		GoWithHTTPHandler(t, e)
 	requireHTTPCode(t, http.StatusNoContent, result)
 }
 
@@ -191,7 +191,7 @@ func TestTenantGet(t *testing.T) {
 	result := testutil.NewRequest().
 		Get("/tenants/"+tenantA.Name).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
-		Go(t, e)
+		GoWithHTTPHandler(t, e)
 	requireHTTPCode(t, http.StatusOK, result)
 	tenant := &api.Tenant{}
 	err := result.UnmarshalJsonToObject(tenant)
@@ -209,7 +209,7 @@ func TestTenantUpdateEmpty(t *testing.T) {
 	result := testutil.NewRequest().
 		Patch("/tenants/1").
 		WithHeader(echo.HeaderAuthorization, bearerToken).
-		Go(t, e)
+		GoWithHTTPHandler(t, e)
 	requireHTTPCode(t, http.StatusBadRequest, result)
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
@@ -231,7 +231,7 @@ func TestTenantUpdateUnknown(t *testing.T) {
 		WithJsonBody(updateTenant).
 		WithContentType(api.ContentJSONPatch).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
-		Go(t, e)
+		GoWithHTTPHandler(t, e)
 	requireHTTPCode(t, http.StatusBadRequest, result)
 	reason := &api.Reason{}
 	err := result.UnmarshalJsonToObject(reason)
@@ -260,7 +260,7 @@ func TestTenantUpdate(t *testing.T) {
 		WithJsonBody(updateTenant).
 		WithContentType(api.ContentJSONPatch).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
-		Go(t, e)
+		GoWithHTTPHandler(t, e)
 	requireHTTPCode(t, http.StatusOK, result)
 	tenant := &api.Tenant{}
 	err := result.UnmarshalJsonToObject(tenant)
@@ -288,7 +288,7 @@ func TestTenantUpdateDisplayName(t *testing.T) {
 		WithJsonBody(updateTenant).
 		WithContentType(api.ContentJSONPatch).
 		WithHeader(echo.HeaderAuthorization, bearerToken).
-		Go(t, e)
+		GoWithHTTPHandler(t, e)
 	requireHTTPCode(t, http.StatusOK, result)
 	tenant := &api.Tenant{}
 	err := result.UnmarshalJsonToObject(tenant)
@@ -361,7 +361,7 @@ func TestTenantPut(t *testing.T) {
 				Put("/tenants/"+tc.tenant.Id.String()).
 				WithJsonBody(tc.tenant).
 				WithHeader(echo.HeaderAuthorization, bearerToken).
-				Go(t, e)
+				GoWithHTTPHandler(t, e)
 			requireHTTPCode(t, tc.code, result)
 
 			res := &api.Tenant{}
