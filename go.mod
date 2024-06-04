@@ -2,7 +2,7 @@ module github.com/projectsyn/lieutenant-api
 
 go 1.22.0
 
-toolchain go1.22.3
+toolchain go1.22.4
 
 require (
 	github.com/AlekSi/pointer v1.2.0
