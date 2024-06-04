@@ -382,11 +382,13 @@ func SyncCRDFromAPICluster(source ClusterProperties, target *synv1alpha1.Cluster
 		}
 	}
 
-	clcm, err := apiCompileMetaToCRDCompileMeta(source.CompileMeta)
-	if err != nil {
-		return fmt.Errorf("failed to convert compile meta: %w", err)
+	if source.CompileMeta != nil {
+		clcm, err := apiCompileMetaToCRDCompileMeta(source.CompileMeta)
+		if err != nil {
+			return fmt.Errorf("failed to convert compile meta: %w", err)
+		}
+		target.Status.CompileMeta = clcm
 	}
-	target.Status.CompileMeta = clcm
 
 	return nil
 }
