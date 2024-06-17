@@ -11,6 +11,7 @@ require (
 	github.com/getkin/kin-openapi v0.123.0
 	github.com/go-logr/logr v1.4.2
 	github.com/hashicorp/golang-lru v1.0.2
+	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/oapi-codegen/echo-middleware v1.0.1
 	github.com/oapi-codegen/runtime v1.1.1
