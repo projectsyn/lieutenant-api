@@ -241,6 +241,8 @@ github.com/projectsyn/lieutenant-operator v1.6.0 h1:9ACzJjjBAonAGu5SkaPMzfZ9e94v
 github.com/projectsyn/lieutenant-operator v1.6.0/go.mod h1:JIIxR4epvsV57V1nb+f1yIFZ4wQJAgvpnkCrmY/xowA=
 github.com/projectsyn/lieutenant-operator v1.11.6 h1:KrRdpcJMdhm3VFgg9nJSPNYTBE5iNnqhSlnAcosp2aI=
 github.com/projectsyn/lieutenant-operator v1.11.6/go.mod h1:LfIYg3RjAm3FmXKbvHEq51bZF+ColBjadCNhdx9ites=
+github.com/projectsyn/lieutenant-operator v1.11.8 h1:nHibzkXjOYDWAIg2M4daf06SM0xXFYpl5Y/cApyx2P8=
+github.com/projectsyn/lieutenant-operator v1.11.8/go.mod h1:LfIYg3RjAm3FmXKbvHEq51bZF+ColBjadCNhdx9ites=
 github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4/go.mod h1:xMI15A0UPsDsEKsMN9yxemIoYk6Tm2C1GtYGdfGttqA=
 github.com/rivo/uniseg v0.2.0 h1:S1pD9weZBuJdFmowNwbpi7BJ8TNftyUImj/0WQi72jY=
 github.com/rivo/uniseg v0.2.0/go.mod h1:J6wj4VEh+S6ZtnVlnTBMWIodfgj8LQOQFoIToxlJtxc=
