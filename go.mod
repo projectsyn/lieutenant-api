@@ -16,7 +16,7 @@ require (
 	github.com/oapi-codegen/runtime v1.1.1
 	github.com/oapi-codegen/testutil v1.1.0
 	github.com/projectsyn/lieutenant-operator v1.11.6
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	github.com/taion809/haikunator v0.0.0-20150324135039-4e414e676fd1
 	go.uber.org/multierr v1.11.0
 	k8s.io/api v0.30.1
