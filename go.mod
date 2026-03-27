@@ -1,14 +1,12 @@
 module github.com/projectsyn/lieutenant-api
 
-go 1.22.0
-
-toolchain go1.22.3
+go 1.22.5
 
 require (
 	github.com/AlekSi/pointer v1.2.0
 	github.com/cosmtrek/air v1.52.0
 	github.com/deepmap/oapi-codegen/v2 v2.1.0
-	github.com/getkin/kin-openapi v0.123.0
+	github.com/getkin/kin-openapi v0.134.0
 	github.com/go-logr/logr v1.4.2
 	github.com/hashicorp/golang-lru v1.0.2
 	github.com/labstack/echo/v4 v4.12.0
@@ -64,6 +62,8 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
+	github.com/oasdiff/yaml v0.0.0-20260313112342-a3ea61cb4d4c // indirect
+	github.com/oasdiff/yaml3 v0.0.0-20260224194419-61cd415a242b // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
 	github.com/perimeterx/marshmallow v1.1.5 // indirect
@@ -77,6 +77,7 @@ require (
 	github.com/ugorji/go/codec v1.2.12 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
+	github.com/woodsbury/decimal128 v1.3.0 // indirect
 	golang.org/x/crypto v0.25.0 // indirect
 	golang.org/x/mod v0.19.0 // indirect
 	golang.org/x/net v0.27.0 // indirect
