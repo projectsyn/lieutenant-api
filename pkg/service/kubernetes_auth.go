@@ -1,13 +1,13 @@
 package service
 
 import (
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
 
 	lruCache "github.com/hashicorp/golang-lru"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
@@ -27,6 +27,7 @@ var (
 		"/openapi.json": true,
 		"/docs":         true,
 	}
+	ErrJWTMissing = echo.NewHTTPError(http.StatusBadRequest, "missing or malformed jwt")
 )
 
 func getCacheSizeOrDefault(def int) int {
@@ -125,5 +126,5 @@ func extractToken(c echo.Context) (string, error) {
 		token := auth[l+1:]
 		return strings.TrimSpace(token), nil
 	}
-	return "", middleware.ErrJWTMissing
+	return "", ErrJWTMissing
 }
