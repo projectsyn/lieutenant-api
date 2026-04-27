@@ -260,6 +260,8 @@ func rawSetupTest(t *testing.T, obj ...client.Object) (*echo.Echo, client.Client
 		Namespace:        "default",
 		OidcDiscoveryURL: "https://idp.example.com/.well-known/openid-configuration",
 		OidcCLientID:     "lieutenant",
+		VaultAddr:        "https://vault.example.com/",
+		VaultLoginMethod: "oidc",
 	}
 	e, err := NewAPIServer(conf, testMiddleWare)
 	assert.NoError(t, err)
@@ -307,4 +309,8 @@ func TestDiscovery(t *testing.T) {
 	require.NotNil(t, metadata.Oidc)
 	assert.Equal(t, "lieutenant", metadata.Oidc.ClientId)
 	assert.Equal(t, "https://idp.example.com/.well-known/openid-configuration", metadata.Oidc.DiscoveryUrl)
+	require.NotNil(t, metadata.Vault)
+	assert.Equal(t, "https://vault.example.com/", metadata.Vault.Addr)
+	require.NotNil(t, metadata.Vault.LoginMethod)
+	assert.Equal(t, "oidc", *metadata.Vault.LoginMethod)
 }
