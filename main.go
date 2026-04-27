@@ -1,4 +1,4 @@
-//go:generate go run github.com/deepmap/oapi-codegen/v2/cmd/oapi-codegen --config oapi-codegen.conf openapi.yaml
+//go:generate go tool github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen --config oapi-codegen.conf openapi.yaml
 
 package main
 
@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 
-	_ "github.com/cosmtrek/air/runner" // used for hot reload
 	"github.com/go-logr/logr"
 	"github.com/go-logr/logr/funcr"
 	"github.com/projectsyn/lieutenant-api/pkg/service"
@@ -31,7 +30,7 @@ func main() {
 
 	e, err := service.NewAPIServer(conf)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, err.Error()+"\n")
+		fmt.Fprintf(os.Stderr, "%v\n", err.Error())
 		os.Exit(1)
 	}
 	fmt.Println("Version: " + Version)

@@ -74,7 +74,7 @@ run: generate
 
 .PHONY: watch
 watch: generate
-	go run github.com/cosmtrek/air
+	go tool github.com/air-verse/air
 
 .PHONY: clean
 clean:
