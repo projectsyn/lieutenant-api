@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 
-	_ "github.com/air-verse/air/runner" // used for hot reload
 	"github.com/go-logr/logr"
 	"github.com/go-logr/logr/funcr"
 	"github.com/projectsyn/lieutenant-api/pkg/service"

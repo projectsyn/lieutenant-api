@@ -4,7 +4,6 @@ go 1.26.1
 
 require (
 	github.com/AlekSi/pointer v1.2.0
-	github.com/air-verse/air v1.65.1
 	github.com/getkin/kin-openapi v0.133.0
 	github.com/go-logr/logr v1.4.3
 	github.com/hashicorp/golang-lru v1.0.2
@@ -24,6 +23,7 @@ require (
 
 require (
 	dario.cat/mergo v1.0.2 // indirect
+	github.com/air-verse/air v1.65.1 // indirect
 	github.com/andybalholm/brotli v1.2.0 // indirect
 	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
 	github.com/bep/godartsass/v2 v2.5.0 // indirect
@@ -99,3 +99,5 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.7.0 // indirect
 	sigs.k8s.io/yaml v1.6.0 // indirect
 )
+
+tool github.com/air-verse/air
