@@ -31,7 +31,7 @@ func main() {
 
 	e, err := service.NewAPIServer(conf)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, err.Error()+"\n")
+		fmt.Fprintf(os.Stderr, "%v\n", err.Error())
 		os.Exit(1)
 	}
 	fmt.Println("Version: " + Version)
