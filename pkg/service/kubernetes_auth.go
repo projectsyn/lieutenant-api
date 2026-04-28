@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	lruCache "github.com/hashicorp/golang-lru"
+	lruCache "github.com/hashicorp/golang-lru/v2"
 	"github.com/labstack/echo/v4"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -42,8 +42,8 @@ func getCacheSizeOrDefault(def int) int {
 	return parsed
 }
 
-func createCache() *lruCache.Cache {
-	cache, err := lruCache.NewWithEvict(getCacheSizeOrDefault(128), nil)
+func createCache() *lruCache.Cache[string, client.Client] {
+	cache, err := lruCache.NewWithEvict[string, client.Client](getCacheSizeOrDefault(128), nil)
 	runtime.Must(err)
 	return cache
 }
@@ -51,7 +51,7 @@ func createCache() *lruCache.Cache {
 // KubernetesAuth provides middleware to authenticate with Kubernetes JWT tokens
 type KubernetesAuth struct {
 	CreateClientFunc func(string) (client.Client, error)
-	cache            *lruCache.Cache
+	cache            *lruCache.Cache[string, client.Client]
 }
 
 // DefaultKubernetesAuth uses the JWT bearer token to authenticate
