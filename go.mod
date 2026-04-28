@@ -6,7 +6,6 @@ require (
 	github.com/AlekSi/pointer v1.2.0
 	github.com/getkin/kin-openapi v0.133.0
 	github.com/go-logr/logr v1.4.3
-	github.com/hashicorp/golang-lru v1.0.2
 	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/labstack/echo/v4 v4.15.1
 	github.com/oapi-codegen/echo-middleware v1.0.2
