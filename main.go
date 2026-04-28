@@ -26,6 +26,8 @@ func main() {
 		Namespace:        os.Getenv("NAMESPACE"),
 		OidcDiscoveryURL: os.Getenv("OIDC_DISCOVERY_URL"),
 		OidcCLientID:     os.Getenv("OIDC_CLIENT_ID"),
+		VaultAddr:        os.Getenv("VAULT_ADDR"),
+		VaultLoginMethod: os.Getenv("VAULT_LOGIN_METHOD"),
 	}
 
 	e, err := service.NewAPIServer(conf)

@@ -36,6 +36,9 @@ type APIConfig struct {
 
 	OidcDiscoveryURL string
 	OidcCLientID     string
+
+	VaultAddr        string
+	VaultLoginMethod string
 }
 
 // APIContext is a custom echo context
@@ -79,6 +82,14 @@ func NewAPIServer(conf APIConfig, k8sMiddleware ...KubernetesAuth) (*echo.Echo, 
 		apiImpl.metadata.Oidc = &api.OIDCConfig{
 			ClientId:     conf.OidcCLientID,
 			DiscoveryUrl: conf.OidcDiscoveryURL,
+		}
+	}
+	if conf.VaultAddr != "" {
+		apiImpl.metadata.Vault = &api.VaultConfig{
+			Addr: conf.VaultAddr,
+		}
+		if conf.VaultLoginMethod != "" {
+			apiImpl.metadata.Vault.LoginMethod = &conf.VaultLoginMethod
 		}
 	}
 
