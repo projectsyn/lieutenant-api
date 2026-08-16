@@ -9,7 +9,7 @@ require (
 	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/labstack/echo/v4 v4.15.1
 	github.com/oapi-codegen/echo-middleware v1.0.2
-	github.com/oapi-codegen/runtime v1.4.0
+	github.com/oapi-codegen/runtime v1.7.0
 	github.com/oapi-codegen/testutil v1.1.0
 	github.com/projectsyn/lieutenant-operator v1.11.12
 	github.com/stretchr/testify v1.11.1
